@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KZN · SD — دار العلم</title>
+<style>
+:root{--ink:#29251f;--muted:#756d60;--paper:#f4f0e7;--panel:#fffdf8;--line:#ded5c6;--green:#354b3d;--gold:#b18a4b;--red:#a33b32}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 Georgia,serif}
+header{background:var(--green);color:#fff;padding:22px max(22px,calc((100vw - 1180px)/2));display:flex;align-items:center;justify-content:space-between;gap:18px}
+.brand{display:flex;align-items:center;gap:14px}.mark{border:1px solid #c7b17e;border-radius:50%;width:46px;height:46px;display:grid;place-items:center;color:#e7d4a6;font-size:23px}
+h1{font-size:21px;margin:0;letter-spacing:.08em}header small{color:#e4d8c2;display:block;font-size:12px;letter-spacing:.12em}
+button,select,input{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:9px 13px;border-radius:7px}
+button.primary{background:var(--green);color:white;border-color:var(--green)}button:disabled{opacity:.5;cursor:not-allowed}
+main{max-width:1180px;margin:30px auto;padding:0 20px}.intro{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:24px}.eyebrow{color:var(--gold);text-transform:uppercase;letter-spacing:.16em;font:11px Arial,sans-serif}.intro h2{font-size:30px;margin:4px 0}.intro p{margin:0;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}.stat,.panel,.book{background:var(--panel);border:1px solid var(--line);border-radius:10px}.stat{padding:15px}.stat b{font-size:24px;display:block;color:var(--green)}.stat span{color:var(--muted);font:12px Arial,sans-serif}
+.layout{display:grid;grid-template-columns:220px 1fr;gap:20px}.side{padding:16px;height:max-content}.side h3{font-size:15px;margin:0 0 12px}.nav{display:grid;gap:6px}.nav button{text-align:left;border:0;background:transparent}.nav button.active{background:#e9e2d4;color:var(--green);font-weight:bold}.content{min-width:0}.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}.toolbar input{flex:1;min-width:180px}.toolbar input,.toolbar select,.field input,.field select,.field textarea{padding:10px;border:1px solid var(--line);border-radius:7px;background:#fffdf8;color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}.book{overflow:hidden}.cover{height:190px;background:linear-gradient(145deg,#e8dfce,#c9b997);display:grid;place-items:center;color:#65573f;font-size:42px}.cover img{width:100%;height:100%;object-fit:cover}.bookbody{padding:13px}.book h3{font-size:17px;margin:0 0 4px}.book p{margin:0 0 9px;color:var(--muted);font-size:13px}.tag{display:inline-block;border-radius:20px;padding:3px 8px;background:#eee8dc;color:#625944;font:11px Arial,sans-serif}.empty{padding:38px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:5px}.field label{font-size:13px;color:var(--muted)}.field.full{grid-column:1/-1}.field textarea{min-height:75px}.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}.hidden{display:none!important}.note{font:12px Arial,sans-serif;color:var(--muted);margin-top:16px}
+@media(max-width:760px){header{padding:16px}.stats{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.side{padding:10px}.nav{grid-template-columns:repeat(2,1fr)}.intro{align-items:start;flex-direction:column}.formgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand"><div class="mark">ك</div><div><h1>KZN · SD</h1><small>دَارُ الْعِلْمِ · HAUS DES WISSENS</small></div></div>
+ <div><button id="langBtn">TR / DE</button> <button id="loginBtn">Anmelden</button></div>
+</header>
+<main>
+ <section class="intro"><div><div class="eyebrow" data-de="Die digitale Büchersammlung" data-tr="Dijital kitap koleksiyonu">Die digitale Büchersammlung</div><h2 data-de="Willkommen in deiner Bibliothek" data-tr="Kütüphanene hoş geldin">Willkommen in deiner Bibliothek</h2><p data-de="Ein Ort für Wissen, Ordnung und Entdeckung." data-tr="Bilgi, düzen ve keşif için bir yer.">Ein Ort für Wissen, Ordnung und Entdeckung.</p></div><button class="primary" id="addBtn">＋ Buch hinzufügen</button></section>
+ <section class="stats">
+  <div class="stat"><b id="total">0</b><span data-de="Bücher insgesamt" data-tr="Toplam kitap">Bücher insgesamt</span></div>
+  <div class="stat"><b id="home">0</b><span data-de="Zuhause" data-tr="Evde">Zuhause</span></div>
+  <div class="stat"><b id="course">0</b><span data-de="Im Kurs" data-tr="Kursta">Im Kurs</span></div>
+  <div class="stat"><b id="loan">0</b><span data-de="Ausgeliehen" data-tr="Ödünç verilen">Ausgeliehen</span></div>
+ </section>
+ <div class="layout">
+  <aside class="panel side"><h3 data-de="Bibliothek" data-tr="Kütüphane">Bibliothek</h3><div class="nav">
+   <button class="active" data-view="all">▤ <span data-de="Alle Bücher" data-tr="Tüm kitaplar">Alle Bücher</span></button>
+   <button data-view="home">⌂ <span data-de="Zuhause" data-tr="Evde">Zuhause</span></button>
+   <button data-view="course">▣ <span data-de="Im Kurs" data-tr="Kursta">Im Kurs</span></button>
+   <button data-view="loans">↗ <span data-de="Ausgeliehen" data-tr="Ödünç verilen">Ausgeliehen</span></button>
+   <button data-view="wishlist">♡ <span data-de="Wunschliste" data-tr="İstek listesi">Wunschliste</span></button>
+  </div><p class="note" data-de="Gemeinsame und persönliche Sammlung – nach der Anmeldung." data-tr="Ortak ve kişisel koleksiyon – giriş yaptıktan sonra.">Gemeinsame und persönliche Sammlung – nach der Anmeldung.</p></aside>
+  <section class="content">
+   <div class="toolbar"><input id="search" placeholder="Titel, Autor oder Thema suchen …"><select id="category"><option value="">Alle Themen</option><option>Islam</option><option>Koranwissenschaften</option><option>Hadith</option><option>Geschichte</option><option>Sprache</option><option>Sonstiges</option></select></div>
+   <div id="books" class="grid"></div>
+   <div id="empty" class="empty">Noch keine Bücher eingetragen. Füge dein erstes Buch hinzu.</div>
+   <section id="formPanel" class="panel" style="padding:18px;margin-top:18px;display:none">
+    <h3 id="formTitle">Neues Buch eintragen</h3>
+    <form id="bookForm"><div class="formgrid">
+     <div class="field"><label>Titel *</label><input name="title" required></div><div class="field"><label>Autor</label><input name="author"></div>
+     <div class="field"><label>Thema / Kategorie</label><select name="category"><option>Islam</option><option>Koranwissenschaften</option><option>Hadith</option><option>Geschichte</option><option>Sprache</option><option>Sonstiges</option></select></div>
+     <div class="field"><label>Standort</label><select name="location"><option>Zuhause</option><option>Im Kurs</option></select></div>
+     <div class="field"><label>Sammlung</label><select name="visibility"><option value="personal">Persönlich</option><option value="shared">Gemeinsam</option></select></div>
+     <div class="field"><label>Buchcover (Bild)</label><input name="cover" type="file" accept="image/*"></div>
+     <div class="field full"><label>Notizen</label><textarea name="notes"></textarea></div>
+    </div><div class="actions"><button type="button" id="cancelBtn">Abbrechen</button><button class="primary" type="submit">Buch speichern</button></div></form>
+   </section>
+  </section>
+ </div>
+ <p class="note">Vorschau / Prototyp: Daten werden vorerst nur in diesem Browser gespeichert. Anmeldung, gemeinsame Synchronisierung, PDF-Speicher und E-Mail-Funktionen werden im nächsten Integrationsschritt mit Supabase verbunden.</p>
+</main>
+<script>
+let books=JSON.parse(localStorage.getItem('kznBooks')||'[]'), view='all', lang='de';
+const $=id=>document.getElementById(id);
+function tr(de,tu){return lang==='de'?de:tu}
+function render(){
+ $('total').textContent=books.length;$('home').textContent=books.filter(b=>b.location==='Zuhause').length;$('course').textContent=books.filter(b=>b.location==='Im Kurs').length;$('loan').textContent=books.filter(b=>b.loaned).length;
+ const q=$('search').value.toLowerCase(),cat=$('category').value;
+ let shown=books.filter(b=>(view==='all'||(view==='home'&&b.location==='Zuhause')||(view==='course'&&b.location==='Im Kurs')||(view==='loans'&&b.loaned)||(view==='wishlist'&&b.wish))&&(!cat||b.category===cat)&&(!q||(b.title+' '+b.author+' '+b.category).toLowerCase().includes(q)));
+ $('books').innerHTML=shown.map(b=>`<article class="book"><div class="cover">${b.cover?`<img src="${b.cover}" alt="Buchcover">`:'▤'}</div><div class="bookbody"><h3>${esc(b.title)}</h3><p>${esc(b.author||'Autor unbekannt')}</p><span class="tag">${esc(b.category)}</span> <span class="tag">${esc(b.location)}</span></div></article>`).join('');
+ $('empty').style.display=shown.length?'none':'block';
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.querySelectorAll('[data-view]').forEach(btn=>btn.onclick=()=>{view=btn.dataset.view;document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x===btn));render()});
+$('search').oninput=render;$('category').onchange=render;
+$('addBtn').onclick=()=>{$('formPanel').style.display='block';$('formPanel').scrollIntoView({behavior:'smooth'})};
+$('cancelBtn').onclick=()=>{$('formPanel').style.display='none';$('bookForm').reset()};
+$('bookForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target),file=f.get('cover');let cover='';if(file&&file.size){cover=await new Promise(resolve=>{let r=new FileReader();r.onload=()=>resolve(r.result);r.readAsDataURL(file)})}books.push({title:f.get('title'),author:f.get('author'),category:f.get('category'),location:f.get('location'),visibility:f.get('visibility'),notes:f.get('notes'),cover,loaned:false});localStorage.setItem('kznBooks',JSON.stringify(books));e.target.reset();$('formPanel').style.display='none';render()};
+$('langBtn').onclick=()=>{lang=lang==='de'?'tr':'de';document.querySelectorAll('[data-de]').forEach(el=>el.textContent=el.dataset[lang]);$('addBtn').textContent=lang==='de'?'＋ Buch hinzufügen':'＋ Kitap ekle';$('loginBtn').textContent=lang==='de'?'Anmelden':'Giriş yap';$('search').placeholder=lang==='de'?'Titel, Autor oder Thema suchen …':'Kitap, yazar veya konu ara …'};
+$('loginBtn').onclick=()=>alert('Die Supabase-Anmeldung wird im nächsten Integrationsschritt aktiviert.');
+render();
+</script>
+</body></html>
