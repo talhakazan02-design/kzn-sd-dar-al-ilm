@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KZN · SD — دار العلم · v0.5.1</title>
+<title>KZN · SD — دار العلم · v0.6</title>
 <style>
 
 :root{
@@ -250,7 +250,7 @@ main{max-width:none;margin:64px 0 0 245px;padding:0 25px 28px}
   </section>
  </div>
  </div>
- <p class="note">Version 0.5.1 · Persönliche Buchdaten werden in Supabase gespeichert, sofern die bestehenden Datenbankrichtlinien dies erlauben. PDF-/Cover-Upload und öffentliche Freigaben bleiben bis zur Sicherheitsprüfung deaktiviert. Bestehende lokale Bücher werden nicht gelöscht oder automatisch übertragen.</p>
+ <p class="note">Version 0.6 · Persönliche Buchdaten werden in Supabase gespeichert, sofern die bestehenden Datenbankrichtlinien dies erlauben. PDF-/Cover-Upload und öffentliche Freigaben bleiben bis zur Sicherheitsprüfung deaktiviert. Bestehende lokale Bücher werden nicht gelöscht oder automatisch übertragen.</p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
@@ -262,6 +262,7 @@ const db = window.supabase.createClient(
   SUPABASE_KEY
 );
 let books=[], view='all', lang='de', portal='library';
+const STORAGE_BUCKET='library-files';
 let booksLoaded=false;
 let booksError='';
 const $=id=>document.getElementById(id);
@@ -270,7 +271,7 @@ function render(){
  $('total').textContent=books.length;$('home').textContent=books.filter(b=>b.location==='Zuhause').length;$('course').textContent=books.filter(b=>b.location==='Im Kurs').length;$('loan').textContent=books.filter(b=>b.loaned).length;
  const q=$('search').value.toLowerCase(),cat=$('category').value;
  let shown=books.filter(b=>(portal==='mine'?b.visibility==='private':portal==='shared'?b.visibility==='shared':true)&&(view==='all'||(view==='home'&&b.location==='Zuhause')||(view==='course'&&b.location==='Im Kurs')||(view==='loans'&&b.loaned)||(view==='wishlist'&&b.wish))&&(!cat||b.category===cat)&&(!q||(b.title+' '+b.author+' '+b.category).toLowerCase().includes(q)));
- $('books').innerHTML=shown.map(b=>`<article class="book"><div class="cover">${b.cover?`<img src="${b.cover}" alt="Buchcover">`:'▤'}</div><div class="bookbody"><h3>${esc(b.title)}</h3><p>${esc(b.author||'Autor unbekannt')}</p><span class="tag">${esc(b.category)}</span> <span class="tag">${esc(b.location)}</span></div></article>`).join('');
+ $('books').innerHTML=shown.map(b=>`<article class="book"><div class="cover">${b.cover_url?`<img src="${esc(b.cover_url)}" alt="Buchcover">`:'▤'}</div><div class="bookbody"><h3>${esc(b.title)}</h3><p>${esc(b.author||'Autor unbekannt')}</p><span class="tag">${esc(b.category)}</span>${b.file_path?` <button type="button" class="open-pdf" data-book-id="${esc(b.id)}">PDF öffnen</button>`:''}</div></article>`).join('');
  $('empty').style.display=shown.length?'none':'block';
  $('empty').textContent=booksError || (booksLoaded ? 'Noch keine Bücher in deiner persönlichen Online-Bibliothek.' : 'Bücher werden geladen …');
 }
@@ -298,12 +299,12 @@ document.querySelectorAll('[data-portal]').forEach(b=>b.addEventListener('click'
 $('search').oninput=render;$('category').onchange=render;
 $('addBtn').onclick=()=>{$('formPanel').style.display='block';$('formPanel').scrollIntoView({behavior:'smooth'})};
 $('cancelBtn').onclick=()=>{$('formPanel').style.display='none';$('bookForm').reset()};
-// V0.5: Erst persönliche Metadaten. Keine Freigabe oder Datei-Uploads ohne geprüfte RLS/Storage-Regeln.
+// v0.6: Private PDFs und Cover. Voraussetzung: SQL-Sicherheitsmigration ist installiert.
 async function loadBooks(){
   if(!currentUser || accessState!=='approved') return;
   booksLoaded=false;booksError='';render();
   const {data,error}=await db.from('books')
-    .select('id,owner_id,title,author,description,category,visibility,created_at')
+    .select('id,owner_id,title,author,description,category,visibility,created_at,file_path,file_name,mime_type,file_size,cover_path')
     .eq('owner_id',currentUser.id)
     .order('created_at',{ascending:false});
   if(error){
@@ -311,10 +312,39 @@ async function loadBooks(){
     booksError='Online-Bücher konnten nicht geladen werden. Bitte Datenbankrechte prüfen. ('+error.message+')';
     books=[];
   }else{
-    books=(data||[]).map(b=>({...b,location:'Nicht angegeben',loaned:false,wish:false}));
+    books=(data||[]).map(b=>({...b,location:'Nicht angegeben',loaned:false,wish:false,cover_url:null}));
+    await Promise.all(books.filter(b=>b.cover_path).map(async b=>{
+      const {data: signed,error: signedError}=await db.storage.from(STORAGE_BUCKET).createSignedUrl(b.cover_path,3600);
+      if(!signedError && signed?.signedUrl) b.cover_url=signed.signedUrl;
+    }));
   }
   booksLoaded=true;render();
 }
+function validateUpload(file,kind){
+  if(!file || !file.size) return null;
+  const allowed=kind==='pdf'?['application/pdf']:['image/jpeg','image/png','image/webp'];
+  const max=kind==='pdf'?25*1024*1024:5*1024*1024;
+  if(!allowed.includes(file.type)) throw new Error(kind==='pdf'?'Nur PDF-Dateien sind erlaubt.':'Nur JPG, PNG und WebP sind erlaubt.');
+  if(file.size>max) throw new Error(kind==='pdf'?'PDF ist größer als 25 MB.':'Cover ist größer als 5 MB.');
+  return file;
+}
+async function uploadPrivateFile(file,path){
+  const {error}=await db.storage.from(STORAGE_BUCKET).upload(path,file,{contentType:file.type,upsert:false});
+  if(error) throw error;
+  return path;
+}
+$('books').addEventListener('click',async event=>{
+  const btn=event.target.closest('.open-pdf');if(!btn)return;
+  const book=books.find(b=>b.id===btn.dataset.bookId);
+  if(!book?.file_path || !currentUser || accessState!=='approved')return;
+  btn.disabled=true;
+  try{
+    const {data,error}=await db.storage.from(STORAGE_BUCKET).createSignedUrl(book.file_path,60);
+    if(error)throw error;
+    window.open(data.signedUrl,'_blank','noopener,noreferrer');
+  }catch(error){alert('PDF konnte nicht geöffnet werden: '+error.message);}
+  finally{btn.disabled=false;}
+});
 $('bookForm').onsubmit=async e=>{
   e.preventDefault();
   if(!currentUser || accessState!=='approved') return;
@@ -324,19 +354,44 @@ $('bookForm').onsubmit=async e=>{
   }
   const submit=e.target.querySelector('button[type="submit"]');
   submit.disabled=true;
+  let newBookId=null;
+  const uploaded=[];
   try{
+    const cover=validateUpload(f.get('cover'),'cover');
+    const pdf=validateUpload(f.get('document'),'pdf');
     const payload={owner_id:currentUser.id,visibility:'private',
       title:String(f.get('title')||'').trim(),author:String(f.get('author')||'').trim(),
       category:String(f.get('category')||'').trim(),description:String(f.get('notes')||'').trim()};
     if(!payload.title) throw new Error('Bitte einen Buchtitel eingeben.');
-    const {error}=await db.from('books').insert(payload);
-    if(error) throw error;
+    const {data:inserted,error:insertError}=await db.from('books').insert(payload).select('id').single();
+    if(insertError)throw insertError;
+    newBookId=inserted.id;
+    const changes={};
+    if(pdf){
+      const path=`${currentUser.id}/${newBookId}/document.pdf`;
+      await uploadPrivateFile(pdf,path);uploaded.push(path);
+      Object.assign(changes,{file_path:path,file_name:pdf.name,mime_type:pdf.type,file_size:pdf.size});
+    }
+    if(cover){
+      const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[cover.type];
+      const path=`${currentUser.id}/${newBookId}/cover.${ext}`;
+      await uploadPrivateFile(cover,path);uploaded.push(path);
+      changes.cover_path=path;
+    }
+    if(Object.keys(changes).length){
+      const {error:updateError}=await db.from('books').update(changes).eq('id',newBookId).eq('owner_id',currentUser.id);
+      if(updateError)throw updateError;
+    }
     e.target.reset();$('formPanel').style.display='none';
     await loadBooks();
-    alert('Buchinformationen wurden in Supabase gespeichert.');
+    alert('Buch und ausgewählte Dateien wurden in Supabase gespeichert.');
   }catch(error){
     console.error('Speichern fehlgeschlagen:',error);
-    alert('Buch konnte nicht gespeichert werden: '+error.message+'\nDie vorhandenen Datenbankregeln oder Pflichtfelder müssen geprüft werden.');
+    if(newBookId){
+      if(uploaded.length)await db.storage.from(STORAGE_BUCKET).remove(uploaded);
+      await db.from('books').delete().eq('id',newBookId).eq('owner_id',currentUser.id);
+    }
+    alert('Speichern fehlgeschlagen: '+error.message+'\nPrüfe, ob das SQL-Sicherheitsskript ausgeführt wurde.');
   }finally{submit.disabled=false;}
 };
 $('langBtn').onclick=()=>{lang=lang==='de'?'tr':'de';document.querySelectorAll('[data-de]').forEach(el=>el.textContent=el.dataset[lang]);$('addBtn').textContent=lang==='de'?'＋ Buch hinzufügen':'＋ Kitap ekle';if(!currentUser)$('loginBtn').textContent=lang==='de'?'Anmelden':'Giriş yap';$('search').placeholder=lang==='de'?'Titel, Autor oder Thema suchen …':'Kitap, yazar veya konu ara …'};
