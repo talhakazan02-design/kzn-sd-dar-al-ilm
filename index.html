@@ -1,9 +1,10 @@
+```
 <!doctype html>
 <html lang="de">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KZN · SD — دار العلم · v0.3</title>
+<title>KZN · SD — دار العلم · v0.3.1</title>
 <style>
 
 :root{
@@ -150,9 +151,51 @@ main{max-width:1250px;margin-top:0}
 #formPanel{background:#1b1916}
 @media(max-width:950px){.portal{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:650px){.portal{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.portal-card{min-height:125px}.hero{padding:28px 12px}.hero:before,.hero:after{display:none}.section-head{flex-direction:column;align-items:flex-start}.layout{grid-template-columns:1fr}.content-shell{padding:12px}}
+
+/* v0.3.1 — dashboard design, authentication logic unchanged */
+body.guest-mode header,body.guest-mode main{margin-left:0}
+:root{--gold:#dcb16a;--ink:#f6e9d2;--muted:#b9a68c;--line:#70512e}
+body{font-family:Georgia,'Times New Roman',serif;background:#070606}
+header{position:relative;z-index:4;margin-left:226px;padding:14px 30px;background:#090807;border-bottom:1px solid #4e341a;min-height:70px}
+header .brand{display:none}
+main{max-width:none;margin:0 0 0 226px;padding:0 26px 35px}
+#libraryArea{max-width:1450px;margin:auto}
+.app-sidebar{position:fixed;z-index:5;top:0;bottom:0;left:0;width:226px;overflow:auto;padding:20px 12px;background:linear-gradient(180deg,#0e0b09,#060606);border-right:1px solid #654725;box-shadow:8px 0 24px #0008}
+.sidebar-logo{text-align:center;color:var(--gold);padding:8px 8px 22px;border-bottom:1px solid #3d2d1c;margin-bottom:14px}
+.sidebar-logo .book-symbol{font-size:35px;line-height:1.3}.sidebar-logo strong{display:block;font-size:25px;letter-spacing:.1em;font-weight:normal}.sidebar-logo .arabic{font-size:23px;display:block;line-height:1.5}.sidebar-logo small{font:11px Arial,sans-serif;color:#cbb18b}
+.sidebar-links{display:grid;gap:5px}.sidebar-links button{width:100%;text-align:left;padding:11px 13px;border:1px solid transparent;background:transparent;color:#d6c8b4;border-radius:7px;font:13px Arial,sans-serif}.sidebar-links button:hover,.sidebar-links button.active{color:#f3d39b;background:linear-gradient(90deg,#654621,#24180f);border-color:#73522d}.sidebar-links .admin-link{margin-top:18px;border-top:1px solid #4a3725;border-radius:0;padding-top:20px}
+.sidebar-footer{margin-top:25px;padding:13px 8px;border:1px solid #4d3824;border-radius:8px;color:#d4b583;font:12px Arial,sans-serif;text-align:center}
+.hero{margin:0 -26px 23px;padding:42px 20px 35px;min-height:220px;background:linear-gradient(180deg,#08070716 0%,#090807cf 100%),radial-gradient(ellipse at 50% 55%,#50321b 0%,#17100d 42%,#080707 78%);border-bottom:1px solid #604222}
+.hero:before,.hero:after{font-size:24px;top:58px;color:#dcb16a}
+.hero-arabic{font-size:clamp(35px,5vw,58px);line-height:1.35}
+.hero h2{font-size:clamp(25px,3vw,36px);letter-spacing:.16em}
+.hero p{margin-top:0}
+.hero-ornament{position:absolute;left:0;right:0;bottom:0;height:110px;pointer-events:none;opacity:.36;background:repeating-linear-gradient(90deg,transparent 0 47px,#8a5d29 48px 49px,transparent 50px 96px);mask-image:linear-gradient(to top,black,transparent)}
+.portal{gap:14px;margin-bottom:27px}.portal-card{min-height:148px;background:linear-gradient(145deg,#1a1510,#0c0b0b);border:1px solid #644625;border-radius:15px;box-shadow:inset 0 1px #b38b4533,0 10px 24px #0009}.portal-card.selected,.portal-card:hover{background:linear-gradient(140deg,#4e3519,#15100b);box-shadow:0 0 16px #bd87333b;border-color:#d8ae65}.portal-icon{font-size:37px}.portal-card strong{font-family:Georgia,serif;font-weight:bold;color:#f5e7cc}.portal-card small{font-size:12px}
+.section-head{margin-top:12px}.section-head h2{color:#eac27e}.stats{margin-top:12px}.stat,.content-shell,.side{background:linear-gradient(145deg,#171310,#0b0a0a);border-color:#584027}.content-shell{min-height:330px}.side{border-radius:12px}
+#accessPanel{margin-top:12vh!important}
+@media(max-width:950px){.app-sidebar{width:180px}.sidebar-logo strong{font-size:21px}header{margin-left:180px}main{margin-left:180px}.portal{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.app-sidebar{position:relative;width:auto;bottom:auto;padding:10px}.sidebar-logo{padding:3px;margin-bottom:5px}.sidebar-logo .book-symbol,.sidebar-logo .arabic,.sidebar-footer{display:none}.sidebar-links{display:flex;overflow:auto}.sidebar-links button{white-space:nowrap;width:auto;padding:9px}.sidebar-links .admin-link{margin:0;border:0;padding:9px}header{margin-left:0;min-height:50px;justify-content:flex-end;padding:8px 15px}main{margin:0;padding:0 13px 25px}.hero{margin:0 -13px 15px;padding:25px 12px}.portal{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-card{min-height:115px}}
 </style>
 </head>
 <body>
+<aside class="app-sidebar" id="appSidebar" aria-label="Hauptnavigation">
+ <div class="sidebar-logo"><div class="book-symbol">☷</div><strong>KZN · SD</strong><span class="arabic" lang="ar">دار العلم</span><small>DİJİTAL KÜTÜPHANE</small></div>
+ <nav class="sidebar-links">
+ <button data-sideportal="library" class="active">⌂ &nbsp; Ana Sayfa</button>
+ <button data-sideportal="library">▤ &nbsp; Kütüphane</button>
+ <button data-sideportal="mine">♧ &nbsp; Benim Kitaplarım</button>
+ <button data-sideportal="shared">♧ &nbsp; Ortak Kütüphane</button>
+ <button data-sideportal="categories">▦ &nbsp; Kategoriler</button>
+ <button data-sideportal="menba">✦ &nbsp; MENBA AI</button>
+ <button data-sideview="loans">⇄ &nbsp; Ausleihe (Ödünç)</button>
+ <button data-sideview="wishlist">♡ &nbsp; Wunschliste</button>
+ <button type="button" id="notesPlaceholder">▤ &nbsp; Notlarım</button>
+ <button type="button" id="statsPlaceholder">▥ &nbsp; İstatistikler</button>
+ <button type="button" id="adminPlaceholder" class="admin-link hidden">⚙ &nbsp; Yönetim (Admin)</button>
+ </nav><div class="sidebar-footer">KZN · SD · دار العلم</div>
+</aside>
+
 <header>
  <div class="brand"><div class="mark">ك</div><div><h1>KZN · SD</h1><small>دَارُ الْعِلْمِ · HAUS DES WISSENS</small></div></div>
  <div><button id="langBtn">TR / DE</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
@@ -160,7 +203,7 @@ main{max-width:1250px;margin-top:0}
 <main>
  <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="email" required placeholder="name@beispiel.de"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Anmeldelink senden</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
  <div id="libraryArea" class="hidden">
- <section class="hero"><div class="hero-arabic" lang="ar" dir="rtl">دار العلم</div><div class="hero-line"></div><h2>KZN · SD</h2><p data-de="Die digitale Bibliothek des Wissens" data-tr="İlmin dijital kütüphanesi">Die digitale Bibliothek des Wissens</p></section>
+ <section class="hero"><div class="hero-ornament" aria-hidden="true"></div><div class="hero-arabic" lang="ar" dir="rtl">دار العلم</div><div class="hero-line"></div><h2>KZN · SD</h2><p data-de="Die digitale Bibliothek des Wissens" data-tr="İlmin dijital kütüphanesi">Die digitale Bibliothek des Wissens</p></section>
  <nav class="portal" aria-label="Hauptbereiche">
   <button class="portal-card selected" data-portal="library"><span class="portal-icon">▤</span><strong>Kütüphane</strong><small>Bibliothek</small></button>
   <button class="portal-card" data-portal="mine"><span class="portal-icon">♧</span><strong>Benim Kitaplarım</strong><small>Meine Bücher</small></button>
@@ -204,7 +247,7 @@ main{max-width:1250px;margin-top:0}
   </section>
  </div>
  </div>
- <p class="note">Version 0.3 · Prototyp: Bücher und Cover werden weiterhin nur lokal in diesem Browser gespeichert. Die Mitgliedschaft wird über Supabase geprüft. Datenbank- und Storage-Richtlinien müssen vor einer echten privaten Freigabe vollständig abgesichert werden.</p>
+ <p class="note">Version 0.3.1 · Prototyp: Bücher und Cover werden weiterhin nur lokal in diesem Browser gespeichert. Die Mitgliedschaft wird über Supabase geprüft. Datenbank- und Storage-Richtlinien müssen vor einer echten privaten Freigabe vollständig abgesichert werden.</p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
@@ -246,6 +289,9 @@ function switchPortal(next){
  if(!isMenba)render();
 }
 document.querySelectorAll('[data-portal]').forEach(b=>b.addEventListener('click',()=>switchPortal(b.dataset.portal)));
+document.querySelectorAll('[data-sideportal]').forEach(b=>b.addEventListener('click',()=>switchPortal(b.dataset.sideportal)));
+document.querySelectorAll('[data-sideview]').forEach(b=>b.addEventListener('click',()=>{switchPortal('library');document.querySelector('[data-view="'+b.dataset.sideview+'"]').click();}));
+['notesPlaceholder','statsPlaceholder','adminPlaceholder'].forEach(id=>$(id).onclick=()=>alert('Dieser Bereich wird in einer späteren Version umgesetzt.')); 
 $('search').oninput=render;$('category').onchange=render;
 $('addBtn').onclick=()=>{$('formPanel').style.display='block';$('formPanel').scrollIntoView({behavior:'smooth'})};
 $('cancelBtn').onclick=()=>{$('formPanel').style.display='none';$('bookForm').reset()};
@@ -256,7 +302,10 @@ let currentUser = null;
 let accessState = 'loading';
 function showAccess(state, message = '') {
   accessState = state;
+  if(state !== 'approved') $('adminPlaceholder').classList.add('hidden');
   $('libraryArea').classList.toggle('hidden', state !== 'approved');
+  $('appSidebar').classList.toggle('hidden', state !== 'approved');
+  document.body.classList.toggle('guest-mode', state !== 'approved');
   $('accessPanel').classList.toggle('hidden', state === 'approved');
   $('loginForm').classList.toggle('hidden', state !== 'guest');
   $('loginFeedback').textContent = state === 'guest' ? $('loginFeedback').textContent : '';
@@ -301,6 +350,7 @@ async function refreshAccess() {
     if (data.status === 'approved') {
       showAccess('approved');
       $('loginBtn').textContent = data.is_admin ? 'Admin · Abmelden' : 'Abmelden';
+       $('adminPlaceholder').classList.toggle('hidden', !data.is_admin);
       render();
     } else if (data.status === 'pending') showAccess('pending');
     else showAccess('rejected');
@@ -350,3 +400,4 @@ refreshAccess();
 render();
 </script>
 </body></html>
+```
