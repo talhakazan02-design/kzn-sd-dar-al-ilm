@@ -1,10 +1,9 @@
-```
 <!doctype html>
 <html lang="de">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KZN · SD — دار العلم · v0.3.1</title>
+<title>KZN · SD — دار العلم · v0.4</title>
 <style>
 
 :root{
@@ -152,49 +151,53 @@ main{max-width:1250px;margin-top:0}
 @media(max-width:950px){.portal{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:650px){.portal{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.portal-card{min-height:125px}.hero{padding:28px 12px}.hero:before,.hero:after{display:none}.section-head{flex-direction:column;align-items:flex-start}.layout{grid-template-columns:1fr}.content-shell{padding:12px}}
 
-/* v0.3.1 — dashboard design, authentication logic unchanged */
-body.guest-mode header,body.guest-mode main{margin-left:0}
-:root{--gold:#dcb16a;--ink:#f6e9d2;--muted:#b9a68c;--line:#70512e}
-body{font-family:Georgia,'Times New Roman',serif;background:#070606}
-header{position:relative;z-index:4;margin-left:226px;padding:14px 30px;background:#090807;border-bottom:1px solid #4e341a;min-height:70px}
-header .brand{display:none}
-main{max-width:none;margin:0 0 0 226px;padding:0 26px 35px}
-#libraryArea{max-width:1450px;margin:auto}
-.app-sidebar{position:fixed;z-index:5;top:0;bottom:0;left:0;width:226px;overflow:auto;padding:20px 12px;background:linear-gradient(180deg,#0e0b09,#060606);border-right:1px solid #654725;box-shadow:8px 0 24px #0008}
-.sidebar-logo{text-align:center;color:var(--gold);padding:8px 8px 22px;border-bottom:1px solid #3d2d1c;margin-bottom:14px}
-.sidebar-logo .book-symbol{font-size:35px;line-height:1.3}.sidebar-logo strong{display:block;font-size:25px;letter-spacing:.1em;font-weight:normal}.sidebar-logo .arabic{font-size:23px;display:block;line-height:1.5}.sidebar-logo small{font:11px Arial,sans-serif;color:#cbb18b}
-.sidebar-links{display:grid;gap:5px}.sidebar-links button{width:100%;text-align:left;padding:11px 13px;border:1px solid transparent;background:transparent;color:#d6c8b4;border-radius:7px;font:13px Arial,sans-serif}.sidebar-links button:hover,.sidebar-links button.active{color:#f3d39b;background:linear-gradient(90deg,#654621,#24180f);border-color:#73522d}.sidebar-links .admin-link{margin-top:18px;border-top:1px solid #4a3725;border-radius:0;padding-top:20px}
-.sidebar-footer{margin-top:25px;padding:13px 8px;border:1px solid #4d3824;border-radius:8px;color:#d4b583;font:12px Arial,sans-serif;text-align:center}
-.hero{margin:0 -26px 23px;padding:42px 20px 35px;min-height:220px;background:linear-gradient(180deg,#08070716 0%,#090807cf 100%),radial-gradient(ellipse at 50% 55%,#50321b 0%,#17100d 42%,#080707 78%);border-bottom:1px solid #604222}
-.hero:before,.hero:after{font-size:24px;top:58px;color:#dcb16a}
-.hero-arabic{font-size:clamp(35px,5vw,58px);line-height:1.35}
-.hero h2{font-size:clamp(25px,3vw,36px);letter-spacing:.16em}
-.hero p{margin-top:0}
-.hero-ornament{position:absolute;left:0;right:0;bottom:0;height:110px;pointer-events:none;opacity:.36;background:repeating-linear-gradient(90deg,transparent 0 47px,#8a5d29 48px 49px,transparent 50px 96px);mask-image:linear-gradient(to top,black,transparent)}
-.portal{gap:14px;margin-bottom:27px}.portal-card{min-height:148px;background:linear-gradient(145deg,#1a1510,#0c0b0b);border:1px solid #644625;border-radius:15px;box-shadow:inset 0 1px #b38b4533,0 10px 24px #0009}.portal-card.selected,.portal-card:hover{background:linear-gradient(140deg,#4e3519,#15100b);box-shadow:0 0 16px #bd87333b;border-color:#d8ae65}.portal-icon{font-size:37px}.portal-card strong{font-family:Georgia,serif;font-weight:bold;color:#f5e7cc}.portal-card small{font-size:12px}
-.section-head{margin-top:12px}.section-head h2{color:#eac27e}.stats{margin-top:12px}.stat,.content-shell,.side{background:linear-gradient(145deg,#171310,#0b0a0a);border-color:#584027}.content-shell{min-height:330px}.side{border-radius:12px}
-#accessPanel{margin-top:12vh!important}
-@media(max-width:950px){.app-sidebar{width:180px}.sidebar-logo strong{font-size:21px}header{margin-left:180px}main{margin-left:180px}.portal{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:650px){.app-sidebar{position:relative;width:auto;bottom:auto;padding:10px}.sidebar-logo{padding:3px;margin-bottom:5px}.sidebar-logo .book-symbol,.sidebar-logo .arabic,.sidebar-footer{display:none}.sidebar-links{display:flex;overflow:auto}.sidebar-links button{white-space:nowrap;width:auto;padding:9px}.sidebar-links .admin-link{margin:0;border:0;padding:9px}header{margin-left:0;min-height:50px;justify-content:flex-end;padding:8px 15px}main{margin:0;padding:0 13px 25px}.hero{margin:0 -13px 15px;padding:25px 12px}.portal{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-card{min-height:115px}}
+/* KZN SD v0.4 — visual redesign; existing auth and local catalog logic preserved */
+:root{--gold:#dcb46b;--line:#57452d;--ink:#f6e9d2;--muted:#b5a690}
+body{background:#070707;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+body:before{opacity:.025}
+header{position:fixed;top:0;right:0;left:245px;height:64px;z-index:20;padding:12px 30px;background:#090909;border-bottom:1px solid #49381e}
+header .brand .mark{border-radius:8px;width:40px;height:40px}
+header h1{font-family:Georgia,serif;font-size:19px}
+header small{font-size:9px}
+main{max-width:none;margin:64px 0 0 245px;padding:0 25px 28px}
+#libraryArea{max-width:1480px;margin:0 auto}
+.hero{height:250px;margin:0 -25px 25px;padding:32px 20px 25px;border-bottom:1px solid #6d502b;background:linear-gradient(180deg,rgba(0,0,0,.12),#090909 98%),url('https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=1800&q=80') center 45%/cover no-repeat,radial-gradient(ellipse at center,#6b4724,#080808 75%)}
+.hero:before,.hero:after{content:'✧';font-size:32px;top:45px;color:#d5a451}
+.hero-arabic{font-size:clamp(34px,5vw,57px);line-height:1.3;text-shadow:0 4px 16px #000,0 0 24px #000}
+.hero h2{font-family:Georgia,serif;font-size:30px;letter-spacing:.15em;text-shadow:0 2px 12px #000}
+.hero p{color:#eed4a7;text-shadow:0 2px 10px #000}
+.hero-line{margin:10px auto}
+.portal{gap:14px;margin:0 0 25px}
+.portal-card{min-height:140px;background:linear-gradient(140deg,#17130f,#090909);border-color:#74552f;border-radius:14px;box-shadow:0 8px 24px #0008;gap:8px}
+.portal-card strong{font:600 16px Georgia,serif;color:#f7ead0}
+.portal-card small{font-size:11px;color:#c4b6a1}
+.portal-card:last-child{border-color:#e5b65d;box-shadow:0 0 16px #e2b35955,inset 0 0 15px #9b662c25}
+.portal-card:last-child strong{color:#f7d38e}
+.portal-icon{font-size:38px}
+.section-head h2,.side h3{font-family:Georgia,serif;color:#e6bb74}
+.stat,.panel,.content-shell,.feature-panel,.book{background:#11100e;border-color:#614929}
+.content-shell{min-height:280px}
+.layout{grid-template-columns:minmax(0,1fr)}
+.layout>.side{display:none}
+.stats{margin-top:0}
+.sidebar-main{position:fixed;left:0;top:0;bottom:0;width:245px;z-index:30;overflow:auto;background:linear-gradient(180deg,#10100e,#050505);border-right:1px solid #654b2a;padding:25px 14px;color:#d7c7ad}
+.sidebar-logo{text-align:center;color:#e9bf75;font:24px Georgia,serif;letter-spacing:.1em;padding:0 0 19px;border-bottom:1px solid #403222}
+.sidebar-logo .book-symbol{display:block;font-size:39px;line-height:1.2}
+.sidebar-logo .arabic{font-size:23px;letter-spacing:0;display:block}
+.sidebar-logo small{font:11px Arial,sans-serif;color:#bda47b;letter-spacing:0}
+.sidebar-nav{display:grid;gap:5px;margin-top:18px}
+.sidebar-nav button{display:flex;gap:12px;align-items:center;text-align:left;width:100%;padding:12px 11px;border:1px solid transparent;background:transparent;color:#d0c5b6;border-radius:9px;font:13px Arial,sans-serif}
+.sidebar-nav button:hover,.sidebar-nav button.active{background:linear-gradient(90deg,#63461e,#2c2417);border-color:#806031;color:#ffe0a0}
+.sidebar-nav .symbol{width:21px;text-align:center;font-size:20px;color:#d6ae66}
+.sidebar-divider{border-top:1px solid #403222;margin:17px 5px}
+.sidebar-account{margin-top:25px;border:1px solid #57432a;border-radius:12px;padding:12px;font-size:12px;color:#cfb994}
+#accessPanel{margin-top:75px!important}
+@media(max-width:1050px){.sidebar-main{width:195px}.sidebar-logo{font-size:20px}header{left:195px}main{margin-left:195px}.portal-card strong{font-size:13px}}
+@media(max-width:760px){.sidebar-main{position:relative;width:auto;max-height:none;padding:10px 12px}.sidebar-logo{display:none}.sidebar-nav{display:flex;overflow:auto;margin:0;gap:6px}.sidebar-nav button{width:auto;flex:none;padding:8px}.sidebar-nav .symbol{font-size:16px}.sidebar-divider,.sidebar-account{display:none}header{position:relative;left:0;height:auto;padding:10px 15px}main{margin:0;padding:0 12px 20px}.hero{margin:0 -12px 18px;height:200px}.portal{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-card{min-height:115px}.portal-card:last-child{grid-column:span 2}.stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-<aside class="app-sidebar" id="appSidebar" aria-label="Hauptnavigation">
- <div class="sidebar-logo"><div class="book-symbol">☷</div><strong>KZN · SD</strong><span class="arabic" lang="ar">دار العلم</span><small>DİJİTAL KÜTÜPHANE</small></div>
- <nav class="sidebar-links">
- <button data-sideportal="library" class="active">⌂ &nbsp; Ana Sayfa</button>
- <button data-sideportal="library">▤ &nbsp; Kütüphane</button>
- <button data-sideportal="mine">♧ &nbsp; Benim Kitaplarım</button>
- <button data-sideportal="shared">♧ &nbsp; Ortak Kütüphane</button>
- <button data-sideportal="categories">▦ &nbsp; Kategoriler</button>
- <button data-sideportal="menba">✦ &nbsp; MENBA AI</button>
- <button data-sideview="loans">⇄ &nbsp; Ausleihe (Ödünç)</button>
- <button data-sideview="wishlist">♡ &nbsp; Wunschliste</button>
- <button type="button" id="notesPlaceholder">▤ &nbsp; Notlarım</button>
- <button type="button" id="statsPlaceholder">▥ &nbsp; İstatistikler</button>
- <button type="button" id="adminPlaceholder" class="admin-link hidden">⚙ &nbsp; Yönetim (Admin)</button>
- </nav><div class="sidebar-footer">KZN · SD · دار العلم</div>
-</aside>
+<aside class="sidebar-main" aria-label="Hauptnavigation"><div class="sidebar-logo"><span class="book-symbol">▱📖▰</span>KZN · SD<span class="arabic" lang="ar">دار العلم</span><small>Dijital Kütüphane</small></div><nav class="sidebar-nav"><button class="active" data-side-portal="library"><span class="symbol">⌂</span>Ana Sayfa</button><button data-side-portal="library"><span class="symbol">▤</span>Kütüphane</button><button data-side-portal="mine"><span class="symbol">▣</span>Benim Kitaplarım</button><button data-side-portal="shared"><span class="symbol">♧</span>Ortak Kütüphane</button><button data-side-portal="categories"><span class="symbol">▦</span>Kategoriler</button><button data-side-portal="menba"><span class="symbol">✦</span>MENBA AI</button><div class="sidebar-divider"></div><button data-side-view="loans"><span class="symbol">▤</span>Ausleihe (Ödünç)</button><button data-side-view="wishlist"><span class="symbol">♡</span>Wunschliste</button><button data-side-placeholder="Notizen"><span class="symbol">✎</span>Notlarım</button><button data-side-placeholder="Statistiken"><span class="symbol">▥</span>İstatistikler</button><div class="sidebar-divider"></div><button data-side-placeholder="Adminbereich"><span class="symbol">⚙</span>Yönetim (Admin)</button></nav><div class="sidebar-account">KZN · SD<br><small>Private Mitgliederbibliothek</small></div></aside>
 
 <header>
  <div class="brand"><div class="mark">ك</div><div><h1>KZN · SD</h1><small>دَارُ الْعِلْمِ · HAUS DES WISSENS</small></div></div>
@@ -203,7 +206,7 @@ main{max-width:none;margin:0 0 0 226px;padding:0 26px 35px}
 <main>
  <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="email" required placeholder="name@beispiel.de"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Anmeldelink senden</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
  <div id="libraryArea" class="hidden">
- <section class="hero"><div class="hero-ornament" aria-hidden="true"></div><div class="hero-arabic" lang="ar" dir="rtl">دار العلم</div><div class="hero-line"></div><h2>KZN · SD</h2><p data-de="Die digitale Bibliothek des Wissens" data-tr="İlmin dijital kütüphanesi">Die digitale Bibliothek des Wissens</p></section>
+ <section class="hero"><div class="hero-arabic" lang="ar" dir="rtl">دار العلم</div><div class="hero-line"></div><h2>KZN · SD</h2><p data-de="Die digitale Bibliothek des Wissens" data-tr="İlmin dijital kütüphanesi">Die digitale Bibliothek des Wissens</p></section>
  <nav class="portal" aria-label="Hauptbereiche">
   <button class="portal-card selected" data-portal="library"><span class="portal-icon">▤</span><strong>Kütüphane</strong><small>Bibliothek</small></button>
   <button class="portal-card" data-portal="mine"><span class="portal-icon">♧</span><strong>Benim Kitaplarım</strong><small>Meine Bücher</small></button>
@@ -247,7 +250,7 @@ main{max-width:none;margin:0 0 0 226px;padding:0 26px 35px}
   </section>
  </div>
  </div>
- <p class="note">Version 0.3.1 · Prototyp: Bücher und Cover werden weiterhin nur lokal in diesem Browser gespeichert. Die Mitgliedschaft wird über Supabase geprüft. Datenbank- und Storage-Richtlinien müssen vor einer echten privaten Freigabe vollständig abgesichert werden.</p>
+ <p class="note">Version 0.4 · Designvorschau / Prototyp: Bücher und Cover werden weiterhin nur lokal in diesem Browser gespeichert. Die Mitgliedschaft wird über Supabase geprüft. Datenbank- und Storage-Richtlinien müssen vor einer echten privaten Freigabe vollständig abgesichert werden.</p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
@@ -289,9 +292,6 @@ function switchPortal(next){
  if(!isMenba)render();
 }
 document.querySelectorAll('[data-portal]').forEach(b=>b.addEventListener('click',()=>switchPortal(b.dataset.portal)));
-document.querySelectorAll('[data-sideportal]').forEach(b=>b.addEventListener('click',()=>switchPortal(b.dataset.sideportal)));
-document.querySelectorAll('[data-sideview]').forEach(b=>b.addEventListener('click',()=>{switchPortal('library');document.querySelector('[data-view="'+b.dataset.sideview+'"]').click();}));
-['notesPlaceholder','statsPlaceholder','adminPlaceholder'].forEach(id=>$(id).onclick=()=>alert('Dieser Bereich wird in einer späteren Version umgesetzt.')); 
 $('search').oninput=render;$('category').onchange=render;
 $('addBtn').onclick=()=>{$('formPanel').style.display='block';$('formPanel').scrollIntoView({behavior:'smooth'})};
 $('cancelBtn').onclick=()=>{$('formPanel').style.display='none';$('bookForm').reset()};
@@ -302,10 +302,7 @@ let currentUser = null;
 let accessState = 'loading';
 function showAccess(state, message = '') {
   accessState = state;
-  if(state !== 'approved') $('adminPlaceholder').classList.add('hidden');
   $('libraryArea').classList.toggle('hidden', state !== 'approved');
-  $('appSidebar').classList.toggle('hidden', state !== 'approved');
-  document.body.classList.toggle('guest-mode', state !== 'approved');
   $('accessPanel').classList.toggle('hidden', state === 'approved');
   $('loginForm').classList.toggle('hidden', state !== 'guest');
   $('loginFeedback').textContent = state === 'guest' ? $('loginFeedback').textContent : '';
@@ -350,7 +347,6 @@ async function refreshAccess() {
     if (data.status === 'approved') {
       showAccess('approved');
       $('loginBtn').textContent = data.is_admin ? 'Admin · Abmelden' : 'Abmelden';
-       $('adminPlaceholder').classList.toggle('hidden', !data.is_admin);
       render();
     } else if (data.status === 'pending') showAccess('pending');
     else showAccess('rejected');
@@ -395,9 +391,14 @@ $('loginBtn').onclick = async () => {
   currentUser = null;
   showAccess('guest');
 };
+
+// Sidebar controls delegate to the existing portal/view handlers.
+document.querySelectorAll('[data-side-portal]').forEach(b=>b.addEventListener('click',()=>{switchPortal(b.dataset.sidePortal);document.querySelectorAll('[data-side-portal]').forEach(x=>x.classList.toggle('active',x===b));}));
+document.querySelectorAll('[data-side-view]').forEach(b=>b.addEventListener('click',()=>{switchPortal('library');const target=document.querySelector('[data-view="'+b.dataset.sideView+'"]');if(target)target.click();}));
+document.querySelectorAll('[data-side-placeholder]').forEach(b=>b.addEventListener('click',()=>alert(b.dataset.sidePlaceholder+' wird in einer späteren Version ergänzt.')));
+
 db.auth.onAuthStateChange(() => { setTimeout(refreshAccess, 0); });
 refreshAccess();
 render();
 </script>
 </body></html>
-```
