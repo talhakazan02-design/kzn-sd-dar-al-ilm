@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KZN · SD — دار العلم · v0.2</title>
+<title>KZN · SD — دار العلم · v0.2.1</title>
 <style>
 
 :root{
@@ -166,7 +166,7 @@ main{max-width:1180px;margin:34px auto;padding:0 20px}
   </section>
  </div>
  </div>
- <p class="note">Version 0.2 · Prototyp: Bücher und Cover werden weiterhin nur lokal in diesem Browser gespeichert. Die Mitgliedschaft wird über Supabase geprüft. Datenbank- und Storage-Richtlinien müssen vor einer echten privaten Freigabe vollständig abgesichert werden.</p>
+ <p class="note">Version 0.2.1 · Prototyp: Bücher und Cover werden weiterhin nur lokal in diesem Browser gespeichert. Die Mitgliedschaft wird über Supabase geprüft. Datenbank- und Storage-Richtlinien müssen vor einer echten privaten Freigabe vollständig abgesichert werden.</p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
@@ -202,6 +202,7 @@ function showAccess(state, message = '') {
   $('libraryArea').classList.toggle('hidden', state !== 'approved');
   $('accessPanel').classList.toggle('hidden', state === 'approved');
   $('loginForm').classList.toggle('hidden', state !== 'guest');
+  $('loginFeedback').textContent = state === 'guest' ? $('loginFeedback').textContent : '';
   const titles = {
     guest: ['Mitgliedszugang', 'Bitte melde dich mit deiner bereits registrierten E-Mail-Adresse an. Neue Registrierungen sind noch nicht freigeschaltet.'],
     pending: ['Genehmigung ausstehend', 'Dein Konto ist vorhanden. Bitte warte auf die Freigabe durch den Administrator.'],
@@ -213,18 +214,32 @@ function showAccess(state, message = '') {
   $('accessTitle').textContent = item[0];
   $('accessText').textContent = message || item[1];
   $('loginBtn').disabled = state === 'loading';
-  $('loginBtn').textContent = currentUser ? 'Abmelden' : 'Anmelden';
+  $('loginBtn').textContent = currentUser ? 'Abmelden' : (lang === 'de' ? 'Anmelden' : 'Giriş yap');
 }
+let accessRequest = 0;
 async function refreshAccess() {
+  const request = ++accessRequest;
   showAccess('loading');
   try {
-    const {data: {user}, error: authError} = await db.auth.getUser();
+    // getSession returns null for visitors; getUser may report AuthSessionMissingError.
+    const {data: sessionData, error: sessionError} = await db.auth.getSession();
+    if (sessionError) throw sessionError;
+    if (request !== accessRequest) return;
+    if (!sessionData.session) {
+      currentUser = null;
+      showAccess('guest');
+      return;
+    }
+    const {data: userData, error: authError} = await db.auth.getUser();
     if (authError) throw authError;
+    if (request !== accessRequest) return;
+    const user = userData?.user;
+    if (!user) { currentUser = null; showAccess('guest'); return; }
     currentUser = user;
-    if (!user) { showAccess('guest'); return; }
     const {data, error} = await db.from('library_members')
       .select('status,is_admin').eq('user_id',user.id).maybeSingle();
     if (error) throw error;
+    if (request !== accessRequest) return;
     if (!data) { showAccess('pending', 'Für dieses Konto liegt noch keine freigegebene Mitgliedschaft vor.'); return; }
     if (data.status === 'approved') {
       showAccess('approved');
@@ -233,8 +248,15 @@ async function refreshAccess() {
     } else if (data.status === 'pending') showAccess('pending');
     else showAccess('rejected');
   } catch (error) {
+    if (request !== accessRequest) return;
     console.error('Mitgliedschaftsprüfung fehlgeschlagen:', error);
-    showAccess('error');
+    // No active session is an ordinary visitor, not a security failure.
+    if (error?.name === 'AuthSessionMissingError') {
+      currentUser = null;
+      showAccess('guest');
+    } else {
+      showAccess('error');
+    }
   }
 }
 $('loginForm').onsubmit = async (event) => {
@@ -259,7 +281,7 @@ $('loginForm').onsubmit = async (event) => {
   } finally { btn.disabled = false; }
 };
 $('loginBtn').onclick = async () => {
-  if (!currentUser) { $('loginEmail').focus(); return; }
+  if (!currentUser) { showAccess('guest'); $('loginEmail').focus(); return; }
   $('loginBtn').disabled = true;
   const {error} = await db.auth.signOut();
   if (error) { alert('Abmelden fehlgeschlagen: ' + error.message); $('loginBtn').disabled = false; return; }
