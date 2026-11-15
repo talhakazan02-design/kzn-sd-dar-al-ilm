@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KZN · SD — دار العلم · v0.5</title>
+<title>KZN · SD — دار العلم · v0.5.1</title>
 <style>
 
 :root{
@@ -250,7 +250,7 @@ main{max-width:none;margin:64px 0 0 245px;padding:0 25px 28px}
   </section>
  </div>
  </div>
- <p class="note">Version 0.5 · Persönliche Buchdaten werden in Supabase gespeichert, sofern die bestehenden Datenbankrichtlinien dies erlauben. PDF-/Cover-Upload und öffentliche Freigaben bleiben bis zur Sicherheitsprüfung deaktiviert. Bestehende lokale Bücher werden nicht gelöscht oder automatisch übertragen.</p>
+ <p class="note">Version 0.5.1 · Persönliche Buchdaten werden in Supabase gespeichert, sofern die bestehenden Datenbankrichtlinien dies erlauben. PDF-/Cover-Upload und öffentliche Freigaben bleiben bis zur Sicherheitsprüfung deaktiviert. Bestehende lokale Bücher werden nicht gelöscht oder automatisch übertragen.</p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
@@ -269,7 +269,7 @@ function tr(de,tu){return lang==='de'?de:tu}
 function render(){
  $('total').textContent=books.length;$('home').textContent=books.filter(b=>b.location==='Zuhause').length;$('course').textContent=books.filter(b=>b.location==='Im Kurs').length;$('loan').textContent=books.filter(b=>b.loaned).length;
  const q=$('search').value.toLowerCase(),cat=$('category').value;
- let shown=books.filter(b=>(portal==='mine'?b.visibility==='personal':portal==='shared'?b.visibility==='shared':true)&&(view==='all'||(view==='home'&&b.location==='Zuhause')||(view==='course'&&b.location==='Im Kurs')||(view==='loans'&&b.loaned)||(view==='wishlist'&&b.wish))&&(!cat||b.category===cat)&&(!q||(b.title+' '+b.author+' '+b.category).toLowerCase().includes(q)));
+ let shown=books.filter(b=>(portal==='mine'?b.visibility==='private':portal==='shared'?b.visibility==='shared':true)&&(view==='all'||(view==='home'&&b.location==='Zuhause')||(view==='course'&&b.location==='Im Kurs')||(view==='loans'&&b.loaned)||(view==='wishlist'&&b.wish))&&(!cat||b.category===cat)&&(!q||(b.title+' '+b.author+' '+b.category).toLowerCase().includes(q)));
  $('books').innerHTML=shown.map(b=>`<article class="book"><div class="cover">${b.cover?`<img src="${b.cover}" alt="Buchcover">`:'▤'}</div><div class="bookbody"><h3>${esc(b.title)}</h3><p>${esc(b.author||'Autor unbekannt')}</p><span class="tag">${esc(b.category)}</span> <span class="tag">${esc(b.location)}</span></div></article>`).join('');
  $('empty').style.display=shown.length?'none':'block';
  $('empty').textContent=booksError || (booksLoaded ? 'Noch keine Bücher in deiner persönlichen Online-Bibliothek.' : 'Bücher werden geladen …');
@@ -325,7 +325,7 @@ $('bookForm').onsubmit=async e=>{
   const submit=e.target.querySelector('button[type="submit"]');
   submit.disabled=true;
   try{
-    const payload={owner_id:currentUser.id,visibility:'personal',
+    const payload={owner_id:currentUser.id,visibility:'private',
       title:String(f.get('title')||'').trim(),author:String(f.get('author')||'').trim(),
       category:String(f.get('category')||'').trim(),description:String(f.get('notes')||'').trim()};
     if(!payload.title) throw new Error('Bitte einen Buchtitel eingeben.');
