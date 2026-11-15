@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KZN · SD — دار العلم · v0.2.1</title>
+<title>KZN · SD — دار العلم · v0.3</title>
 <style>
 
 :root{
@@ -123,6 +123,33 @@ main{max-width:1180px;margin:34px auto;padding:0 20px}
   .stats{gap:8px}.stat{padding:12px}
 }
 
+
+/* Darül İlm 0.3 visual system */
+:root{--gold:#d8b56d;--line:#4b3c25;--muted:#b6aa98}
+body{font-family:Georgia,'Times New Roman',serif;background:radial-gradient(ellipse at 50% -20%,#31251a 0%,#0c0c0e 48%,#070709 100%)}
+header{padding-top:15px;padding-bottom:15px}
+.brand .mark{font-size:26px}
+main{max-width:1250px;margin-top:0}
+.hero{position:relative;isolation:isolate;overflow:hidden;margin:0 -20px 26px;padding:50px 26px 46px;text-align:center;border-bottom:1px solid #5a482e;background:radial-gradient(ellipse at center,rgba(151,106,39,.2),transparent 68%)}
+.hero:before,.hero:after{content:'✦';position:absolute;top:32px;color:rgba(215,174,91,.45);font-size:46px}.hero:before{left:8%}.hero:after{right:8%}
+.hero-arabic{font-size:clamp(43px,7vw,74px);line-height:1.5;color:#e4c684;text-shadow:0 4px 26px #a8792840}
+.hero h2{font-size:clamp(23px,3vw,34px);font-weight:normal;letter-spacing:.18em;margin:0;color:#f7e9cf}
+.hero p{color:#bba88c;margin:8px 0 0}
+.hero-line{width:130px;height:1px;background:linear-gradient(90deg,transparent,#d8b56d,transparent);margin:18px auto}
+.portal{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px;margin:0 0 28px}
+.portal-card{min-height:154px;padding:22px 9px;border:1px solid #735b32;background:linear-gradient(160deg,#272119,#131315 76%);border-radius:11px;text-align:center;color:#ecd7a9;box-shadow:inset 0 0 0 3px #ffffff04,0 12px 30px #0005;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:9px}
+.portal-card:hover,.portal-card.selected{border-color:#e0bf79;background:linear-gradient(160deg,#45341f,#1b1918);transform:translateY(-2px)}
+.portal-icon{font-size:34px;line-height:1.2;color:#e5bd70}
+.portal-card strong{font-size:15px;font-weight:normal}.portal-card small{font:11px Arial,sans-serif;color:#b5a28a}
+.section-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin:0 0 17px}.section-head h2{font-size:24px;font-weight:normal;margin:0;color:#ecd8ac}.section-head p{font-size:13px;color:#b6aa98;margin:3px 0 0}
+.content-shell{padding:20px;border:1px solid #493b28;background:#121213;border-radius:12px;min-height:250px}
+.layout{grid-template-columns:200px minmax(0,1fr)}.side{background:#141313}.side h3{color:#dfc188}
+.stats{margin-top:20px}.stat{border-color:#473a28}
+.feature-panel{padding:26px;border:1px solid #56452b;border-radius:10px;background:linear-gradient(135deg,#251e16,#141414)}
+.feature-panel h3{font-size:24px;color:#e6c580;font-weight:normal;margin:0 0 8px}.feature-panel p{color:#bdb1a0;max-width:700px}.feature-panel .tag{margin-top:10px}
+#formPanel{background:#1b1916}
+@media(max-width:950px){.portal{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.portal{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.portal-card{min-height:125px}.hero{padding:28px 12px}.hero:before,.hero:after{display:none}.section-head{flex-direction:column;align-items:flex-start}.layout{grid-template-columns:1fr}.content-shell{padding:12px}}
 </style>
 </head>
 <body>
@@ -133,7 +160,15 @@ main{max-width:1180px;margin:34px auto;padding:0 20px}
 <main>
  <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="email" required placeholder="name@beispiel.de"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Anmeldelink senden</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
  <div id="libraryArea" class="hidden">
- <section class="intro"><div><div class="eyebrow" data-de="Die digitale Büchersammlung" data-tr="Dijital kitap koleksiyonu">Die digitale Büchersammlung</div><h2 data-de="Willkommen in deiner Bibliothek" data-tr="Kütüphanene hoş geldin">Willkommen in deiner Bibliothek</h2><p data-de="Ein Ort für Wissen, Ordnung und Entdeckung." data-tr="Bilgi, düzen ve keşif için bir yer.">Ein Ort für Wissen, Ordnung und Entdeckung.</p></div><button class="primary" id="addBtn">＋ Buch hinzufügen</button></section>
+ <section class="hero"><div class="hero-arabic" lang="ar" dir="rtl">دار العلم</div><div class="hero-line"></div><h2>KZN · SD</h2><p data-de="Die digitale Bibliothek des Wissens" data-tr="İlmin dijital kütüphanesi">Die digitale Bibliothek des Wissens</p></section>
+ <nav class="portal" aria-label="Hauptbereiche">
+  <button class="portal-card selected" data-portal="library"><span class="portal-icon">▤</span><strong>Kütüphane</strong><small>Bibliothek</small></button>
+  <button class="portal-card" data-portal="mine"><span class="portal-icon">♧</span><strong>Benim Kitaplarım</strong><small>Meine Bücher</small></button>
+  <button class="portal-card" data-portal="shared"><span class="portal-icon">◈</span><strong>Ortak Kütüphane</strong><small>Gemeinsame Bibliothek</small></button>
+  <button class="portal-card" data-portal="categories"><span class="portal-icon">۞</span><strong>Kategoriler</strong><small>Kategorien</small></button>
+  <button class="portal-card" data-portal="menba"><span class="portal-icon" lang="ar">منبع</span><strong>MENBA AI</strong><small>Kaynaklı Bilgi Asistanı</small></button>
+ </nav>
+ <div class="section-head"><div><h2 id="sectionTitle">Kütüphane</h2><p id="sectionDescription">Deine Bibliothek im Überblick</p></div><button class="primary" id="addBtn">＋ Buch hinzufügen</button></div>
  <section class="stats">
   <div class="stat"><b id="total">0</b><span data-de="Bücher insgesamt" data-tr="Toplam kitap">Bücher insgesamt</span></div>
   <div class="stat"><b id="home">0</b><span data-de="Zuhause" data-tr="Evde">Zuhause</span></div>
@@ -148,7 +183,9 @@ main{max-width:1180px;margin:34px auto;padding:0 20px}
    <button data-view="loans">↗ <span data-de="Ausgeliehen" data-tr="Ödünç verilen">Ausgeliehen</span></button>
    <button data-view="wishlist">♡ <span data-de="Wunschliste" data-tr="İstek listesi">Wunschliste</span></button>
   </div><p class="note" data-de="Gemeinsame und persönliche Sammlung – nach der Anmeldung." data-tr="Ortak ve kişisel koleksiyon – giriş yaptıktan sonra.">Gemeinsame und persönliche Sammlung – nach der Anmeldung.</p></aside>
-  <section class="content">
+  <section class="content content-shell">
+   <div id="featurePanel" class="feature-panel hidden" aria-live="polite"></div>
+   <div id="catalogPanel">
    <div class="toolbar"><input id="search" placeholder="Titel, Autor oder Thema suchen …"><select id="category"><option value="">Alle Themen</option><option>Islam</option><option>Koranwissenschaften</option><option>Hadith</option><option>Geschichte</option><option>Sprache</option><option>Sonstiges</option></select></div>
    <div id="books" class="grid"></div>
    <div id="empty" class="empty">Noch keine Bücher eingetragen. Füge dein erstes Buch hinzu.</div>
@@ -163,10 +200,11 @@ main{max-width:1180px;margin:34px auto;padding:0 20px}
      <div class="field full"><label>Notizen</label><textarea name="notes"></textarea></div>
     </div><div class="actions"><button type="button" id="cancelBtn">Abbrechen</button><button class="primary" type="submit">Buch speichern</button></div></form>
    </section>
+   </div>
   </section>
  </div>
  </div>
- <p class="note">Version 0.2.1 · Prototyp: Bücher und Cover werden weiterhin nur lokal in diesem Browser gespeichert. Die Mitgliedschaft wird über Supabase geprüft. Datenbank- und Storage-Richtlinien müssen vor einer echten privaten Freigabe vollständig abgesichert werden.</p>
+ <p class="note">Version 0.3 · Prototyp: Bücher und Cover werden weiterhin nur lokal in diesem Browser gespeichert. Die Mitgliedschaft wird über Supabase geprüft. Datenbank- und Storage-Richtlinien müssen vor einer echten privaten Freigabe vollständig abgesichert werden.</p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
@@ -177,18 +215,37 @@ const db = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
-let books=JSON.parse(localStorage.getItem('kznBooks')||'[]'), view='all', lang='de';
+let books=JSON.parse(localStorage.getItem('kznBooks')||'[]'), view='all', lang='de', portal='library';
 const $=id=>document.getElementById(id);
 function tr(de,tu){return lang==='de'?de:tu}
 function render(){
  $('total').textContent=books.length;$('home').textContent=books.filter(b=>b.location==='Zuhause').length;$('course').textContent=books.filter(b=>b.location==='Im Kurs').length;$('loan').textContent=books.filter(b=>b.loaned).length;
  const q=$('search').value.toLowerCase(),cat=$('category').value;
- let shown=books.filter(b=>(view==='all'||(view==='home'&&b.location==='Zuhause')||(view==='course'&&b.location==='Im Kurs')||(view==='loans'&&b.loaned)||(view==='wishlist'&&b.wish))&&(!cat||b.category===cat)&&(!q||(b.title+' '+b.author+' '+b.category).toLowerCase().includes(q)));
+ let shown=books.filter(b=>(portal==='mine'?b.visibility==='personal':portal==='shared'?b.visibility==='shared':true)&&(view==='all'||(view==='home'&&b.location==='Zuhause')||(view==='course'&&b.location==='Im Kurs')||(view==='loans'&&b.loaned)||(view==='wishlist'&&b.wish))&&(!cat||b.category===cat)&&(!q||(b.title+' '+b.author+' '+b.category).toLowerCase().includes(q)));
  $('books').innerHTML=shown.map(b=>`<article class="book"><div class="cover">${b.cover?`<img src="${b.cover}" alt="Buchcover">`:'▤'}</div><div class="bookbody"><h3>${esc(b.title)}</h3><p>${esc(b.author||'Autor unbekannt')}</p><span class="tag">${esc(b.category)}</span> <span class="tag">${esc(b.location)}</span></div></article>`).join('');
  $('empty').style.display=shown.length?'none':'block';
 }
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 document.querySelectorAll('[data-view]').forEach(btn=>btn.onclick=()=>{view=btn.dataset.view;document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x===btn));render()});
+const portalInfo={
+ library:['Kütüphane','Deine Bibliothek im Überblick'],
+ mine:['Benim Kitaplarım','Deine persönlichen Bücher (lokaler Prototyp)'],
+ shared:['Ortak Kütüphane','Gemeinsame Bücher (lokaler Prototyp)'],
+ categories:['Kategoriler','Bücher nach Themen entdecken'],
+ menba:['MENBA AI','Kaynaklı Bilgi Asistanı']
+};
+function switchPortal(next){
+ portal=next;view='all';document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view==='all'));
+ document.querySelectorAll('[data-portal]').forEach(b=>b.classList.toggle('selected',b.dataset.portal===next));
+ $('sectionTitle').textContent=portalInfo[next][0];$('sectionDescription').textContent=portalInfo[next][1];
+ const isMenba=next==='menba';$('catalogPanel').classList.toggle('hidden',isMenba);
+ $('featurePanel').classList.toggle('hidden',!isMenba);
+ $('addBtn').classList.toggle('hidden',isMenba);
+ if(isMenba){$('featurePanel').innerHTML='<h3>منبع · MENBA AI</h3><p>Hier entsteht unser KI-Assistent. In einer späteren Entwicklungsphase beantwortet er Fragen ausschließlich anhand der Bücher, für die du eine Berechtigung hast, und nennt Buch, Ausgabe und Seitenzahl als Quelle.</p><span class="tag">In Entwicklung · Noch keine KI-Anfragen möglich</span>';}
+ if(next==='categories'){$('category').focus();}
+ if(!isMenba)render();
+}
+document.querySelectorAll('[data-portal]').forEach(b=>b.addEventListener('click',()=>switchPortal(b.dataset.portal)));
 $('search').oninput=render;$('category').onchange=render;
 $('addBtn').onclick=()=>{$('formPanel').style.display='block';$('formPanel').scrollIntoView({behavior:'smooth'})};
 $('cancelBtn').onclick=()=>{$('formPanel').style.display='none';$('bookForm').reset()};
