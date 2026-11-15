@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KZN · SD — دار العلم</title>
+<title>KZN · SD — دار العلم · v0.2</title>
 <style>
 
 :root{
@@ -128,9 +128,11 @@ main{max-width:1180px;margin:34px auto;padding:0 20px}
 <body>
 <header>
  <div class="brand"><div class="mark">ك</div><div><h1>KZN · SD</h1><small>دَارُ الْعِلْمِ · HAUS DES WISSENS</small></div></div>
- <div><button id="langBtn">TR / DE</button> <button id="loginBtn">Anmelden</button></div>
+ <div><button id="langBtn">TR / DE</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
 </header>
 <main>
+ <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="email" required placeholder="name@beispiel.de"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Anmeldelink senden</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
+ <div id="libraryArea" class="hidden">
  <section class="intro"><div><div class="eyebrow" data-de="Die digitale Büchersammlung" data-tr="Dijital kitap koleksiyonu">Die digitale Büchersammlung</div><h2 data-de="Willkommen in deiner Bibliothek" data-tr="Kütüphanene hoş geldin">Willkommen in deiner Bibliothek</h2><p data-de="Ein Ort für Wissen, Ordnung und Entdeckung." data-tr="Bilgi, düzen ve keşif için bir yer.">Ein Ort für Wissen, Ordnung und Entdeckung.</p></div><button class="primary" id="addBtn">＋ Buch hinzufügen</button></section>
  <section class="stats">
   <div class="stat"><b id="total">0</b><span data-de="Bücher insgesamt" data-tr="Toplam kitap">Bücher insgesamt</span></div>
@@ -163,7 +165,8 @@ main{max-width:1180px;margin:34px auto;padding:0 20px}
    </section>
   </section>
  </div>
- <p class="note">Vorschau / Prototyp: Daten werden vorerst nur in diesem Browser gespeichert. Anmeldung, gemeinsame Synchronisierung, PDF-Speicher und E-Mail-Funktionen werden im nächsten Integrationsschritt mit Supabase verbunden.</p>
+ </div>
+ <p class="note">Version 0.2 · Prototyp: Bücher und Cover werden weiterhin nur lokal in diesem Browser gespeichert. Die Mitgliedschaft wird über Supabase geprüft. Datenbank- und Storage-Richtlinien müssen vor einer echten privaten Freigabe vollständig abgesichert werden.</p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
@@ -190,24 +193,81 @@ $('search').oninput=render;$('category').onchange=render;
 $('addBtn').onclick=()=>{$('formPanel').style.display='block';$('formPanel').scrollIntoView({behavior:'smooth'})};
 $('cancelBtn').onclick=()=>{$('formPanel').style.display='none';$('bookForm').reset()};
 $('bookForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target),file=f.get('cover');let cover='';if(file&&file.size){cover=await new Promise(resolve=>{let r=new FileReader();r.onload=()=>resolve(r.result);r.readAsDataURL(file)})}books.push({title:f.get('title'),author:f.get('author'),category:f.get('category'),location:f.get('location'),visibility:f.get('visibility'),notes:f.get('notes'),cover,loaned:false});localStorage.setItem('kznBooks',JSON.stringify(books));e.target.reset();$('formPanel').style.display='none';render()};
-$('langBtn').onclick=()=>{lang=lang==='de'?'tr':'de';document.querySelectorAll('[data-de]').forEach(el=>el.textContent=el.dataset[lang]);$('addBtn').textContent=lang==='de'?'＋ Buch hinzufügen':'＋ Kitap ekle';$('loginBtn').textContent=lang==='de'?'Anmelden':'Giriş yap';$('search').placeholder=lang==='de'?'Titel, Autor oder Thema suchen …':'Kitap, yazar veya konu ara …'};
-$('loginBtn').onclick = async () => {
-  const email = prompt('Bitte gib deine E-Mail-Adresse ein:');
-  if (!email) return;
-
-  const { error } = await db.auth.signInWithOtp({
-    email: email.trim(),
-    options: {
-      emailRedirectTo: window.location.origin + window.location.pathname
-    }
-  });
-
-  if (error) {
-    alert('Fehler: ' + error.message);
-  } else {
-    alert('Bitte überprüfe deine E-Mails. Du erhältst einen Anmeldelink.');
+$('langBtn').onclick=()=>{lang=lang==='de'?'tr':'de';document.querySelectorAll('[data-de]').forEach(el=>el.textContent=el.dataset[lang]);$('addBtn').textContent=lang==='de'?'＋ Buch hinzufügen':'＋ Kitap ekle';if(!currentUser)$('loginBtn').textContent=lang==='de'?'Anmelden':'Giriş yap';$('search').placeholder=lang==='de'?'Titel, Autor oder Thema suchen …':'Kitap, yazar veya konu ara …'};
+// Version 0.2: Zugangsschranke für die Oberfläche. Server-RLS/Storage muss separat abgesichert werden.
+let currentUser = null;
+let accessState = 'loading';
+function showAccess(state, message = '') {
+  accessState = state;
+  $('libraryArea').classList.toggle('hidden', state !== 'approved');
+  $('accessPanel').classList.toggle('hidden', state === 'approved');
+  $('loginForm').classList.toggle('hidden', state !== 'guest');
+  const titles = {
+    guest: ['Mitgliedszugang', 'Bitte melde dich mit deiner bereits registrierten E-Mail-Adresse an. Neue Registrierungen sind noch nicht freigeschaltet.'],
+    pending: ['Genehmigung ausstehend', 'Dein Konto ist vorhanden. Bitte warte auf die Freigabe durch den Administrator.'],
+    rejected: ['Kein Zugang', 'Deine Mitgliedschaft ist nicht freigegeben. Wende dich an den Administrator.'],
+    error: ['Zugriff konnte nicht geprüft werden', 'Die Mitgliederdaten konnten nicht sicher überprüft werden. Bitte versuche es später erneut.'],
+    loading: ['Zugang wird geprüft', 'Einen Moment bitte …']
+  };
+  const item = titles[state] || titles.error;
+  $('accessTitle').textContent = item[0];
+  $('accessText').textContent = message || item[1];
+  $('loginBtn').disabled = state === 'loading';
+  $('loginBtn').textContent = currentUser ? 'Abmelden' : 'Anmelden';
+}
+async function refreshAccess() {
+  showAccess('loading');
+  try {
+    const {data: {user}, error: authError} = await db.auth.getUser();
+    if (authError) throw authError;
+    currentUser = user;
+    if (!user) { showAccess('guest'); return; }
+    const {data, error} = await db.from('library_members')
+      .select('status,is_admin').eq('user_id',user.id).maybeSingle();
+    if (error) throw error;
+    if (!data) { showAccess('pending', 'Für dieses Konto liegt noch keine freigegebene Mitgliedschaft vor.'); return; }
+    if (data.status === 'approved') {
+      showAccess('approved');
+      $('loginBtn').textContent = data.is_admin ? 'Admin · Abmelden' : 'Abmelden';
+      render();
+    } else if (data.status === 'pending') showAccess('pending');
+    else showAccess('rejected');
+  } catch (error) {
+    console.error('Mitgliedschaftsprüfung fehlgeschlagen:', error);
+    showAccess('error');
   }
+}
+$('loginForm').onsubmit = async (event) => {
+  event.preventDefault();
+  const email = $('loginEmail').value.trim();
+  const btn = $('sendLink');
+  btn.disabled = true;
+  $('loginFeedback').textContent = 'Anmeldelink wird angefordert …';
+  try {
+    const {error} = await db.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: window.location.origin + window.location.pathname
+      }
+    });
+    if (error) throw error;
+    $('loginFeedback').textContent = 'Wenn die Adresse registriert ist, erhältst du einen Anmeldelink. Bitte prüfe dein Postfach.';
+  } catch (error) {
+    console.error('Anmeldung fehlgeschlagen:', error);
+    $('loginFeedback').textContent = 'Der Anmeldelink konnte nicht angefordert werden. Prüfe deine Adresse oder versuche es später erneut.';
+  } finally { btn.disabled = false; }
 };
+$('loginBtn').onclick = async () => {
+  if (!currentUser) { $('loginEmail').focus(); return; }
+  $('loginBtn').disabled = true;
+  const {error} = await db.auth.signOut();
+  if (error) { alert('Abmelden fehlgeschlagen: ' + error.message); $('loginBtn').disabled = false; return; }
+  currentUser = null;
+  showAccess('guest');
+};
+db.auth.onAuthStateChange(() => { setTimeout(refreshAccess, 0); });
+refreshAccess();
 render();
 </script>
 </body></html>
