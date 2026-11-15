@@ -242,7 +242,8 @@ main{max-width:none;margin:64px 0 0 245px;padding:0 25px 28px}
      <div class="field"><label>Thema / Kategorie</label><select name="category"><option>Islam</option><option>Koranwissenschaften</option><option>Hadith</option><option>Geschichte</option><option>Sprache</option><option>Sonstiges</option></select></div>
      <div class="field"><label>Standort</label><select name="location"><option>Zuhause</option><option>Im Kurs</option></select></div>
      <div class="field"><label>Sammlung</label><select name="visibility"><option value="personal">Persönlich</option><option value="shared" disabled>Gemeinsam (Admin-Freigabe folgt)</option></select></div>
-     <div class="field"><label>Buchcover (Bild)</label><input name="cover" type="file" accept="image/*" disabled title="Sicherer Datei-Upload folgt"> <small>Upload folgt nach Prüfung der Storage-Regeln.</small></div>
+     <div class="field"><label>Buchcover (JPG, PNG oder WebP, max. 5 MB)</label><input name="cover" type="file" accept="image/jpeg,image/png,image/webp"></div>
+     <div class="field"><label>PDF-Datei (max. 25 MB)</label><input name="document" type="file" accept="application/pdf,.pdf"></div>
      <div class="field full"><label>Notizen</label><textarea name="notes"></textarea></div>
     </div><div class="actions"><button type="button" id="cancelBtn">Abbrechen</button><button class="primary" type="submit">Buch speichern</button></div></form>
    </section>
@@ -250,7 +251,7 @@ main{max-width:none;margin:64px 0 0 245px;padding:0 25px 28px}
   </section>
  </div>
  </div>
- <p class="note">Version 0.6 · Persönliche Buchdaten werden in Supabase gespeichert, sofern die bestehenden Datenbankrichtlinien dies erlauben. PDF-/Cover-Upload und öffentliche Freigaben bleiben bis zur Sicherheitsprüfung deaktiviert. Bestehende lokale Bücher werden nicht gelöscht oder automatisch übertragen.</p>
+ <p class="note">Version 0.6 · Persönliche Buchdaten werden in Supabase gespeichert, sofern die bestehenden Datenbankrichtlinien dies erlauben. PDF-/Cover-Upload ist für private Bücher verfügbar. Gemeinsame Freigaben bleiben bis zur Admin-Prüfung deaktiviert. Bestehende lokale Bücher werden nicht gelöscht oder automatisch übertragen.</p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
