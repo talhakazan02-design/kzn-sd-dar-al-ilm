@@ -1,3 +1,1 @@
-KZN SD v0.8.5 – Hintergrund-Synchronisierung
-Nur index.html austauschen. Hintergrund und Original-Logo bleiben identisch.
-GitHub: index.html im Hauptverzeichnis ersetzen und Commit changes klicken. Danach Strg+F5.
+KZN SD v0.8.6: Lade index.html und darul-ilm-logo-transparent.png in das GitHub-Hauptverzeichnis. Das Original-Logo und bibliothek-hintergrund.jpg bleiben unverändert.
