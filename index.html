@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KZN · SD — دار العلم · v0.6</title>
+<title>KZN · SD — دار العلم · v0.7.0</title>
 <style>
 
 :root{
@@ -201,10 +201,10 @@ main{max-width:none;margin:64px 0 0 245px;padding:0 25px 28px}
 
 <header>
  <div class="brand"><div class="mark">ك</div><div><h1>KZN · SD</h1><small>دَارُ الْعِلْمِ · HAUS DES WISSENS</small></div></div>
- <div><button id="langBtn">TR / DE</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
+ <div><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
 </header>
 <main>
- <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="email" required placeholder="name@beispiel.de"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Anmeldelink senden</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
+ <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="username" required placeholder="name@beispiel.de"></div><div class="field"><label for="loginPassword">Passwort</label><input type="password" id="loginPassword" autocomplete="current-password" minlength="8" required placeholder="Passwort eingeben"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Mit Passwort anmelden</button><button type="button" id="magicLinkBtn">Einmaligen E-Mail-Link anfordern</button></div></form><form id="passwordForm" class="hidden"><h3>Passwort festlegen / ändern</h3><p>Nur für dein aktuell angemeldetes Konto.</p><div class="field"><label for="newPassword">Neues Passwort (mindestens 12 Zeichen)</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="field"><label for="confirmPassword">Passwort wiederholen</label><input id="confirmPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="actions"><button class="primary" type="submit" id="savePassword">Passwort speichern</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
  <div id="libraryArea" class="hidden">
  <section class="hero"><div class="hero-arabic" lang="ar" dir="rtl">دار العلم</div><div class="hero-line"></div><h2>KZN · SD</h2><p data-de="Die digitale Bibliothek des Wissens" data-tr="İlmin dijital kütüphanesi">Die digitale Bibliothek des Wissens</p></section>
  <nav class="portal" aria-label="Hauptbereiche">
@@ -443,9 +443,11 @@ function showAccess(state, message = '') {
   if(state!=='approved'){books=[];booksLoaded=false;booksError='';}
   $('accessPanel').classList.toggle('hidden', state === 'approved');
   $('loginForm').classList.toggle('hidden', state !== 'guest');
+  $('passwordBtn').classList.toggle('hidden', !currentUser);
+  $('passwordForm').classList.add('hidden');
   $('loginFeedback').textContent = state === 'guest' ? $('loginFeedback').textContent : '';
   const titles = {
-    guest: ['Mitgliedszugang', 'Bitte melde dich mit deiner bereits registrierten E-Mail-Adresse an. Neue Registrierungen sind noch nicht freigeschaltet.'],
+    guest: ['Mitgliedszugang', 'Mit E-Mail und Passwort anmelden. Wenn du noch kein Passwort hast, kannst du den bisherigen E-Mail-Link verwenden (sofern das Versandlimit es erlaubt). Neue Registrierungen werden später freigeschaltet.'],
     pending: ['Genehmigung ausstehend', 'Dein Konto ist vorhanden. Bitte warte auf die Freigabe durch den Administrator.'],
     rejected: ['Kein Zugang', 'Deine Mitgliedschaft ist nicht freigegeben. Wende dich an den Administrator.'],
     error: ['Zugriff konnte nicht geprüft werden', 'Die Mitgliederdaten konnten nicht sicher überprüft werden. Bitte versuche es später erneut.'],
@@ -503,23 +505,59 @@ async function refreshAccess() {
 $('loginForm').onsubmit = async (event) => {
   event.preventDefault();
   const email = $('loginEmail').value.trim();
+  const password = $('loginPassword').value;
   const btn = $('sendLink');
   btn.disabled = true;
-  $('loginFeedback').textContent = 'Anmeldelink wird angefordert …';
+  $('loginFeedback').textContent = 'Anmeldung wird geprüft …';
   try {
-    const {error} = await db.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: false,
-        emailRedirectTo: window.location.origin + window.location.pathname
-      }
-    });
-    if (error) throw error;
-    $('loginFeedback').textContent = 'Wenn die Adresse registriert ist, erhältst du einen Anmeldelink. Bitte prüfe dein Postfach.';
-  } catch (error) {
-    console.error('Anmeldung fehlgeschlagen:', error);
-    $('loginFeedback').textContent = 'Der Anmeldelink konnte nicht angefordert werden. Prüfe deine Adresse oder versuche es später erneut.';
+    const {error} = await db.auth.signInWithPassword({email, password});
+    if(error) throw error;
+    $('loginFeedback').textContent = '';
+    await refreshAccess();
+  } catch(error) {
+    console.error('Passwortanmeldung fehlgeschlagen:',error);
+    $('loginFeedback').textContent = 'Anmeldung fehlgeschlagen. Bitte E-Mail und Passwort prüfen. Falls noch kein Passwort eingerichtet wurde, den E-Mail-Link verwenden.';
   } finally { btn.disabled = false; }
+};
+$('magicLinkBtn').onclick = async () => {
+  const email = $('loginEmail').value.trim();
+  if(!$('loginEmail').reportValidity()) return;
+  const btn=$('magicLinkBtn'); btn.disabled=true;
+  $('loginFeedback').textContent='Anmeldelink wird angefordert …';
+  try {
+    const {error}=await db.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:window.location.origin+window.location.pathname}});
+    if(error) throw error;
+    $('loginFeedback').textContent='Falls die Adresse registriert ist und das Versandlimit es erlaubt, erhältst du einen Anmeldelink.';
+  } catch(error) {
+    console.error('E-Mail-Link fehlgeschlagen:',error);
+    $('loginFeedback').textContent='E-Mail-Link konnte nicht versendet werden. Möglicherweise ist das E-Mail-Limit erreicht.';
+  } finally {btn.disabled=false;}
+};
+$('passwordBtn').onclick=()=>{
+  $('passwordForm').classList.toggle('hidden');
+  const opened=!$('passwordForm').classList.contains('hidden');
+  $('accessPanel').classList.toggle('hidden', !opened);
+  $('accessTitle').textContent=opened?'Passwortverwaltung':'Mitgliedszugang';
+  $('accessText').textContent=opened?'Dein neues Passwort wird sicher über Supabase gespeichert.':'';
+  if(opened) $('newPassword').focus();
+};
+$('passwordForm').onsubmit=async event=>{
+  event.preventDefault();
+  if(!currentUser) return;
+  const password=$('newPassword').value;
+  if(password.length<12 || password!==$('confirmPassword').value){alert('Passwörter müssen übereinstimmen und mindestens 12 Zeichen lang sein.');return;}
+  const btn=$('savePassword'); btn.disabled=true;
+  try {
+    const {error}=await db.auth.updateUser({password});
+    if(error) throw error;
+    $('passwordForm').reset();
+    $('passwordForm').classList.add('hidden');
+    $('accessPanel').classList.add('hidden');
+    alert('Passwort erfolgreich gespeichert. Du kannst dich künftig mit E-Mail und Passwort anmelden.');
+  } catch(error) {
+    console.error('Passwortänderung fehlgeschlagen:',error);
+    alert('Passwort konnte nicht gespeichert werden: '+error.message);
+  } finally {btn.disabled=false;}
 };
 $('loginBtn').onclick = async () => {
   if (!currentUser) { showAccess('guest'); $('loginEmail').focus(); return; }
