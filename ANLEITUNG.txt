@@ -1,1 +1,1 @@
-KZN SD v0.7.9 — index.html, bibliothek-hintergrund.jpg und darul-ilm-original-logo.png ins GitHub-Hauptverzeichnis hochladen. Vorhandene Dateien ersetzen. Supabase-Daten bleiben unverändert. Browser hart neu laden (Strg+F5).
+KZN · SD v0.8.0: Alle drei Dateien in das GitHub-Hauptverzeichnis hochladen und bestehende Dateien ersetzen. Danach Commit changes und Strg+F5. Nur CSS/Design geändert.
