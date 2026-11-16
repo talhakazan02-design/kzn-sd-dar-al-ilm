@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KZN · SD — دار العلم · v0.7.1</title>
+<title>KZN · SD — دار العلم · v0.7.2</title>
 <style>
 
 :root{
@@ -195,7 +195,7 @@ main{max-width:none;margin:64px 0 0 245px;padding:0 25px 28px}
 @media(max-width:1050px){.sidebar-main{width:195px}.sidebar-logo{font-size:20px}header{left:195px}main{margin-left:195px}.portal-card strong{font-size:13px}}
 @media(max-width:760px){.sidebar-main{position:relative;width:auto;max-height:none;padding:10px 12px}.sidebar-logo{display:none}.sidebar-nav{display:flex;overflow:auto;margin:0;gap:6px}.sidebar-nav button{width:auto;flex:none;padding:8px}.sidebar-nav .symbol{font-size:16px}.sidebar-divider,.sidebar-account{display:none}header{position:relative;left:0;height:auto;padding:10px 15px}main{margin:0;padding:0 12px 20px}.hero{margin:0 -12px 18px;height:200px}.portal{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-card{min-height:115px}.portal-card:last-child{grid-column:span 2}.stats{grid-template-columns:repeat(2,1fr)}}
 
-/* KZN · SD — Darül İlm heritage design v0.7.1. Visual layer only. */
+/* KZN · SD — Darül İlm heritage design v0.7.2. Visual layer only. */
 :root{--gold:#dcb86b;--line:#5b4425;--ink:#f6ebd6;--muted:#bba98b}
 body{background:radial-gradient(ellipse at 54% -18%,#3c2710 0%,#130f0a 34%,#080808 72%);color:var(--ink)}
 body:before{opacity:.045;background-image:repeating-linear-gradient(45deg,transparent 0 36px,#ad7c31 37px 38px,transparent 39px 74px),repeating-linear-gradient(-45deg,transparent 0 36px,#ad7c31 37px 38px,transparent 39px 74px)}
@@ -234,6 +234,173 @@ button.primary{background:linear-gradient(135deg,#e7c780,#ac7c35);border-color:#
 button.primary:hover{background:linear-gradient(135deg,#f1d696,#c39548)}
 #accessPanel{border-color:#8d6733;background:linear-gradient(140deg,#271a0e,#100e0b)}
 @media(max-width:760px){.hero{height:265px}.hero .hero-emblem{width:140px;height:140px}.portal-card{min-height:120px}.sidebar-logo{display:none}}
+
+/* ============================================================
+   DARÜL İLM CLASSIC · v0.7.2
+   Full visual redesign only: no authentication, database or
+   upload logic is modified.
+   ============================================================ */
+:root{
+  --gold:#d8b46e;--ink:#f6ead4;--muted:#c3ae8d;--line:#6b4e29;
+  --panel:#17120d;
+}
+body{
+  color:var(--ink);
+  background:
+    radial-gradient(ellipse at 70% 0%,rgba(145,93,35,.20),transparent 44%),
+    radial-gradient(ellipse at 22% 80%,rgba(87,53,20,.13),transparent 50%),
+    #090806;
+}
+body:before{
+  opacity:.15;
+  background-image:
+    repeating-linear-gradient(45deg,transparent 0 38px,rgba(201,151,67,.16) 39px 40px,transparent 41px 78px),
+    repeating-linear-gradient(-45deg,transparent 0 38px,rgba(201,151,67,.16) 39px 40px,transparent 41px 78px);
+  mask-image:linear-gradient(to bottom,#000,transparent 95%);
+}
+.sidebar-main{
+  background:
+    radial-gradient(ellipse at 50% 2%,rgba(179,116,40,.19),transparent 37%),
+    linear-gradient(180deg,#21180e,#0d0a08 65%,#090807);
+  border-right:1px solid #a07b43;
+  box-shadow:inset -4px 0 0 rgba(213,167,90,.07),8px 0 40px #0008;
+}
+.sidebar-logo{position:relative;border-bottom:1px solid #9c7643;padding-bottom:25px}
+.sidebar-logo:after{
+  content:"✦  ❖  ✦";display:block;color:#c69c55;font-size:12px;
+  letter-spacing:1.3em;text-align:center;margin:6px 0 0 12px;
+}
+.sidebar-logo .heritage-logo{filter:drop-shadow(0 4px 15px #c9974540)}
+.sidebar-nav button{font-family:Georgia,serif;font-size:14px;padding:13px 11px}
+.sidebar-nav button.active{
+  border-color:#c89b52;
+  box-shadow:inset 3px 0 0 #e4c17c,0 2px 15px #0005;
+}
+header{
+  background:linear-gradient(90deg,#1d150b,#0d0b08);
+  border-bottom:1px solid #8e6c39;
+  box-shadow:0 5px 25px #0008;
+}
+header h1{color:#f5dfb4}
+header small{color:#c6a16a}
+main{background:transparent}
+.hero{
+  min-height:390px;height:auto;
+  padding:50px 20px 35px;
+  position:relative;isolation:isolate;
+  border-bottom:4px double #aa8248;
+  box-shadow:inset 0 -35px 65px #090705,0 20px 35px #0008;
+  background:
+    linear-gradient(90deg,rgba(9,7,5,.79),rgba(14,10,6,.29) 30%,rgba(14,10,6,.30) 70%,rgba(9,7,5,.82)),
+    linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.10) 50%,#100c08 100%),
+    url('https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=1800&q=85') center 48%/cover no-repeat,
+    #2b1d10;
+}
+.hero:before,.hero:after{display:none!important}
+.hero .hero-arabic{font-size:clamp(44px,5.5vw,76px);color:#f3d99e;text-shadow:0 4px 14px #000,0 0 45px #000}
+.hero h2{font-size:clamp(25px,3.1vw,39px);letter-spacing:.12em;color:#fff1d1}
+.hero p{color:#ead6b5}
+.hero-line{height:2px;width:230px;background:linear-gradient(90deg,transparent,#e3bd72,transparent);margin:18px auto}
+.hero:after{
+  display:block!important;content:"";position:absolute;inset:12px 20px 12px;
+  pointer-events:none;z-index:-1;
+  border:1px solid rgba(228,186,108,.52);
+  border-radius:110px 110px 8px 8px / 125px 125px 8px 8px;
+  box-shadow:inset 0 0 0 6px rgba(8,6,4,.22),inset 0 0 0 7px rgba(228,186,108,.21);
+}
+.hero:before{
+  display:block!important;content:"✦";position:absolute;z-index:2;
+  top:22px;left:50%;transform:translateX(-50%);
+  color:#e6c37e;font-size:21px;text-shadow:0 0 12px #000;
+}
+.portal{
+  gap:16px;margin-bottom:32px;
+}
+.portal-card{
+  position:relative;overflow:hidden;
+  min-height:182px;padding:24px 10px 18px;
+  border:1px solid #a17b45;border-radius:105px 105px 10px 10px / 105px 105px 10px 10px;
+  background:
+    radial-gradient(ellipse at 50% 12%,rgba(218,170,87,.22),transparent 65%),
+    linear-gradient(160deg,#302217,#14100c 78%);
+  box-shadow:inset 0 0 0 5px #0c0908,inset 0 0 0 6px #8e6d3c66,0 14px 28px #0008;
+  transition:transform .18s,border-color .18s,box-shadow .18s;
+}
+.portal-card:before{
+  content:"✦";position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  color:#d4a960;font-size:12px;
+}
+.portal-card:hover,.portal-card.selected{
+  background:radial-gradient(ellipse at 50% 10%,#634421,#20160e 70%);
+  border-color:#e6c483;
+  box-shadow:inset 0 0 0 5px #0c0908,inset 0 0 0 6px #c59d5c99,0 12px 30px #000a,0 0 20px #d7a25324;
+}
+.portal-icon{font-size:35px;color:#f0cc82;filter:drop-shadow(0 2px 9px #bd8e4c77)}
+.portal-card strong{font:normal 16px Georgia,serif;color:#f7e3bc}
+.portal-card small{color:#c8b28e}
+.section-head{padding:0 2px 12px;border-bottom:1px solid #6e532e}
+.section-head h2{font:normal 28px Georgia,serif;color:#edce8f}
+.section-head h2:before{content:"❖";color:#c59c59;margin-right:11px;font-size:19px}
+.stats{gap:14px}
+.stat{
+  border:1px solid #86683c;
+  border-radius:8px;
+  background:linear-gradient(135deg,#2b2014,#14100d 68%);
+  box-shadow:inset 0 0 0 3px #0b0907,0 10px 25px #0007;
+}
+.stat b{color:#e9c480;font-family:Georgia,serif;font-size:31px}
+.stat span{color:#d4bfa0}
+.content-shell,.panel,.feature-panel{
+  background:
+    linear-gradient(135deg,rgba(115,77,31,.10),transparent 32%),
+    linear-gradient(155deg,#21180f,#110e0b 70%);
+  border:1px solid #806137;
+  box-shadow:inset 0 0 0 3px #ffffff04,0 15px 35px #0006;
+}
+.content-shell{border-radius:10px;padding:25px}
+.book{
+  border:1px solid #87683d;border-radius:8px;
+  background:linear-gradient(160deg,#292016,#13100d);
+  box-shadow:inset 0 0 0 3px #ffffff05,0 10px 26px #0008;
+}
+.cover{
+  height:220px;
+  background:
+    radial-gradient(circle at 50% 35%,#b88b4350,transparent 48%),
+    repeating-linear-gradient(90deg,transparent 0 16px,#ffffff05 17px,transparent 18px 34px),
+    linear-gradient(135deg,#41301e,#17110c);
+  border-bottom:2px solid #88663a;
+}
+.bookbody{border-top:1px solid #b68c4b30}
+.book h3{font-family:Georgia,serif;color:#f2dba9}
+.tag{background:#312414;border-color:#9e783c;color:#e5c080}
+button.primary{
+  background:linear-gradient(135deg,#f0d292,#c69a50);
+  border-color:#f4d99d;color:#201406;
+}
+button:not(.primary):hover{border-color:#b99155}
+.toolbar input,.toolbar select,.field input,.field select,.field textarea{
+  background:#140f0b;border-color:#765b36;color:#f4e5ca;
+}
+#formPanel{border-color:#a27b43!important}
+.empty{border-color:#8c6938;background:#1a140e}
+@media(max-width:1100px){
+  .portal{gap:9px}
+  .portal-card{min-height:160px}
+}
+@media(max-width:760px){
+  .hero{min-height:290px;padding:45px 15px 24px}
+  .hero:after{inset:9px}
+  .portal-card{min-height:140px;border-radius:65px 65px 8px 8px / 70px 70px 8px 8px}
+  .content-shell{padding:14px}
+  .sidebar-logo:after{display:none}
+}
+@media(max-width:420px){
+  .hero{min-height:260px}
+  .portal-card strong{font-size:13px}
+  .portal-card small{font-size:10px}
+}
+
 </style>
 </head>
 <body>
