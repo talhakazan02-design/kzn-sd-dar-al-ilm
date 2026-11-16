@@ -1,3 +1,3 @@
-KZN · SD v0.8.1
-Die drei Dateien direkt ins GitHub-Hauptverzeichnis hochladen und bestehende Dateien ersetzen.
-Original-Logo unverändert. Supabase-JavaScript unverändert.
+KZN SD v0.8.5 – Hintergrund-Synchronisierung
+Nur index.html austauschen. Hintergrund und Original-Logo bleiben identisch.
+GitHub: index.html im Hauptverzeichnis ersetzen und Commit changes klicken. Danach Strg+F5.

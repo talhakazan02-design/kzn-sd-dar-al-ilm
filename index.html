@@ -911,7 +911,90 @@ main{margin:53px 0 0 205px!important;padding:0 22px 35px!important}
 .book .cover{height:170px!important}
 @media(max-width:760px){#libraryArea>.portal>.portal-card{clip-path:none!important}#libraryArea>.hero:after{bottom:33px!important}}
 
-</style>
+
+/* v0.8.3 — reference-proportion correction, limited to presentation. */
+@media(min-width:761px){
+.sidebar-main{width:205px!important;padding:12px!important}
+.sidebar-logo .heritage-logo{width:135px!important;height:135px!important}
+.sidebar-nav button{font-size:13px!important;padding:9px 10px!important}
+header{left:205px!important;height:48px!important;padding:6px 18px!important}
+main{margin:48px 0 0 205px!important;padding:0 22px 36px!important}
+#libraryArea{max-width:1230px!important;margin:0 auto!important}
+#libraryArea>.hero{height:330px!important;min-height:330px!important;margin:0!important;padding:20px 12px 34px!important;background:linear-gradient(90deg,#09060350,#09060305 50%,#09060350),url('bibliothek-hintergrund.jpg') center 41%/cover no-repeat!important;box-shadow:none!important;border:0!important}
+#libraryArea>.hero>.hero-emblem{width:235px!important;height:235px!important;max-height:235px!important;object-fit:contain!important}
+#libraryArea>.hero>p{font-size:13px!important;margin:-9px 0 0!important}
+#libraryArea>.portal{max-width:1090px!important;margin:-24px auto 15px!important;padding:0 10px!important;gap:15px!important;grid-template-columns:repeat(5,minmax(0,1fr))!important}
+#libraryArea>.portal>.portal-card{height:112px!important;min-height:112px!important;padding:23px 8px 10px!important;clip-path:none!important;border-radius:49% 49% 7px 7px / 45% 45% 7px 7px!important;overflow:visible!important}
+#libraryArea>.portal>.portal-card .portal-icon{font-size:27px!important;margin-top:1px!important}
+#libraryArea>.portal>.portal-card strong{font-size:14px!important}
+#libraryArea>.portal>.portal-card small{font-size:10px!important}
+#libraryArea .section-head{margin:0 0 8px!important;padding:8px 12px!important}
+#libraryArea .stats{margin:0 0 8px!important}
+#libraryArea .content-shell{min-height:0!important;padding:9px!important;background:rgba(10,7,5,.86)!important}
+#libraryArea #books.grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))!important;gap:12px!important}
+#libraryArea .book .cover{height:185px!important}
+}
+#libraryArea>.hero:before{display:none!important}
+#libraryArea>.hero:after{display:none!important}
+#libraryArea>.portal>.portal-card:before{content:'✥'!important;top:7px!important;font-size:13px!important}
+#libraryArea>.portal>.portal-card:after{content:'❧ ✦ ❧'!important;bottom:3px!important;font-size:10px!important}
+#libraryArea>.portal>.portal-card{background:radial-gradient(ellipse at 50% 0%,#6b472cbb,#1c110ae8 65%,#090705fa)!important;border:2px solid #d9ac61!important;box-shadow:inset 0 0 0 3px #120b07,inset 0 0 0 4px #c2934b,0 5px 17px #000b!important}
+@media(min-width:761px) and (max-width:1100px){#libraryArea>.portal{gap:8px!important}#libraryArea>.portal>.portal-card{height:105px!important;min-height:105px!important}#libraryArea>.portal>.portal-card strong{font-size:12px!important}}
+
+
+/* v0.8.4 — faithful reference composition, no changes to auth or data code */
+@media(min-width:761px){
+.sidebar-main{width:172px!important;padding:10px 9px!important}
+.sidebar-logo .heritage-logo{width:112px!important;height:116px!important}
+.sidebar-logo{padding:0 0 9px!important}
+.sidebar-nav button{font-size:11px!important;padding:7px 8px!important}
+.sidebar-account{font-size:10px!important}
+header{left:172px!important;height:37px!important;padding:3px 12px!important;background:rgba(8,6,5,.91)!important}
+header .mark{display:none!important}
+header h1{font-size:12px!important}
+header small{font-size:8px!important}
+header button{font-size:10px!important;padding:4px 7px!important}
+main{margin:37px 0 0 172px!important;padding:0 16px 20px!important;max-width:none!important}
+#libraryArea{max-width:1440px!important;margin:auto!important}
+#libraryArea>.hero{height:242px!important;min-height:242px!important;padding:4px 10px 17px!important;margin:0!important;border:0!important;background:linear-gradient(90deg,#100a0755,transparent 30%,transparent 70%,#100a0755),url('bibliothek-hintergrund.jpg') center 47%/cover no-repeat!important}
+#libraryArea>.hero>.hero-emblem{width:178px!important;height:195px!important;max-height:195px!important;object-fit:contain!important;mix-blend-mode:screen!important}
+#libraryArea>.hero>.hero-arabic,#libraryArea>.hero>.hero-line,#libraryArea>.hero>h2{display:none!important}
+#libraryArea>.hero>p{font-size:10px!important;margin:-13px 0 0!important;color:#e9c989!important;text-shadow:0 2px 5px black!important}
+#libraryArea>.portal{max-width:1070px!important;margin:-2px auto 7px!important;padding:0 8px!important;gap:12px!important;grid-template-columns:repeat(5,minmax(0,1fr))!important}
+#libraryArea>.portal>.portal-card{height:104px!important;min-height:104px!important;padding:22px 6px 9px!important;gap:2px!important;clip-path:none!important;border-radius:49% 49% 4px 4px / 42% 42% 4px 4px!important;border:1.5px solid #d6a65b!important;box-shadow:inset 0 0 0 3px #120a06,inset 0 0 0 4px #c39a59,0 3px 11px #000b!important;background:linear-gradient(180deg,#3d2819f2,#0c0806f8)!important}
+#libraryArea>.portal>.portal-card .portal-icon{font-size:26px!important;line-height:1.1!important}
+#libraryArea>.portal>.portal-card strong{font-size:12px!important;line-height:1.15!important}
+#libraryArea>.portal>.portal-card small{font-size:9px!important}
+#libraryArea>.portal>.portal-card:before{content:'✥'!important;font-size:10px!important;top:4px!important}
+#libraryArea>.portal>.portal-card:after{content:'❦'!important;font-size:10px!important;bottom:1px!important}
+#libraryArea .section-head{padding:5px 8px!important;margin:0 0 6px!important;background:#100b08e8!important}
+#libraryArea .section-head h2{font-size:19px!important}
+#libraryArea .section-head p{font-size:10px!important}
+#libraryArea .section-head button{padding:6px 10px!important;font-size:11px!important}
+#libraryArea .stats{gap:9px!important;margin:0 0 7px!important}
+#libraryArea .stat{padding:5px 11px!important;min-height:49px!important}
+#libraryArea .stat b{font-size:20px!important}
+#libraryArea .stat span{font-size:10px!important}
+#libraryArea .layout{grid-template-columns:minmax(0,1fr)!important;gap:0!important}
+#libraryArea .layout>.side{display:none!important}
+#libraryArea .content-shell{background:rgba(9,6,4,.88)!important;border:0!important;padding:7px!important;min-height:0!important}
+#libraryArea .toolbar{margin-bottom:5px!important}
+#libraryArea .toolbar input,#libraryArea .toolbar select{padding:7px 9px!important;font-size:11px!important}
+#libraryArea #books.grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:11px!important}
+#libraryArea .book .cover{height:150px!important}
+#libraryArea .book{background:rgba(18,10,6,.95)!important}
+#libraryArea .empty{padding:12px!important}
+}
+@media(min-width:761px) and (max-width:1080px){#libraryArea>.portal{gap:6px!important}#libraryArea>.portal>.portal-card{height:95px!important;min-height:95px!important}#libraryArea #books.grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+
+</st
+/* v0.8.5 — one continuous library background, aligned top to bottom */
+html{min-height:100%;background:#100906!important}
+body{background:linear-gradient(180deg,rgba(8,5,3,.12),rgba(8,5,3,.36)),url('bibliothek-hintergrund.jpg') center top / cover fixed no-repeat!important;background-color:#100906!important}
+main:before,main::before{background:none!important;display:none!important}
+#libraryArea>.hero{background:linear-gradient(90deg,rgba(10,6,4,.20),rgba(10,6,4,0) 35%,rgba(10,6,4,0) 65%,rgba(10,6,4,.20))!important;background-image:linear-gradient(90deg,rgba(10,6,4,.20),transparent 35%,transparent 65%,rgba(10,6,4,.20))!important}
+@media(max-width:760px){body{background-attachment:scroll!important;background-size:auto 100vh!important;background-position:center top!important}}
+yle>
 </head>
 <body>
 <aside class="sidebar-main" aria-label="Hauptnavigation"><div class="sidebar-logo"><img class="heritage-logo" alt="Darül İlm Logo" src="darul-ilm-original-logo.png"><span class="arabic" lang="ar">دار العلم</span><small>Dijital Kütüphane</small></div><nav class="sidebar-nav"><button class="active" data-side-portal="library"><span class="symbol">⌂</span>Ana Sayfa</button><button data-side-portal="library"><span class="symbol">▤</span>Kütüphane</button><button data-side-portal="mine"><span class="symbol">▣</span>Benim Kitaplarım</button><button data-side-portal="shared"><span class="symbol">♧</span>Ortak Kütüphane</button><button data-side-portal="categories"><span class="symbol">▦</span>Kategoriler</button><button data-side-portal="menba"><span class="symbol">✦</span>MENBA AI</button><div class="sidebar-divider"></div><button data-side-view="loans"><span class="symbol">▤</span>Ausleihe (Ödünç)</button><button data-side-view="wishlist"><span class="symbol">♡</span>Wunschliste</button><button data-side-placeholder="Notizen"><span class="symbol">✎</span>Notlarım</button><button data-side-placeholder="Statistiken"><span class="symbol">▥</span>İstatistikler</button><div class="sidebar-divider"></div><button data-side-placeholder="Adminbereich"><span class="symbol">⚙</span>Yönetim (Admin)</button></nav><div class="sidebar-account">KZN · SD<br><small>Private Mitgliederbibliothek</small></div></aside>
