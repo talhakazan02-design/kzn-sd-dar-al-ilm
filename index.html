@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KZN · SD — دار العلم · v0.7.4</title>
+<title>KZN · SD — دار العلم · v0.7.6</title>
 <style>
 
 :root{
@@ -195,7 +195,7 @@ main{max-width:none;margin:64px 0 0 245px;padding:0 25px 28px}
 @media(max-width:1050px){.sidebar-main{width:195px}.sidebar-logo{font-size:20px}header{left:195px}main{margin-left:195px}.portal-card strong{font-size:13px}}
 @media(max-width:760px){.sidebar-main{position:relative;width:auto;max-height:none;padding:10px 12px}.sidebar-logo{display:none}.sidebar-nav{display:flex;overflow:auto;margin:0;gap:6px}.sidebar-nav button{width:auto;flex:none;padding:8px}.sidebar-nav .symbol{font-size:16px}.sidebar-divider,.sidebar-account{display:none}header{position:relative;left:0;height:auto;padding:10px 15px}main{margin:0;padding:0 12px 20px}.hero{margin:0 -12px 18px;height:200px}.portal{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-card{min-height:115px}.portal-card:last-child{grid-column:span 2}.stats{grid-template-columns:repeat(2,1fr)}}
 
-/* KZN · SD — Darül İlm heritage design v0.7.4. Visual layer only. */
+/* KZN · SD — Darül İlm heritage design v0.7.5. Visual layer only. */
 :root{--gold:#dcb86b;--line:#5b4425;--ink:#f6ebd6;--muted:#bba98b}
 body{background:radial-gradient(ellipse at 54% -18%,#3c2710 0%,#130f0a 34%,#080808 72%);color:var(--ink)}
 body:before{opacity:.045;background-image:repeating-linear-gradient(45deg,transparent 0 36px,#ad7c31 37px 38px,transparent 39px 74px),repeating-linear-gradient(-45deg,transparent 0 36px,#ad7c31 37px 38px,transparent 39px 74px)}
@@ -236,7 +236,7 @@ button.primary:hover{background:linear-gradient(135deg,#f1d696,#c39548)}
 @media(max-width:760px){.hero{height:265px}.hero .hero-emblem{width:140px;height:140px}.portal-card{min-height:120px}.sidebar-logo{display:none}}
 
 /* ============================================================
-   DARÜL İLM CLASSIC · v0.7.4
+   DARÜL İLM CLASSIC · v0.7.5
    Full visual redesign only: no authentication, database or
    upload logic is modified.
    ============================================================ */
@@ -402,7 +402,7 @@ button:not(.primary):hover{border-color:#b99155}
 }
 
 
-/* DARÜL İLM — v0.7.4 GRAND CLASSIC
+/* DARÜL İLM — v0.7.5 GRAND CLASSIC
    Ornament and architecture layer. No data/auth JavaScript changes. */
 :root{--gold:#e4bc73;--ink:#f8ecd3;--muted:#c5af8e}
 body{
@@ -561,7 +561,7 @@ header:after{content:"";position:absolute;bottom:3px;left:0;right:0;border-botto
 
 
 
-/* v0.7.4 — Royal Library visual theme. Existing auth, storage and app scripts untouched. */
+/* v0.7.5 — Royal Library visual theme. Existing auth, storage and app scripts untouched. */
 :root{--gold:#d8a34e;--gold-bright:#f2d28c}
 body{background:#090706!important;color:#f5e8d3!important}
 .sidebar-main{background:linear-gradient(180deg,#160d07,#080605 62%)!important;border-right:1px solid #9b713b!important}
@@ -583,6 +583,49 @@ header{background:linear-gradient(90deg,#140d07,#090706)!important}
 .stat,.panel,.content-shell{background:linear-gradient(145deg,#1e140e,#0d0907)!important;border-color:#91662f!important}
 .section-head h2{color:#edc77d!important}
 @media(max-width:760px){.hero{min-height:310px!important;padding:24px 10px!important}.hero:after{inset:10px 8% 10px!important}.hero .hero-emblem{width:205px!important;height:205px!important}.portal-card{min-height:120px!important}}
+
+
+/* v0.7.5 — full-page traditional library, visual-only override */
+html{min-height:100%;background:#0a0705}
+body{min-height:100vh;background:linear-gradient(90deg,rgba(10,7,5,.78),rgba(10,7,5,.48) 45%,rgba(10,7,5,.80)),linear-gradient(180deg,rgba(8,6,4,.18),rgba(8,6,4,.68)),url('bibliothek-hintergrund.jpg') center center / cover fixed no-repeat!important}
+body:before{opacity:.08!important;pointer-events:none}
+main{background:transparent!important;position:relative}
+main:before{content:'';position:fixed;inset:0 0 0 245px;pointer-events:none;z-index:-1;background:linear-gradient(180deg,rgba(8,5,3,.08),rgba(8,5,3,.54)),url('bibliothek-hintergrund.jpg') center center / cover no-repeat;filter:saturate(.92)}
+.hero{min-height:440px!important;background:linear-gradient(90deg,rgba(8,5,3,.53),rgba(8,5,3,.14) 50%,rgba(8,5,3,.53)),linear-gradient(180deg,rgba(5,4,3,.12),rgba(5,4,3,.42)),url('bibliothek-hintergrund.jpg') center center / cover no-repeat!important;border:1px solid #a98550!important;border-radius:150px 150px 12px 12px / 135px 135px 12px 12px!important;box-shadow:inset 0 0 0 7px #0b080799,inset 0 0 0 9px #d5ac6480,0 18px 48px #000b!important;margin:20px 0 32px!important}
+.hero:after{border-radius:145px 145px 8px 8px / 130px 130px 8px 8px!important}
+.hero .hero-emblem{filter:drop-shadow(0 8px 25px #000)!important}
+.portal-card{background:linear-gradient(180deg,rgba(69,41,20,.88),rgba(17,12,8,.91))!important;backdrop-filter:blur(8px);border-color:#c49a58!important;box-shadow:inset 0 0 0 5px #0a0707,inset 0 0 0 6px #bd925a88,0 15px 35px #000a!important}
+.portal-card:hover,.portal-card.selected{background:linear-gradient(180deg,rgba(111,71,32,.95),rgba(27,17,10,.96))!important}
+.content-shell,.panel,.feature-panel,.stat,.book{background:linear-gradient(135deg,rgba(42,27,15,.91),rgba(12,9,7,.92))!important;backdrop-filter:blur(11px);border-color:#947044!important}
+.sidebar-main{background:linear-gradient(180deg,rgba(28,18,11,.97),rgba(9,7,6,.98))!important}
+header{background:rgba(17,11,7,.96)!important}
+.section-head{background:linear-gradient(90deg,rgba(24,15,9,.62),transparent);padding:12px!important}
+@media(max-width:1050px){main:before{inset:0 0 0 195px}}
+@media(max-width:760px){body{background-attachment:scroll!important}main:before{inset:0}.hero{min-height:300px!important;border-radius:90px 90px 8px 8px / 85px 85px 8px 8px!important;margin:12px 0 20px!important}.hero:after{border-radius:80px 80px 8px 8px / 75px 75px 8px 8px!important}}
+
+
+
+/* v0.7.6 — corrected full-page library layout; preserves the original logo image and all application JS. */
+body{background:linear-gradient(90deg,rgba(7,5,3,.82),rgba(7,5,3,.54) 50%,rgba(7,5,3,.82)),url("bibliothek-hintergrund.jpg") center center/cover fixed no-repeat!important}
+main:before{display:none!important}
+.hero{display:flex!important;flex-direction:column;align-items:center;justify-content:center;min-height:330px!important;height:auto!important;padding:26px 18px!important;margin:16px 0 26px!important;border-radius:12px!important;background:linear-gradient(180deg,rgba(9,6,4,.72),rgba(9,6,4,.84))!important;box-shadow:0 12px 40px #000a,inset 0 0 0 2px #c69a5460!important}
+.hero:before,.hero:after{display:none!important}
+.hero .hero-emblem{position:relative!important;z-index:1!important;width:min(280px,70vw)!important;height:auto!important;max-height:260px!important;object-fit:contain!important;mix-blend-mode:normal!important;filter:drop-shadow(0 10px 22px #000)!important}
+.hero .hero-arabic,.hero .hero-line,.hero h2{display:none!important}
+.hero p{position:relative!important;z-index:1!important;margin:7px 0 0!important;text-align:center!important;font:italic 17px Georgia,serif!important;color:#e9c989!important}
+.portal-card{border-radius:13px!important;min-height:125px!important;background:linear-gradient(160deg,rgba(47,30,17,.91),rgba(14,10,7,.94))!important}
+.portal-card:last-child{grid-column:auto!important}
+@media(max-width:760px){
+ body{background:linear-gradient(rgba(8,6,4,.79),rgba(8,6,4,.84)),url("bibliothek-hintergrund.jpg") center top/auto 100vh fixed no-repeat!important}
+ header{display:flex!important;flex-wrap:wrap!important;gap:8px!important;align-items:center!important}
+ .hero{min-height:270px!important;margin:12px 0 20px!important;padding:18px 12px!important;border-radius:10px!important}
+ .hero .hero-emblem{width:min(225px,66vw)!important;max-height:210px!important}
+ .hero p{font-size:13px!important}
+ .portal{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ .portal-card{min-height:115px!important;padding:14px 8px!important}
+ .portal-card:last-child{grid-column:span 2!important}
+ .content-shell{min-width:0!important}
+}
 
 </style>
 </head>
