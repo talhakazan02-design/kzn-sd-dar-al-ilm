@@ -993,6 +993,18 @@ body{background:linear-gradient(180deg,rgba(8,5,3,.12),rgba(8,5,3,.36)),url('bib
 main:before,main::before{background:none!important;display:none!important}
 #libraryArea>.hero{background:linear-gradient(90deg,rgba(10,6,4,.20),rgba(10,6,4,0) 35%,rgba(10,6,4,0) 65%,rgba(10,6,4,.20))!important;background-image:linear-gradient(90deg,rgba(10,6,4,.20),transparent 35%,transparent 65%,rgba(10,6,4,.20))!important}
 @media(max-width:760px){body{background-attachment:scroll!important;background-size:auto 100vh!important;background-position:center top!important}}
+
+/* v0.8.6: a single shared background coordinate system and a transparent CENTER emblem. */
+html { background:#100906!important; }
+body { background: none!important; background-color:#100906!important; }
+body::before { content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background-image:linear-gradient(180deg,rgba(8,5,3,.12),rgba(8,5,3,.36)),url("bibliothek-hintergrund.jpg");
+  background-size:cover; background-position:center center; background-repeat:no-repeat; }
+main::before,main:before { display:none!important;content:none!important; }
+#libraryArea>.hero { background:none!important; background-image:none!important; }
+#libraryArea>.hero::before,#libraryArea>.hero::after { background:none!important; }
+#libraryArea>.hero>.hero-emblem { mix-blend-mode:normal!important; background:transparent!important; filter:drop-shadow(0 3px 8px #000a); }
+@media(max-width:760px){body::before{background-position:center top;background-size:auto 100vh}}
 </style>
 </head>
 <body>
@@ -1005,7 +1017,7 @@ main:before,main::before{background:none!important;display:none!important}
 <main>
  <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="username" required placeholder="name@beispiel.de"></div><div class="field"><label for="loginPassword">Passwort</label><input type="password" id="loginPassword" autocomplete="current-password" minlength="8" required placeholder="Passwort eingeben"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Mit Passwort anmelden</button><button type="button" id="magicLinkBtn">Einmaligen E-Mail-Link anfordern</button></div></form><form id="passwordForm" class="hidden"><h3>Passwort festlegen / ändern</h3><p>Nur für dein aktuell angemeldetes Konto.</p><div class="field"><label for="newPassword">Neues Passwort (mindestens 12 Zeichen)</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="field"><label for="confirmPassword">Passwort wiederholen</label><input id="confirmPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="actions"><button class="primary" type="submit" id="savePassword">Passwort speichern</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
  <div id="libraryArea" class="hidden">
- <section class="hero"><img class="hero-emblem" alt="Darül İlm" src="darul-ilm-original-logo.png"><div class="hero-arabic" lang="ar" dir="rtl">دار العلم</div><div class="hero-line"></div><h2>KZN · SD</h2><p data-de="Die digitale Bibliothek des Wissens" data-tr="İlmin dijital kütüphanesi">Die digitale Bibliothek des Wissens</p></section>
+ <section class="hero"><img class="hero-emblem" alt="Darül İlm" src="darul-ilm-logo-transparent.png"><div class="hero-arabic" lang="ar" dir="rtl">دار العلم</div><div class="hero-line"></div><h2>KZN · SD</h2><p data-de="Die digitale Bibliothek des Wissens" data-tr="İlmin dijital kütüphanesi">Die digitale Bibliothek des Wissens</p></section>
  <nav class="portal" aria-label="Hauptbereiche">
   <button class="portal-card selected" data-portal="library"><span class="portal-icon">▤</span><strong>Kütüphane</strong><small>Bibliothek</small></button>
   <button class="portal-card" data-portal="mine"><span class="portal-icon">♧</span><strong>Benim Kitaplarım</strong><small>Meine Bücher</small></button>
