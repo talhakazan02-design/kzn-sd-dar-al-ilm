@@ -866,6 +866,51 @@ main{margin:53px 0 0 205px!important;padding:0 22px 35px!important}
 .content-shell{border:1px solid #b68b4a!important;box-shadow:inset 0 0 0 1px #c89a4d44!important}
 @media(max-width:760px){#libraryArea>.hero:after{bottom:27px!important;font-size:17px!important;letter-spacing:6px!important}#libraryArea>.portal>.portal-card:before{font-size:11px!important;letter-spacing:0!important;top:6px!important}#libraryArea>.portal>.portal-card .category-books svg{width:27px;height:27px}}
 
+
+/* v0.8.2 – reference-based layout refinement. No application JS or logo modifications. */
+@media(min-width:761px){
+ .sidebar-main{width:172px!important;padding:10px 9px!important}
+ .sidebar-logo .heritage-logo{width:118px!important;height:126px!important}
+ .sidebar-nav button{padding:8px 7px!important;font-size:12px!important}
+ header{left:172px!important;height:45px!important;padding:5px 16px!important}
+ main{margin:45px 0 0 172px!important;padding:0 16px 28px!important}
+ #libraryArea{max-width:none!important}
+ #libraryArea>.hero{height:345px!important;min-height:345px!important;margin:0 -16px!important;padding:15px 16px 68px!important;background-position:center 48%!important}
+ #libraryArea>.hero>.hero-emblem{width:215px!important;height:230px!important;margin:0 auto!important}
+ #libraryArea>.hero>p{margin:-14px 0 0!important;font-size:12px!important}
+ #libraryArea>.portal{margin:-56px 18px 13px!important;gap:12px!important}
+ #libraryArea>.portal>.portal-card{min-height:116px!important;padding:17px 5px 10px!important}
+ #libraryArea>.portal .portal-icon{font-size:27px!important;margin-top:6px!important}
+ #libraryArea>.portal strong{font-size:14px!important}
+ #libraryArea>.portal small{font-size:10px!important}
+}
+/* Distinctive Islamic pointed arches, not generic rounded dashboard rectangles. */
+#libraryArea>.portal>.portal-card{
+ clip-path:polygon(0 24%,3% 17%,10% 11%,27% 7%,40% 3%,50% 0,60% 3%,73% 7%,90% 11%,97% 17%,100% 24%,100% 100%,0 100%)!important;
+ border-radius:46% 46% 4px 4px / 26% 26% 4px 4px!important;
+ border:2px solid #e2b96f!important;
+ background:radial-gradient(ellipse at 50% 5%,#6b4828cc,#21150fe8 62%,#0d0907f5)!important;
+ box-shadow:inset 0 0 0 3px #100a07,inset 0 0 0 5px #c4934b,0 5px 14px #000b!important;
+}
+#libraryArea>.portal>.portal-card:before{content:'❦'!important;top:7px!important;color:#f7d48b!important;font-size:15px!important}
+#libraryArea>.portal>.portal-card:after{content:'❧ ✦ ❧'!important;bottom:2px!important;font-size:10px!important;white-space:nowrap!important}
+#libraryArea>.hero:after{content:'❧  ✦  ❧'!important;bottom:54px!important;font-size:16px!important;opacity:.85!important}
+#libraryArea>.hero:before{display:none!important}
+/* Compact, translucent lower section matching the approved composition. */
+.section-head{background:rgba(15,9,6,.85)!important;border-top:1px solid #a87940!important;border-bottom:1px solid #bd8f4e!important;padding:9px 13px!important;margin:0 0 8px!important}
+.section-head h2{font-size:23px!important}
+.stats{gap:9px!important;margin-bottom:8px!important}
+.stat{padding:8px 12px!important;border:1px solid #b68b4c!important;background:rgba(17,11,7,.88)!important}
+.stat b{font-size:21px!important}
+.stat span{font-size:11px!important}
+.layout{display:block!important}
+.layout>.side{display:none!important}
+.content-shell{background:rgba(11,7,5,.65)!important;border:1px solid #9b733e!important;box-shadow:0 6px 15px #0005!important;min-height:120px!important;padding:10px!important}
+.toolbar input,.toolbar select{border-color:#bd955a!important;background:rgba(12,8,6,.83)!important}
+#books.grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))!important;gap:12px!important}
+.book .cover{height:170px!important}
+@media(max-width:760px){#libraryArea>.portal>.portal-card{clip-path:none!important}#libraryArea>.hero:after{bottom:33px!important}}
+
 </style>
 </head>
 <body>
