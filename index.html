@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KZN · SD — دار العلم · v0.7.2</title>
+<title>KZN · SD — دار العلم · v0.7.3</title>
 <style>
 
 :root{
@@ -195,7 +195,7 @@ main{max-width:none;margin:64px 0 0 245px;padding:0 25px 28px}
 @media(max-width:1050px){.sidebar-main{width:195px}.sidebar-logo{font-size:20px}header{left:195px}main{margin-left:195px}.portal-card strong{font-size:13px}}
 @media(max-width:760px){.sidebar-main{position:relative;width:auto;max-height:none;padding:10px 12px}.sidebar-logo{display:none}.sidebar-nav{display:flex;overflow:auto;margin:0;gap:6px}.sidebar-nav button{width:auto;flex:none;padding:8px}.sidebar-nav .symbol{font-size:16px}.sidebar-divider,.sidebar-account{display:none}header{position:relative;left:0;height:auto;padding:10px 15px}main{margin:0;padding:0 12px 20px}.hero{margin:0 -12px 18px;height:200px}.portal{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-card{min-height:115px}.portal-card:last-child{grid-column:span 2}.stats{grid-template-columns:repeat(2,1fr)}}
 
-/* KZN · SD — Darül İlm heritage design v0.7.2. Visual layer only. */
+/* KZN · SD — Darül İlm heritage design v0.7.3. Visual layer only. */
 :root{--gold:#dcb86b;--line:#5b4425;--ink:#f6ebd6;--muted:#bba98b}
 body{background:radial-gradient(ellipse at 54% -18%,#3c2710 0%,#130f0a 34%,#080808 72%);color:var(--ink)}
 body:before{opacity:.045;background-image:repeating-linear-gradient(45deg,transparent 0 36px,#ad7c31 37px 38px,transparent 39px 74px),repeating-linear-gradient(-45deg,transparent 0 36px,#ad7c31 37px 38px,transparent 39px 74px)}
@@ -236,7 +236,7 @@ button.primary:hover{background:linear-gradient(135deg,#f1d696,#c39548)}
 @media(max-width:760px){.hero{height:265px}.hero .hero-emblem{width:140px;height:140px}.portal-card{min-height:120px}.sidebar-logo{display:none}}
 
 /* ============================================================
-   DARÜL İLM CLASSIC · v0.7.2
+   DARÜL İLM CLASSIC · v0.7.3
    Full visual redesign only: no authentication, database or
    upload logic is modified.
    ============================================================ */
@@ -399,6 +399,164 @@ button:not(.primary):hover{border-color:#b99155}
   .hero{min-height:260px}
   .portal-card strong{font-size:13px}
   .portal-card small{font-size:10px}
+}
+
+
+/* DARÜL İLM — v0.7.3 GRAND CLASSIC
+   Ornament and architecture layer. No data/auth JavaScript changes. */
+:root{--gold:#e4bc73;--ink:#f8ecd3;--muted:#c5af8e}
+body{
+ background:
+ radial-gradient(ellipse at 54% 0%,#47311b 0%,#1b130c 26%,#090806 66%) fixed;
+}
+body:before{
+ opacity:.32!important;
+ background-image:
+ radial-gradient(circle at center,transparent 0 13px,#ad804326 14px 15px,transparent 16px),
+ repeating-linear-gradient(45deg,transparent 0 39px,#c7a06124 40px,transparent 41px 80px),
+ repeating-linear-gradient(-45deg,transparent 0 39px,#c7a06124 40px,transparent 41px 80px)!important;
+ background-size:80px 80px,80px 80px,80px 80px!important;
+}
+.sidebar-main,.side{
+ background:linear-gradient(160deg,#281b0f 0%,#110c08 48%,#080706 100%)!important;
+ border-right:2px solid #a78047!important;
+}
+.sidebar-main:before{
+ content:"";position:absolute;inset:0 7px;pointer-events:none;
+ border-left:1px solid #a37a3c2e;border-right:1px solid #a37a3c2e;
+}
+.sidebar-logo{padding-top:22px!important}
+.sidebar-logo:before{content:"۞";display:block;text-align:center;color:#d9b16a;font-size:23px;margin-bottom:8px}
+.sidebar-nav button{border-bottom:1px solid #c29a3c12!important}
+.sidebar-nav button.active{background:linear-gradient(90deg,#5c3e1d,#25190d)!important}
+header{background:linear-gradient(90deg,#2c1d0f,#0c0907)!important;border-bottom:2px solid #9c773e!important}
+header:after{content:"";position:absolute;bottom:3px;left:0;right:0;border-bottom:1px solid #b78d4b55;pointer-events:none}
+.hero{
+ min-height:480px!important;
+ padding:67px 20px 48px!important;
+ margin-bottom:40px!important;
+ background:
+ linear-gradient(90deg,#080604ee,#140c0640 24%,#140c0630 74%,#080604ee),
+ linear-gradient(180deg,#09060544,#1b100930 45%,#0b0705f5 100%),
+ url('https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=1800&q=85') center 44%/cover no-repeat!important;
+ border-bottom:6px double #d1a65d!important;
+ box-shadow:inset 0 0 85px 24px #0504039c,0 22px 45px #000b!important;
+}
+.hero:after{
+ display:block!important;content:""!important;
+ position:absolute;z-index:0;pointer-events:none;
+ inset:15px 8% 13px!important;
+ border:2px solid #dfb66c!important;
+ border-radius:48% 48% 8px 8px / 68% 68% 8px 8px!important;
+ box-shadow:
+ inset 0 0 0 6px #0c0806a0,
+ inset 0 0 0 8px #d6aa5d99,
+ inset 0 0 0 17px #0c08065e,
+ inset 0 0 0 18px #bd904b66,
+ 0 0 0 5px #0a0705aa,
+ 0 0 0 6px #b48c4a77!important;
+ background:none!important;
+}
+.hero:before{
+ content:"❈"!important;top:19px!important;left:50%!important;
+ transform:translateX(-50%)!important;font-size:27px!important;
+ color:#f2d497!important;text-shadow:0 0 16px #000!important;
+}
+.hero>*{position:relative;z-index:1}
+.hero-arabic{
+ font-size:clamp(57px,6.5vw,95px)!important;
+ color:#ffe1a0!important;
+ text-shadow:0 4px 6px #000,0 0 18px #1c1005,0 0 36px #e6b65a66!important;
+}
+.hero h2{
+ font-size:clamp(19px,2.1vw,30px)!important;
+ letter-spacing:.25em!important;
+ color:#f4dcae!important;
+}
+.hero p{font-family:Georgia,serif;font-style:italic;font-size:16px!important}
+.hero-line{width:300px!important;height:2px!important;margin:20px auto!important}
+.portal{
+ position:relative;
+ padding-top:24px!important;
+ border-top:1px solid #b78e50a6;
+}
+.portal:before{
+ content:"❖ ۞ ❖";position:absolute;top:-12px;left:50%;
+ transform:translateX(-50%);padding:0 20px;
+ background:#100b07;color:#e4bb74;letter-spacing:12px;font-size:15px;
+ white-space:nowrap;
+}
+.portal-card{
+ min-height:205px!important;
+ border-radius:48% 48% 8px 8px / 43% 43% 8px 8px!important;
+ border:2px solid #d1a363!important;
+ background:
+ radial-gradient(ellipse at 50% 13%,#9d713d66,transparent 57%),
+ linear-gradient(180deg,#3c2919,#171009 80%)!important;
+ box-shadow:
+ inset 0 0 0 5px #120c08,
+ inset 0 0 0 7px #b78b4b9c,
+ inset 0 0 0 12px #21160c,
+ inset 0 0 0 13px #9d763f80,
+ 0 12px 28px #000b!important;
+}
+.portal-card:before{content:"❈"!important;top:14px!important;font-size:17px!important}
+.portal-icon{font-size:43px!important;margin-top:18px;color:#f5d58d!important}
+.portal-card strong{font-size:17px!important}
+.portal-card:hover,.portal-card.selected{
+ transform:translateY(-5px)!important;
+ background:radial-gradient(ellipse at 50% 10%,#9c6d37,#2d1d0e 70%)!important;
+ box-shadow:inset 0 0 0 5px #120c08,inset 0 0 0 7px #e0b96c,0 0 24px #dba44d77!important;
+}
+.section-head{
+ position:relative;
+ border-bottom:3px double #9d783f!important;
+ padding-bottom:17px!important;
+ margin-top:15px!important;
+}
+.section-head:after{content:"۞";position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);background:#120c08;color:#d8b36c;padding:0 15px;font-size:20px}
+.section-head h2{font-size:32px!important;color:#f4d394!important}
+.stats{margin-top:27px!important}
+.stat{
+ position:relative;overflow:hidden;
+ background:linear-gradient(140deg,#3d2916,#171009)!important;
+ border:2px solid #a57b42!important;
+ box-shadow:inset 0 0 0 5px #120c08,inset 0 0 0 6px #b98b4766,0 12px 25px #0009!important;
+}
+.stat:after{content:"◇";position:absolute;right:11px;top:3px;color:#d7ad6b44;font-size:56px}
+.stat b{color:#ffdc96!important}
+.content-shell,.feature-panel,.panel{
+ position:relative;
+ border:2px solid #a37a40!important;
+ background:linear-gradient(145deg,#302013,#120d09 80%)!important;
+ box-shadow:inset 0 0 0 6px #120d09,inset 0 0 0 7px #98734280,0 15px 35px #0009!important;
+}
+.content-shell:before{
+ content:"❖";position:absolute;top:-15px;left:50%;transform:translateX(-50%);
+ padding:0 15px;color:#e5bf77;background:#20160e;font-size:20px;
+}
+.book{
+ border:2px solid #a67d44!important;
+ background:linear-gradient(140deg,#332315,#130e09)!important;
+ box-shadow:inset 0 0 0 4px #120c08,0 12px 24px #0009!important;
+}
+.cover{
+ height:240px!important;
+ background:radial-gradient(ellipse at 50% 30%,#a47b4566,transparent 57%),linear-gradient(160deg,#4d351d,#1c120a)!important;
+}
+.book h3{color:#ffe2a8!important;font-size:19px!important}
+@media(max-width:900px){
+ .hero{min-height:360px!important}
+ .portal-card{min-height:170px!important}
+ .portal-icon{font-size:32px!important}
+}
+@media(max-width:650px){
+ .hero{min-height:290px!important;padding:45px 14px 28px!important}
+ .hero:after{inset:12px 5% 11px!important}
+ .hero-arabic{font-size:47px!important}
+ .portal-card{min-height:150px!important}
+ .portal-card strong{font-size:14px!important}
+ .section-head h2{font-size:25px!important}
 }
 
 </style>
