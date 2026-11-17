@@ -1,0 +1,9 @@
+1. Backup der bisherigen Website anlegen.
+2. KATEGORIEN-SUPABASE.sql einmal in Supabase > SQL Editor ausführen.
+3. Alle Website-Dateien in GitHub Pages ersetzen.
+4. Mit Mitgliedskonto anmelden und Zahnrad Kategorien verwalten öffnen.
+5. Kategorien umbenennen, Bilder hochladen, sortieren oder ausblenden.
+6. Als Admin im Dialog Gemeinsame Kategorien auswählen.
+ACHTUNG: Kategorien sind Anzeige-/Filtergruppen; vorhandene Bücher werden nicht automatisch umkategorisiert. Neue Kategorienamen sind beim Buchformular ggf. separat als Kategorie auszuwählen.
+Die Bilder werden komprimiert in der Datenbank gespeichert, nicht in Supabase Storage.
+Live-Funktion mit Supabase noch nicht getestet.

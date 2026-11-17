@@ -1265,7 +1265,10 @@ main::before,main:before{display:none!important;content:none!important}
 #passwordAdminNav{white-space:nowrap}
 #passwordAdminNav.hidden{display:none!important}
 </style>
-</head>
+<style>
+.cat-manage-btn{border:1px solid #c9a15a;background:#20170f;color:#f2d59e;border-radius:7px;padding:8px 11px;cursor:pointer;font:600 13px Georgia,serif}
+.cat-editor-overlay[hidden]{display:none!important}.cat-editor-overlay{position:fixed;inset:0;background:#000c;z-index:100000;display:flex;align-items:center;justify-content:center;padding:15px}.cat-editor{width:min(740px,96vw);max-height:88vh;overflow:auto;background:#1c140e;border:2px solid #c8a15e;border-radius:14px;color:#f3dfb6;padding:22px;box-shadow:0 0 50px #000}.cat-editor-head,.cat-editor-row,.cat-editor-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.cat-editor label{display:block;margin:12px 0}.cat-editor input:not([type=checkbox]):not([type=file]),.cat-editor select{display:block;width:100%;max-width:100%;box-sizing:border-box;background:#100c09;color:#ffe6b5;border:1px solid #a88b56;padding:9px;border-radius:5px}.cat-editor input[type=file]{display:block;margin-top:7px;max-width:100%}.cat-editor button{border:1px solid #c8a15e;color:#ffe6b5;background:#352513;padding:7px 10px;border-radius:5px;cursor:pointer}.cat-editor-row{padding:9px 0;border-bottom:1px solid #725735}.cat-editor-row small{opacity:.8}.cat-editor-row button{font-size:12px}.cat-editor-row .cat-editor-preview{width:45px;height:35px;object-fit:cover;border-radius:4px}.cat-editor #catEditorForm{border-top:1px solid #95713c;margin-top:14px;padding-top:12px}.kzn-categories button .kzn-category-emblem{display:none!important}.kzn-categories button{overflow:hidden}.kzn-categories button img{object-fit:cover}.cat-editor-status{min-height:20px}
+</style></head>
 <body>
 <aside class="sidebar-main" aria-label="Hauptnavigation"><div class="sidebar-logo"><img class="heritage-logo" alt="Darül İlm Logo" src="darul-ilm-logo-transparent.png"><span class="arabic" lang="ar">دار العلم</span><small>Dijital Kütüphane</small></div><nav class="sidebar-nav"><button class="active" data-side-portal="library"><span class="symbol">⌂</span>Ana Sayfa</button><button data-side-portal="library"><span class="symbol">▤</span>Kütüphane</button><button data-side-portal="mine"><span class="symbol">▣</span>Benim Kitaplarım</button><button data-side-portal="shared"><span class="symbol">♧</span>Ortak Kütüphane</button><button data-side-portal="categories"><span class="symbol">▦</span>Kategoriler</button><button data-side-portal="menba"><span class="symbol">✦</span>MENBA AI</button><div class="sidebar-divider"></div><button data-side-view="loans"><span class="symbol">▤</span>Ausleihe (Ödünç)</button><button data-side-view="wishlist"><span class="symbol">♡</span>Wunschliste</button><button data-side-placeholder="Notizen"><span class="symbol">✎</span>Notlarım</button><button data-side-placeholder="Statistiken"><span class="symbol">▥</span>İstatistikler</button><div class="sidebar-divider"></div><button data-side-placeholder="Adminbereich"><span class="symbol">⚙</span>Yönetim (Admin)</button></nav><div class="sidebar-account">KZN · SD<br><small>Private Mitgliederbibliothek</small></div></aside>
 
@@ -1291,7 +1294,7 @@ main::before,main:before{display:none!important;content:none!important}
 <section class="kzn-dashboard" id="kznDashboard" aria-label="Bibliotheksübersicht">
 <div class="kzn-dash-search"><span aria-hidden="true">⌕</span><input id="dashboardSearch" type="search" placeholder="Bücher, Autoren und Themen durchsuchen …" aria-label="Bibliothek durchsuchen"><button type="button" id="dashboardAdd">＋ Buch hinzufügen</button></div>
 <div class="kzn-dash-stats"><div class="kzn-dash-stat"><span>▤</span><strong id="dashBooks">—</strong><small>Bücher insgesamt</small></div><div class="kzn-dash-stat"><span>♧</span><strong id="dashMembers">—</strong><small>Mitglieder</small></div><div class="kzn-dash-stat"><span>↗</span><strong id="dashLoans">—</strong><small>Aktive Ausleihen</small></div><div class="kzn-dash-stat"><span>♡</span><strong id="dashWishlist">—</strong><small>Wunschliste</small></div></div>
-<div class="kzn-dash-columns"><div class="kzn-dash-main"><div class="kzn-section-label"><h3>Kategorien entdecken</h3><span>WISSEN · İLİM</span></div><div class="kzn-categories"><button data-dash-category="Koranwissenschaften"><span class="kzn-category-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6h14v12H5zM8 10h8M8 14h5M3 3v18M21 3v18"/></svg></span><img class="kzn-cat-image" src="kategorie-quran.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Kur’an & Tafsir</span></button><button data-dash-category="Hadith"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-hadith.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Hadith & Sunna</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">✒</span><img class="kzn-cat-image" src="kategorie-aqidah.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Akâid & İtikad</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">⚖</span><img class="kzn-cat-image" src="kategorie-fiqh.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Fıkıh & İbadet</span></button><button data-dash-category="Geschichte"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-siyer.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Siyer & Tarih</span></button><button data-dash-category="Sprache"><span class="kzn-category-emblem" aria-hidden="true">ع</span><img class="kzn-cat-image" src="kategorie-arabic.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Arapça & Dil</span></button><button data-dash-category="Tecvid"><span class="kzn-category-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M4 8c3-3 5-3 8 0 3-3 5-3 8 0v11c-3-3-5-3-8 0-3-3-5-3-8 0z"/><path d="M7 11h3M14 11h3M7 14h3M14 14h3"/></svg></span><img class="kzn-cat-image" src="https://img.kitapyurdu.com/v1/getImage/fn%3A6571460/wi%3A800/wh%3Aa2cc12818" alt="Buchcover Karabaş Tecvidi" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='kategorie-quran.jpg'"><span class="kzn-cat-name">Tecvid</span></button></div><div class="kzn-section-label"><h3>Neue Hinzufügungen</h3><button type="button" id="dashAllBooks">Alle Bücher ansehen ›</button></div><div id="dashRecent" class="kzn-recent"><p class="kzn-muted">Deine Bücher werden geladen …</p></div></div><aside class="kzn-dash-aside"><div class="kzn-side-card kzn-ai"><div class="kzn-menba-arabic" lang="ar" dir="rtl">منبع</div><h3>MENBA AI</h3><p>Dein Wissensassistent für die digitale Bibliothek.</p><button type="button" id="dashMenba">MENBA AI öffnen ›</button><small>Der KI-Assistent ist noch in Entwicklung.</small></div><div class="kzn-side-card"><h3>↗ &nbsp; Aktive Ausleihen</h3><p class="kzn-muted">Noch keine verknüpften Ausleihdaten verfügbar.</p></div><div class="kzn-side-card"><h3>♡ &nbsp; Wunschliste</h3><p class="kzn-muted">Noch keine verknüpfte Wunschliste verfügbar.</p></div></aside></div></section>
+<div class="kzn-dash-columns"><div class="kzn-dash-main"><div class="kzn-section-label"><h3>Kategorien entdecken</h3><button type="button" id="manageCategories" class="cat-manage-btn" title="Meine Kategorien verwalten">⚙ Kategorien verwalten</button><span>WISSEN · İLİM</span></div><div class="kzn-categories"><button data-dash-category="Koranwissenschaften"><span class="kzn-category-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6h14v12H5zM8 10h8M8 14h5M3 3v18M21 3v18"/></svg></span><img class="kzn-cat-image" src="kategorie-quran.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Kur’an & Tafsir</span></button><button data-dash-category="Hadith"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-hadith.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Hadith & Sunna</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">✒</span><img class="kzn-cat-image" src="kategorie-aqidah.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Akâid & İtikad</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">⚖</span><img class="kzn-cat-image" src="kategorie-fiqh.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Fıkıh & İbadet</span></button><button data-dash-category="Geschichte"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-siyer.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Siyer & Tarih</span></button><button data-dash-category="Sprache"><span class="kzn-category-emblem" aria-hidden="true">ع</span><img class="kzn-cat-image" src="kategorie-arabic.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Arapça & Dil</span></button><button data-dash-category="Tecvid"><span class="kzn-category-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M4 8c3-3 5-3 8 0 3-3 5-3 8 0v11c-3-3-5-3-8 0-3-3-5-3-8 0z"/><path d="M7 11h3M14 11h3M7 14h3M14 14h3"/></svg></span><img class="kzn-cat-image" src="https://img.kitapyurdu.com/v1/getImage/fn%3A6571460/wi%3A800/wh%3Aa2cc12818" alt="Buchcover Karabaş Tecvidi" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='kategorie-quran.jpg'"><span class="kzn-cat-name">Tecvid</span></button></div><div class="kzn-section-label"><h3>Neue Hinzufügungen</h3><button type="button" id="dashAllBooks">Alle Bücher ansehen ›</button></div><div id="dashRecent" class="kzn-recent"><p class="kzn-muted">Deine Bücher werden geladen …</p></div></div><aside class="kzn-dash-aside"><div class="kzn-side-card kzn-ai"><div class="kzn-menba-arabic" lang="ar" dir="rtl">منبع</div><h3>MENBA AI</h3><p>Dein Wissensassistent für die digitale Bibliothek.</p><button type="button" id="dashMenba">MENBA AI öffnen ›</button><small>Der KI-Assistent ist noch in Entwicklung.</small></div><div class="kzn-side-card"><h3>↗ &nbsp; Aktive Ausleihen</h3><p class="kzn-muted">Noch keine verknüpften Ausleihdaten verfügbar.</p></div><div class="kzn-side-card"><h3>♡ &nbsp; Wunschliste</h3><p class="kzn-muted">Noch keine verknüpfte Wunschliste verfügbar.</p></div></aside></div></section>
  <div class="section-head"><div><h2 id="sectionTitle">Kütüphane</h2><p id="sectionDescription">Deine Bibliothek im Überblick</p></div><button class="primary" id="addBtn">＋ Buch hinzufügen</button></div>
  <section class="stats">
   <div class="stat"><b id="total">0</b><span data-de="Bücher insgesamt" data-tr="Toplam kitap">Bücher insgesamt</span></div>
@@ -1345,6 +1348,7 @@ main::before,main:before{display:none!important;content:none!important}
 </section>
  <p class="note">Version 0.7.1 · Persönliche Buchdaten werden in Supabase gespeichert, sofern die bestehenden Datenbankrichtlinien dies erlauben. PDF-/Cover-Upload ist für private Bücher verfügbar. Gemeinsame Freigaben bleiben bis zur Admin-Prüfung deaktiviert. Bestehende lokale Bücher werden nicht gelöscht oder automatisch übertragen.</p>
 </main>
+<div id="catEditorOverlay" class="cat-editor-overlay" hidden><section class="cat-editor" role="dialog" aria-modal="true" aria-labelledby="catEditorTitle"><div class="cat-editor-head"><h2 id="catEditorTitle">Kategorien verwalten</h2><button type="button" id="catEditorClose">✕ Schließen</button></div><p>Persönliche Kategorien gelten nur für dein Konto. Gemeinsame Kategorien darf nur der Admin bearbeiten. Beim Löschen bleiben Bücher erhalten.</p><label>Bibliothek <select id="catEditorScope"><option value="personal">Meine Kategorien</option><option value="shared">Gemeinsame Kategorien (Admin)</option></select></label><div id="catEditorList"></div><form id="catEditorForm"><h3 id="catFormTitle">Kategorie hinzufügen</h3><label>Name <input id="catName" maxlength="80" required placeholder="z. B. Tecvid"></label><label>Zuordnung vorhandener Bücher <select id="catSource"><option value="">Eigener Kategoriename</option><option value="Islam">Islam</option><option value="Koranwissenschaften">Koranwissenschaften</option><option value="Hadith">Hadith</option><option value="Tecvid">Tecvid</option><option value="Geschichte">Geschichte</option><option value="Sprache">Sprache</option><option value="Sonstiges">Sonstiges</option></select></label><label>Bild (JPG, PNG, WebP; max. 5 MB) <input type="file" id="catImage" accept="image/jpeg,image/png,image/webp"></label><label><input type="checkbox" id="catVisible" checked> Kategorie anzeigen</label><div class="cat-editor-actions"><button type="submit" id="catSave">Speichern</button><button type="button" id="catCancel">Abbrechen</button></div></form><p id="catEditorStatus" role="status"></p></section></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
 const SUPABASE_URL = "https://ndivrlvecgvdntmwemnr.supabase.co";
@@ -1958,4 +1962,94 @@ if(recoveryMode)showRecoveryScreen();
  new MutationObserver(sync).observe(passwordBtn,{attributes:true,attributeFilter:['class']});
  sync();
 })();
-</script></body></html>
+</script><script>
+/* Category manager v1: categories are stored per owner in Supabase with RLS. */
+(()=>{
+'use strict';
+const defaults=[
+ ['Kur’an & Tafsir','Koranwissenschaften','kategorie-quran.jpg'],['Hadith & Sunna','Hadith','kategorie-hadith.jpg'],['Akâid & İtikad','Islam','kategorie-aqidah.jpg'],['Fıkıh & İbadet','Islam','kategorie-fiqh.jpg'],['Siyer & Tarih','Geschichte','kategorie-siyer.jpg'],['Arapça & Dil','Sprache','kategorie-arabic.jpg'],['Tecvid','Tecvid','']];
+let entries=[],scope='personal',editing=null,isAdmin=false,ready=false;
+const el=id=>document.getElementById(id);
+const msg=t=>el('catEditorStatus').textContent=t;
+const safe=t=>String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cardArea=document.querySelector('.kzn-categories');
+const originalCards=[...cardArea.querySelectorAll('[data-dash-category]')].map((b,i)=>({name:b.querySelector('.kzn-cat-name')?.textContent||defaults[i]?.[0],category:b.dataset.dashCategory,image:b.querySelector('img')?.getAttribute('src')||''}));
+const template=originalCards.length?originalCards:defaults.map(d=>({name:d[0],category:d[1],image:d[2]}));
+function defaultRows(){return template.map((c,i)=>({name:c.name,source_category:c.category,image_data:c.image,visible:true,position:i,scope,owner_id:currentUser.id}));}
+async function query(){
+ if(!currentUser||accessState!=='approved')return;
+ const {data,error}=await db.from('user_categories').select('*').eq('scope',scope).order('position');
+ if(error)throw error;
+ entries=data||[];
+ if(!entries.length && (scope==='personal'||(scope==='shared'&&isAdmin))){
+  const {error:e}=await db.from('user_categories').insert(defaultRows());if(e)throw e;
+  const r=await db.from('user_categories').select('*').eq('scope',scope).order('position');if(r.error)throw r.error;entries=r.data||[];
+ }
+}
+function currentCards(){return entries.filter(x=>x.visible)}
+function drawCards(){
+ if(!ready)return;
+ const bookCategory=document.querySelector('#bookForm select[name=category]');
+ if(bookCategory)entries.forEach(c=>{const value=c.source_category||c.name;if(![...bookCategory.options].some(o=>o.value===value))bookCategory.add(new Option(value,value));});
+ cardArea.replaceChildren();
+ currentCards().forEach(cat=>{
+  const b=document.createElement('button');b.type='button';b.dataset.dashCategory=cat.source_category||cat.name;
+  const img=document.createElement('img');img.className='kzn-cat-image';img.alt='';img.loading='lazy';img.src=cat.image_data||'kategorie-quran.jpg';
+  const label=document.createElement('span');label.className='kzn-cat-name';label.textContent=cat.name;
+  b.append(img,label);
+  b.addEventListener('click',()=>{
+   // Update catalog filter and show matching books at the top; no forced scroll to bottom.
+   const sel=el('category');const value=cat.source_category||cat.name;
+   if(![...sel.options].some(o=>o.value===value))sel.add(new Option(value,value));
+   switchPortal('library');sel.value=value;render();
+   if(typeof openTop==='function'&&typeof bookResults==='function')openTop(cat.name,'Bücher dieser Kategorie',bookResults());
+  });
+  cardArea.append(b);
+ });
+ // Keep top category navigation in sync when already open; its next opening reads cards dynamically.
+}
+function drawEditor(){
+ const list=el('catEditorList');list.replaceChildren();
+ entries.sort((a,b)=>a.position-b.position).forEach((c,i)=>{
+  const row=document.createElement('div');row.className='cat-editor-row';
+  const img=document.createElement('img');img.className='cat-editor-preview';img.alt='';img.src=c.image_data||'kategorie-quran.jpg';
+  const label=document.createElement('span');label.textContent=c.name+(c.visible?'':' (ausgeblendet)');label.style.flex='1';
+  row.append(img,label);
+  for(const [name,fn] of [['↑',()=>move(i,-1)],['↓',()=>move(i,1)],['Bearbeiten',()=>edit(c)],['Ein/Aus',()=>toggle(c)],['Löschen',()=>remove(c)]]){
+   const b=document.createElement('button');b.type='button';b.textContent=name;b.addEventListener('click',fn);row.append(b);
+  }
+  list.append(row);
+ });
+ if(!entries.length)list.textContent='Noch keine Kategorien vorhanden.';
+}
+async function saveUpdate(id,patch){const {error}=await db.from('user_categories').update(patch).eq('id',id);if(error)throw error;await query();drawEditor();drawCards()}
+async function move(i,delta){const other=i+delta;if(other<0||other>=entries.length)return;try{const a=entries[i],b=entries[other];await saveUpdate(a.id,{position:b.position});await saveUpdate(b.id,{position:a.position});msg('Reihenfolge gespeichert.')}catch(e){msg(e.message)}}
+function edit(c){editing=c.id;el('catFormTitle').textContent='Kategorie bearbeiten';el('catName').value=c.name;el('catSource').value=c.source_category||'';el('catVisible').checked=c.visible;el('catImage').value='';el('catName').focus()}
+async function toggle(c){try{await saveUpdate(c.id,{visible:!c.visible});msg('Sichtbarkeit gespeichert.')}catch(e){msg(e.message)}}
+async function remove(c){if(!confirm('Kategorie „'+c.name+'“ löschen? Die Bücher bleiben erhalten.'))return;const {error}=await db.from('user_categories').delete().eq('id',c.id);if(error){msg(error.message);return}await query();drawEditor();drawCards();msg('Kategorie gelöscht. Bücher wurden nicht verändert.')}
+function resetForm(){editing=null;el('catEditorForm').reset();el('catFormTitle').textContent='Kategorie hinzufügen';el('catVisible').checked=true}
+async function shrinkImage(file){if(!file)return null;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5e6)throw Error('Nur JPG, PNG oder WebP bis 5 MB.');const bmp=await createImageBitmap(file);const scale=Math.min(1,640/bmp.width,440/bmp.height);const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bmp.width*scale));canvas.height=Math.max(1,Math.round(bmp.height*scale));canvas.getContext('2d').drawImage(bmp,0,0,canvas.width,canvas.height);bmp.close();return canvas.toDataURL('image/jpeg',.78)}
+async function openEditor(){if(!currentUser||accessState!=='approved')return;el('catEditorOverlay').hidden=false;scope='personal';el('catEditorScope').value=scope;el('catEditorScope').querySelector('option[value=shared]').disabled=!isAdmin;resetForm();try{await query();drawEditor();msg('')}catch(e){msg('Supabase-Einrichtung fehlt oder Zugriff verweigert: '+e.message)}}
+el('manageCategories').addEventListener('click',openEditor);
+el('catEditorClose').addEventListener('click',()=>el('catEditorOverlay').hidden=true);
+el('catCancel').addEventListener('click',resetForm);
+el('catEditorScope').addEventListener('change',async e=>{scope=e.target.value;resetForm();try{await query();drawEditor();msg('')}catch(err){msg(err.message)}});
+el('catEditorForm').addEventListener('submit',async e=>{
+ e.preventDefault();const btn=el('catSave');btn.disabled=true;
+ try{const image=await shrinkImage(el('catImage').files[0]);const payload={name:el('catName').value.trim(),source_category:el('catSource').value||el('catName').value.trim(),visible:el('catVisible').checked};if(image)payload.image_data=image;
+ if(!payload.name)throw Error('Bitte einen Namen eingeben.');
+ let result;if(editing){result=await db.from('user_categories').update(payload).eq('id',editing)}else{result=await db.from('user_categories').insert({...payload,scope,owner_id:currentUser.id,position:entries.length,image_data:image||'kategorie-quran.jpg'})}
+ if(result.error)throw result.error;resetForm();await query();drawEditor();drawCards();msg('Gespeichert.');
+ }catch(err){msg('Speichern fehlgeschlagen: '+err.message)}finally{btn.disabled=false}
+});
+async function init(){if(!currentUser||accessState!=='approved')return;try{const {data,error}=await db.from('library_members').select('is_admin').eq('user_id',currentUser.id).maybeSingle();if(error)throw error;isAdmin=Boolean(data?.is_admin);scope='personal';await query();ready=true;drawCards();}catch(e){console.warn('Kategorienverwaltung:',e.message);ready=false;}}
+// Observe the existing app's authenticated state without changing auth logic.
+const observer=new MutationObserver(()=>{if(!el('libraryArea').classList.contains('hidden')&&currentUser&&!ready)init();if(el('libraryArea').classList.contains('hidden')){ready=false;el('catEditorOverlay').hidden=true}});
+observer.observe(el('libraryArea'),{attributes:true,attributeFilter:['class']});
+// Switch visible category cards with the active personal/shared library section.
+async function followPortal(){if(!ready||el('catEditorOverlay').hidden===false)return;const next=portal==='shared'?'shared':'personal';if(next===scope)return;scope=next;try{await query();drawCards()}catch(e){console.warn(e.message)}}
+document.querySelectorAll('[data-portal],[data-side-portal]').forEach(b=>b.addEventListener('click',()=>setTimeout(followPortal,0)));
+if(!el('libraryArea').classList.contains('hidden'))init();
+})();
+</script>
+</body></html>
