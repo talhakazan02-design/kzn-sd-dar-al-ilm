@@ -1217,6 +1217,45 @@ main::before,main:before{display:none!important;content:none!important}
 @media(max-width:500px){.kzn-top-results-heading{align-items:flex-start;flex-direction:column}.kzn-top-books{grid-template-columns:1fr}}
 .password-reset-row{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:12px;border:1px solid #b8955b;margin:10px 0;color:#f3d5a0;flex-wrap:wrap}
 .password-reset-row button{padding:10px;background:#b68c4d;color:#1d1109;border:1px solid #f2ce84;cursor:pointer}
+
+/* KZN SD · gold ornament upgrade — scoped to visual elements */
+#libraryArea>.portal{gap:15px;margin:24px 0 22px}
+#libraryArea>.portal>.portal-card{position:relative;isolation:isolate;overflow:hidden;min-height:190px;padding:28px 11px 22px;border:2px solid #c89d50;border-radius:48% 48% 13px 13px / 29% 29% 13px 13px;background:radial-gradient(ellipse at 50% 0%,#46301a 0%,#1c140d 49%,#0a0908 100%);box-shadow:inset 0 0 0 4px #130e08,inset 0 0 0 6px #b78c47,inset 0 0 0 9px #382617,0 12px 30px #000a;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+#libraryArea>.portal>.portal-card:before{content:'❧  ✦  ❧';position:absolute;left:14px;right:14px;top:15px;height:30px;color:#d9ad60;font:18px Georgia,serif;letter-spacing:5px;text-shadow:0 0 11px #a97734a6;pointer-events:none}
+#libraryArea>.portal>.portal-card:after{content:'❦';position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font:21px Georgia,serif;color:#d6a451;text-shadow:0 0 8px #ac7a39;pointer-events:none}
+#libraryArea>.portal>.portal-card .portal-icon{position:relative;z-index:1;margin-top:15px;color:#e7bf73;filter:drop-shadow(0 0 8px #bd8c4555)}
+#libraryArea>.portal>.portal-card strong{position:relative;z-index:1;color:#ffe4ad;font:600 clamp(12px,1.25vw,16px) Georgia,serif;text-shadow:0 2px 8px #000}
+#libraryArea>.portal>.portal-card small{position:relative;z-index:1;color:#d0b88c}
+#libraryArea>.portal>.portal-card:hover,#libraryArea>.portal>.portal-card.selected{transform:translateY(-4px);border-color:#ffdc8c;box-shadow:inset 0 0 0 4px #130e08,inset 0 0 0 6px #f0c57a,inset 0 0 0 9px #56391b,0 0 23px #c99a4d66,0 14px 32px #000a}
+#libraryArea>.portal>.portal-card:focus-visible,.kzn-categories button:focus-visible{outline:3px solid #ffe3a1;outline-offset:4px}
+.kzn-categories button{position:relative;overflow:hidden;border:2px solid #b98d46!important;box-shadow:inset 0 0 0 3px #191007,inset 0 0 0 5px #e1b86d,0 10px 25px #0008!important;transition:transform .18s,box-shadow .18s}
+.kzn-categories button:before{content:'❦';position:absolute;z-index:3;top:7px;left:9px;color:#ffe0a0;font:26px Georgia,serif;text-shadow:0 2px 8px #000}
+.kzn-categories button:after{content:'❦';position:absolute;z-index:3;top:7px;right:9px;color:#ffe0a0;font:26px Georgia,serif;transform:scaleX(-1);text-shadow:0 2px 8px #000}
+.kzn-categories button:hover,.kzn-categories button[aria-pressed="true"]{transform:translateY(-3px);box-shadow:inset 0 0 0 3px #191007,inset 0 0 0 5px #f3d08a,0 0 20px #d0a15a66!important}
+.kzn-cat-name{border-top:2px solid #e5b76d!important}
+.kzn-top-results{scroll-margin-top:85px;border:1px solid #b9904d;box-shadow:inset 0 0 0 3px #1c140b,inset 0 0 0 4px #73512a,0 12px 35px #0009;background:linear-gradient(155deg,#24190d,#0d0c0a)}
+.kzn-top-results[hidden]{display:none!important}
+.kzn-top-category-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-top:16px}
+.kzn-top-category-grid button{background:#15110d;border:1px solid #bf9655;border-radius:8px;color:#f5dcaa;cursor:pointer;overflow:hidden;padding:0;min-height:130px;font:600 15px Georgia,serif}
+.kzn-top-category-grid img{width:100%;height:112px;object-fit:cover;display:block}
+.kzn-top-category-grid span{display:block;padding:10px}
+.kzn-top-category-grid button:hover{border-color:#f4d08b;box-shadow:0 0 16px #c08c4166}
+@media(max-width:760px){#libraryArea>.portal{gap:9px}#libraryArea>.portal>.portal-card{min-height:155px;padding:24px 5px 17px}#libraryArea>.portal>.portal-card:before{font-size:12px;letter-spacing:2px;top:12px}#libraryArea>.portal>.portal-card:after{font-size:16px;bottom:5px}.kzn-top-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){#libraryArea>.portal>.portal-card,.kzn-categories button{transition:none}}
+
+/* v3: gilded category portals and accessible compact account controls */
+#passwordManageBtn{border:1px solid #cda85d;background:linear-gradient(145deg,#35230f,#15100b);color:#f5d89c;box-shadow:inset 0 0 0 2px #5d431d,0 2px 12px #0007;white-space:nowrap}
+#passwordManageBtn:hover,#passwordManageBtn[aria-expanded="true"]{border-color:#ffe1a0;background:#523719}
+#passwordApprovalPanel{scroll-margin-top:90px;border:2px solid #c49a51!important;box-shadow:inset 0 0 0 4px #271708,inset 0 0 0 5px #8c652e,0 14px 40px #0009!important;margin:20px auto!important}
+.kzn-categories{gap:22px!important;padding:16px 10px 22px!important}
+.kzn-categories button{border-radius:52% 52% 9px 9px / 24% 24% 9px 9px!important;min-height:216px!important;background:linear-gradient(#30200e,#0e0906)!important;border:2px solid #e3b869!important;box-shadow:inset 0 0 0 4px #241407,inset 0 0 0 6px #a77b37,0 0 0 2px #553714,0 10px 24px #000b!important;overflow:visible!important}
+.kzn-categories button:before,.kzn-categories button:after{content:'❦'!important;position:absolute!important;top:8px!important;font-size:30px!important;color:#ffe1a1!important;z-index:5!important;text-shadow:0 2px 7px #000!important}
+.kzn-categories button:before{left:8px!important;transform:rotate(-18deg)!important}
+.kzn-categories button:after{right:8px!important;transform:scaleX(-1) rotate(-18deg)!important}
+.kzn-categories .kzn-cat-image{height:158px!important;border-radius:49% 49% 0 0 / 22% 22% 0 0!important;object-fit:cover!important;filter:brightness(.86) contrast(1.07)!important}
+.kzn-categories .kzn-cat-name{min-height:46px!important;margin:-12px 9px 8px!important;width:calc(100% - 18px)!important;border-radius:8px!important;border:1px solid #e2bb6b!important;box-shadow:0 0 0 3px #241506,0 4px 14px #000a!important;letter-spacing:.35px!important}
+.kzn-categories button:hover,.kzn-categories button[aria-pressed="true"]{transform:translateY(-4px)!important;box-shadow:inset 0 0 0 4px #241407,inset 0 0 0 6px #e9c477,0 0 18px #c99646a0!important}
+@media(max-width:700px){.kzn-categories{gap:15px!important;padding:12px 4px!important}.kzn-categories button{min-height:175px!important}.kzn-categories .kzn-cat-image{height:116px!important}header>div:last-child{display:flex;flex-wrap:wrap;gap:5px}}
 </style>
 </head>
 <body>
@@ -1224,9 +1263,17 @@ main::before,main:before{display:none!important;content:none!important}
 
 <header>
  <div class="brand"><div class="mark">ك</div><div><h1>KZN · SD</h1><small>دَارُ الْعِلْمِ · HAUS DES WISSENS</small></div></div>
- <div><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
+ <div><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button id="passwordManageBtn" class="hidden" type="button" aria-expanded="false" aria-controls="passwordApprovalPanel">Passwortverwaltung</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
 </header>
 <main>
+<section id="passwordApprovalPanel" class="panel hidden" style="max-width:960px;margin:20px auto;padding:22px">
+<h2>Passwortverwaltung</h2>
+<p>Mitglieder können ihr Passwort selbst per E-Mail zurücksetzen. Optional können sie zusätzlich beim Admin Hilfe beantragen. Der Administrator sieht niemals das Passwort.</p>
+<div id="memberResetControls" class="hidden"><button type="button" id="memberRequestReset" class="primary">Passwort-Hilfe beim Admin beantragen</button></div>
+<div id="adminResetControls" class="hidden"><h3>Passwort-Hilfe für Mitglieder</h3><p>Eine Reset-Mail kannst du an die bestätigte E-Mail-Adresse eines Mitglieds senden. Bitte nur auf dessen Wunsch.</p><div class="field"><label for="adminResetEmail">E-Mail-Adresse des Mitglieds</label><input id="adminResetEmail" type="email" autocomplete="off" placeholder="mitglied@beispiel.de"></div><button type="button" id="adminSendReset">Reset-Mail senden</button><h3>Offene Passwort-Anfragen</h3><button type="button" id="refreshResetRequests">Anfragen aktualisieren</button><div id="resetRequestList"></div></div>
+<p id="resetApprovalFeedback" role="status" aria-live="polite"></p>
+</section>
+
  <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="username" required placeholder="name@beispiel.de"></div><div class="field"><label for="loginPassword">Passwort</label><input type="password" id="loginPassword" autocomplete="current-password" minlength="8" required placeholder="Passwort eingeben"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Mit Passwort anmelden</button><button type="button" id="magicLinkBtn">Einmaligen E-Mail-Link anfordern</button><button type="button" id="forgotPasswordBtn">Passwort vergessen?</button></div></form><form id="passwordForm" class="hidden"><h3>Passwort festlegen / ändern</h3><p>Nur für dein aktuell angemeldetes Konto.</p><div class="field"><label for="newPassword">Neues Passwort (mindestens 12 Zeichen)</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="field"><label for="confirmPassword">Passwort wiederholen</label><input id="confirmPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="actions"><button class="primary" type="submit" id="savePassword">Passwort speichern</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
  <div id="libraryArea" class="hidden">
  <section class="hero"><img class="hero-emblem" alt="Darül İlm" src="darul-ilm-logo-transparent.png"><div class="hero-arabic" lang="ar" dir="rtl">دار العلم</div><div class="hero-line"></div><h2>KZN · SD</h2><p data-de="Die digitale Bibliothek des Wissens" data-tr="İlmin dijital kütüphanesi">Die digitale Bibliothek des Wissens</p></section>
@@ -1289,13 +1336,7 @@ main::before,main:before{display:none!important;content:none!important}
   </section>
  </div>
  </div>
-<section id="passwordApprovalPanel" class="panel" style="max-width:960px;margin:20px auto;padding:22px">
-<h2>Passwortverwaltung</h2>
-<p>Mitglieder können ihr Passwort selbst per E-Mail zurücksetzen. Optional können sie zusätzlich beim Admin Hilfe beantragen. Der Administrator sieht niemals das Passwort.</p>
-<div id="memberResetControls" class="hidden"><button type="button" id="memberRequestReset" class="primary">Passwort-Hilfe beim Admin beantragen</button></div>
-<div id="adminResetControls" class="hidden"><h3>Passwort-Hilfe für Mitglieder</h3><p>Eine Reset-Mail kannst du an die bestätigte E-Mail-Adresse eines Mitglieds senden. Bitte nur auf dessen Wunsch.</p><div class="field"><label for="adminResetEmail">E-Mail-Adresse des Mitglieds</label><input id="adminResetEmail" type="email" autocomplete="off" placeholder="mitglied@beispiel.de"></div><button type="button" id="adminSendReset">Reset-Mail senden</button><h3>Offene Passwort-Anfragen</h3><button type="button" id="refreshResetRequests">Anfragen aktualisieren</button><div id="resetRequestList"></div></div>
-<p id="resetApprovalFeedback" role="status" aria-live="polite"></p>
-</section>
+
  <p class="note">Version 0.7.1 · Persönliche Buchdaten werden in Supabase gespeichert, sofern die bestehenden Datenbankrichtlinien dies erlauben. PDF-/Cover-Upload ist für private Bücher verfügbar. Gemeinsame Freigaben bleiben bis zur Admin-Prüfung deaktiviert. Bestehende lokale Bücher werden nicht gelöscht oder automatisch übertragen.</p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -1754,8 +1795,10 @@ render();
   if(name==='menba'){
    openTop('MENBA AI','Dein Wissensassistent', $('featurePanel').innerHTML);
   }else if(name==='categories'){
-   top.hidden=true;
-   $('kznDashboard').scrollIntoView({block:'start',behavior:'instant'});
+   const cards=[...document.querySelectorAll('[data-dash-category]')];
+   const grid='<div class="kzn-top-category-grid">'+cards.map((b,i)=>'<button type="button" data-top-cat="'+i+'"><img src="'+b.querySelector('img').getAttribute('src')+'" alt=""><span>'+b.querySelector('.kzn-cat-name').textContent+'</span></button>').join('')+'</div>';
+   openTop('Kategoriler · Kategorien','Wähle eine Kategorie direkt hier oben aus.',grid);
+   content.querySelectorAll('[data-top-cat]').forEach(btn=>btn.addEventListener('click',()=>cards[Number(btn.dataset.topCat)].click()));
   }else{
    const labels={library:'Kütüphane · Bibliothek',mine:'Benim Kitaplarım · Meine Bücher',shared:'Ortak Kütüphane · Gemeinsame Bibliothek'};
    openTop(labels[name]||'Bibliothek','Deine Bücher direkt oben anzeigen',bookResults());
@@ -1887,5 +1930,21 @@ db.auth.onAuthStateChange((event)=>{
 // If the URL has an explicit recovery marker, show the form immediately.
 if(recoveryMode)showRecoveryScreen();
 
+
+// Keep password management near the top; no long scroll to the footer.
+(function(){
+ const manage=document.getElementById('passwordManageBtn');
+ const panel=document.getElementById('passwordApprovalPanel');
+ const password=document.getElementById('passwordBtn');
+ const sync=()=>{manage.classList.toggle('hidden',password.classList.contains('hidden'));if(manage.classList.contains('hidden')){panel.classList.add('hidden');manage.setAttribute('aria-expanded','false')}};
+ new MutationObserver(sync).observe(password,{attributes:true,attributeFilter:['class']});sync();
+ manage.addEventListener('click',()=>{
+  const open=panel.classList.contains('hidden');
+  panel.classList.toggle('hidden',!open);
+  manage.setAttribute('aria-expanded',String(open));
+  if(open){document.getElementById('accessPanel').classList.add('hidden');panel.scrollIntoView({block:'start',behavior:'smooth'});}
+ });
+ password.addEventListener('click',()=>{panel.classList.add('hidden');manage.setAttribute('aria-expanded','false')});
+})();
 </script>
 </body></html>

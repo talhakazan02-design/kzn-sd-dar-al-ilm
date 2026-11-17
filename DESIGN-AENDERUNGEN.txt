@@ -1,0 +1,7 @@
+Version Gold Design v2 auf Basis der funktionierenden Passwort-Reset-Fix-Version.
+- Fünf obere Navigationsbögen: größere goldene Doppelrahmen und sichtbare Ornamente.
+- Sechs Kategorie-Karten: goldene Zierdetails, stärkere Rahmen.
+- Kategorielink oben zeigt Kategorie-Auswahl direkt unter den fünf Bögen, ohne zum Dashboard zu springen.
+- Klick auf eine Kategorie zeigt Ergebnisse im oberen Ergebnisbereich.
+- Supabase und Passwortlogik wurden nicht absichtlich verändert.
+- Bitte vor Veröffentlichung Sicherung anlegen und Navigation sowie Passwort-Reset erneut testen.
