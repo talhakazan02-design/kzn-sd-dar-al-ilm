@@ -1,0 +1,6 @@
+Diese Version basiert auf KZN-SD-Design-Freigegeben. Das Original-Logo und alle Buchbilder wurden unverändert kopiert.
+Die sechs Kategorie-Embleme sind jetzt goldene SVG-Symbole statt Emoji-Zeichen.
+Die Passwortverwaltung ist standardmäßig ausgeblendet und öffnet nur über den Header-Button neben Passwort ändern.
+Sicherung der vorherigen Website anlegen, dann alle Dateien aus ZIP ins Repository hochladen.
+Nach Veröffentlichung im Browser mit Strg+F5 aktualisieren und mit einem Mitgliedskonto testen.
+Keine Änderung am Supabase-Schema erforderlich.

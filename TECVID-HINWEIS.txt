@@ -1,0 +1,5 @@
+NEU: Siebte Kategorie „Tecvid“ und Auswahl „Tecvid“ für neue Bücher.
+Buchmotiv: Karabaş Tecvidi; das Werk ist bei Çamlıca Kitap Avrupa gelistet (https://camlicakitap.de/karabas-tecvidi-almanca.html).
+WICHTIG: Das Coverbild wird derzeit extern von Kitapyurdu geladen, da die Original-Bilddatei von Çamlıca nicht direkt heruntergeladen werden konnte. Bei fehlender Internetverbindung wird als Fallback das vorhandene Koran-Bild gezeigt.
+Für ein dauerhaft lokal eingebundenes Originalfoto bitte das Bild der Çamlıca-Produktseite separat zur Verfügung stellen.
+Original-Logo, Passwortverwaltung und alle anderen Dateien sind unverändert.

@@ -1256,6 +1256,14 @@ main::before,main:before{display:none!important;content:none!important}
 #libraryArea>.portal>.portal-card[data-portal="menba"] .portal-icon{font-family:'Amiri','Noto Naskh Arabic',serif!important;font-size:36px!important}
 @media(max-width:760px){.kzn-categories{gap:23px 13px!important}.kzn-categories button .kzn-category-emblem{width:40px!important;height:40px!important;min-height:40px!important;top:-15px!important;font-size:21px!important}.kzn-categories button .kzn-cat-image{height:106px!important}}
 
+
+/* FINAL: gold-only subject symbols, no pseudo-decorations or white emoji */
+.kzn-categories button::before,.kzn-categories button::after,.kzn-category-emblem::before,.kzn-category-emblem::after{content:none!important;display:none!important}
+.kzn-categories button .kzn-category-emblem{position:absolute!important;top:-12px!important;left:50%!important;transform:translateX(-50%)!important;display:flex!important;align-items:center!important;justify-content:center!important;width:37px!important;height:37px!important;min-height:37px!important;padding:6px!important;border:1.5px solid #dcb46b!important;border-radius:50%!important;background:#1a1008!important;color:#e7c078!important;font-size:0!important;line-height:1!important;box-shadow:0 2px 7px #000b!important;z-index:9!important}
+.kzn-categories button .kzn-category-emblem svg{width:23px!important;height:23px!important;display:block!important;color:#e7c078!important;stroke:#e7c078!important;fill:none!important}
+#passwordApprovalPanel.hidden{display:none!important}
+#passwordAdminNav{white-space:nowrap}
+#passwordAdminNav.hidden{display:none!important}
 </style>
 </head>
 <body>
@@ -1263,7 +1271,7 @@ main::before,main:before{display:none!important;content:none!important}
 
 <header>
  <div class="brand"><div class="mark">ك</div><div><h1>KZN · SD</h1><small>دَارُ الْعِلْمِ · HAUS DES WISSENS</small></div></div>
- <div><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
+ <div><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button type="button" id="passwordAdminNav" class="hidden" aria-expanded="false" aria-controls="passwordApprovalPanel">Passwortverwaltung</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
 </header>
 <main>
  <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="username" required placeholder="name@beispiel.de"></div><div class="field"><label for="loginPassword">Passwort</label><input type="password" id="loginPassword" autocomplete="current-password" minlength="8" required placeholder="Passwort eingeben"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Mit Passwort anmelden</button><button type="button" id="magicLinkBtn">Einmaligen E-Mail-Link anfordern</button><button type="button" id="forgotPasswordBtn">Passwort vergessen?</button></div></form><form id="passwordForm" class="hidden"><h3>Passwort festlegen / ändern</h3><p>Nur für dein aktuell angemeldetes Konto.</p><div class="field"><label for="newPassword">Neues Passwort (mindestens 12 Zeichen)</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="field"><label for="confirmPassword">Passwort wiederholen</label><input id="confirmPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="actions"><button class="primary" type="submit" id="savePassword">Passwort speichern</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
@@ -1283,7 +1291,7 @@ main::before,main:before{display:none!important;content:none!important}
 <section class="kzn-dashboard" id="kznDashboard" aria-label="Bibliotheksübersicht">
 <div class="kzn-dash-search"><span aria-hidden="true">⌕</span><input id="dashboardSearch" type="search" placeholder="Bücher, Autoren und Themen durchsuchen …" aria-label="Bibliothek durchsuchen"><button type="button" id="dashboardAdd">＋ Buch hinzufügen</button></div>
 <div class="kzn-dash-stats"><div class="kzn-dash-stat"><span>▤</span><strong id="dashBooks">—</strong><small>Bücher insgesamt</small></div><div class="kzn-dash-stat"><span>♧</span><strong id="dashMembers">—</strong><small>Mitglieder</small></div><div class="kzn-dash-stat"><span>↗</span><strong id="dashLoans">—</strong><small>Aktive Ausleihen</small></div><div class="kzn-dash-stat"><span>♡</span><strong id="dashWishlist">—</strong><small>Wunschliste</small></div></div>
-<div class="kzn-dash-columns"><div class="kzn-dash-main"><div class="kzn-section-label"><h3>Kategorien entdecken</h3><span>WISSEN · İLİM</span></div><div class="kzn-categories"><button data-dash-category="Koranwissenschaften"><span class="kzn-category-emblem" aria-hidden="true">📖</span><img class="kzn-cat-image" src="kategorie-quran.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Kur’an & Tafsir</span></button><button data-dash-category="Hadith"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-hadith.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Hadith & Sunna</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">✒</span><img class="kzn-cat-image" src="kategorie-aqidah.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Akâid & İtikad</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">⚖</span><img class="kzn-cat-image" src="kategorie-fiqh.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Fıkıh & İbadet</span></button><button data-dash-category="Geschichte"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-siyer.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Siyer & Tarih</span></button><button data-dash-category="Sprache"><span class="kzn-category-emblem" aria-hidden="true">ع</span><img class="kzn-cat-image" src="kategorie-arabic.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Arapça & Dil</span></button></div><div class="kzn-section-label"><h3>Neue Hinzufügungen</h3><button type="button" id="dashAllBooks">Alle Bücher ansehen ›</button></div><div id="dashRecent" class="kzn-recent"><p class="kzn-muted">Deine Bücher werden geladen …</p></div></div><aside class="kzn-dash-aside"><div class="kzn-side-card kzn-ai"><div class="kzn-menba-arabic" lang="ar" dir="rtl">منبع</div><h3>MENBA AI</h3><p>Dein Wissensassistent für die digitale Bibliothek.</p><button type="button" id="dashMenba">MENBA AI öffnen ›</button><small>Der KI-Assistent ist noch in Entwicklung.</small></div><div class="kzn-side-card"><h3>↗ &nbsp; Aktive Ausleihen</h3><p class="kzn-muted">Noch keine verknüpften Ausleihdaten verfügbar.</p></div><div class="kzn-side-card"><h3>♡ &nbsp; Wunschliste</h3><p class="kzn-muted">Noch keine verknüpfte Wunschliste verfügbar.</p></div></aside></div></section>
+<div class="kzn-dash-columns"><div class="kzn-dash-main"><div class="kzn-section-label"><h3>Kategorien entdecken</h3><span>WISSEN · İLİM</span></div><div class="kzn-categories"><button data-dash-category="Koranwissenschaften"><span class="kzn-category-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6h14v12H5zM8 10h8M8 14h5M3 3v18M21 3v18"/></svg></span><img class="kzn-cat-image" src="kategorie-quran.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Kur’an & Tafsir</span></button><button data-dash-category="Hadith"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-hadith.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Hadith & Sunna</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">✒</span><img class="kzn-cat-image" src="kategorie-aqidah.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Akâid & İtikad</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">⚖</span><img class="kzn-cat-image" src="kategorie-fiqh.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Fıkıh & İbadet</span></button><button data-dash-category="Geschichte"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-siyer.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Siyer & Tarih</span></button><button data-dash-category="Sprache"><span class="kzn-category-emblem" aria-hidden="true">ع</span><img class="kzn-cat-image" src="kategorie-arabic.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Arapça & Dil</span></button><button data-dash-category="Tecvid"><span class="kzn-category-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M4 8c3-3 5-3 8 0 3-3 5-3 8 0v11c-3-3-5-3-8 0-3-3-5-3-8 0z"/><path d="M7 11h3M14 11h3M7 14h3M14 14h3"/></svg></span><img class="kzn-cat-image" src="https://img.kitapyurdu.com/v1/getImage/fn%3A6571460/wi%3A800/wh%3Aa2cc12818" alt="Buchcover Karabaş Tecvidi" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='kategorie-quran.jpg'"><span class="kzn-cat-name">Tecvid</span></button></div><div class="kzn-section-label"><h3>Neue Hinzufügungen</h3><button type="button" id="dashAllBooks">Alle Bücher ansehen ›</button></div><div id="dashRecent" class="kzn-recent"><p class="kzn-muted">Deine Bücher werden geladen …</p></div></div><aside class="kzn-dash-aside"><div class="kzn-side-card kzn-ai"><div class="kzn-menba-arabic" lang="ar" dir="rtl">منبع</div><h3>MENBA AI</h3><p>Dein Wissensassistent für die digitale Bibliothek.</p><button type="button" id="dashMenba">MENBA AI öffnen ›</button><small>Der KI-Assistent ist noch in Entwicklung.</small></div><div class="kzn-side-card"><h3>↗ &nbsp; Aktive Ausleihen</h3><p class="kzn-muted">Noch keine verknüpften Ausleihdaten verfügbar.</p></div><div class="kzn-side-card"><h3>♡ &nbsp; Wunschliste</h3><p class="kzn-muted">Noch keine verknüpfte Wunschliste verfügbar.</p></div></aside></div></section>
  <div class="section-head"><div><h2 id="sectionTitle">Kütüphane</h2><p id="sectionDescription">Deine Bibliothek im Überblick</p></div><button class="primary" id="addBtn">＋ Buch hinzufügen</button></div>
  <section class="stats">
   <div class="stat"><b id="total">0</b><span data-de="Bücher insgesamt" data-tr="Toplam kitap">Bücher insgesamt</span></div>
@@ -1302,7 +1310,7 @@ main::before,main:before{display:none!important;content:none!important}
   <section class="content content-shell">
    <div id="featurePanel" class="feature-panel hidden" aria-live="polite"></div>
    <div id="catalogPanel">
-   <div class="toolbar"><input id="search" placeholder="Titel, Autor oder Thema suchen …"><select id="category"><option value="">Alle Themen</option><option>Islam</option><option>Koranwissenschaften</option><option>Hadith</option><option>Geschichte</option><option>Sprache</option><option>Sonstiges</option></select></div>
+   <div class="toolbar"><input id="search" placeholder="Titel, Autor oder Thema suchen …"><select id="category"><option value="">Alle Themen</option><option>Islam</option><option>Koranwissenschaften</option><option>Hadith</option><option>Tecvid</option><option>Geschichte</option><option>Sprache</option><option>Sonstiges</option></select></div>
    <div class="actions" style="margin:10px 0"><button type="button" id="trashToggle">🗑 Papierkorb (7 Tage)</button></div>
    <div id="books" class="grid"></div>
    <div id="empty" class="empty">Noch keine Bücher eingetragen. Füge dein erstes Buch hinzu.</div>
@@ -1328,7 +1336,7 @@ main::before,main:before{display:none!important;content:none!important}
   </section>
  </div>
  </div>
-<section id="passwordApprovalPanel" class="panel" style="max-width:960px;margin:20px auto;padding:22px">
+<section id="passwordApprovalPanel" class="panel hidden" style="max-width:960px;margin:20px auto;padding:22px">
 <h2>Passwortverwaltung</h2>
 <p>Mitglieder können ihr Passwort selbst per E-Mail zurücksetzen. Optional können sie zusätzlich beim Admin Hilfe beantragen. Der Administrator sieht niemals das Passwort.</p>
 <div id="memberResetControls" class="hidden"><button type="button" id="memberRequestReset" class="primary">Passwort-Hilfe beim Admin beantragen</button></div>
@@ -1929,4 +1937,25 @@ db.auth.onAuthStateChange((event)=>{
 if(recoveryMode)showRecoveryScreen();
 
 </script>
-</body></html>
+<script>
+// FINAL password panel: visible only when deliberately opened from header.
+(function(){
+ const nav=document.getElementById('passwordAdminNav');
+ const panel=document.getElementById('passwordApprovalPanel');
+ const passwordBtn=document.getElementById('passwordBtn');
+ if(!nav||!panel||!passwordBtn)return;
+ function sync(){
+   const signedIn=!passwordBtn.classList.contains('hidden');
+   nav.classList.toggle('hidden',!signedIn);
+   if(!signedIn){panel.classList.add('hidden');nav.setAttribute('aria-expanded','false');}
+ }
+ nav.addEventListener('click',function(){
+   sync();if(nav.classList.contains('hidden'))return;
+   const open=panel.classList.toggle('hidden')===false;
+   nav.setAttribute('aria-expanded',String(open));
+   if(open)panel.scrollIntoView({behavior:'smooth',block:'start'});
+ });
+ new MutationObserver(sync).observe(passwordBtn,{attributes:true,attributeFilter:['class']});
+ sync();
+})();
+</script></body></html>
