@@ -1119,6 +1119,53 @@ main::before,main:before{display:none!important;content:none!important}
 /* A single continuous centered library scene across the entire content area. */
 @media(min-width:761px){body::before{left:238px!important;width:calc(100% - 238px)!important;right:0!important;background-position:center center!important;background-size:cover!important}}
 @media(max-width:760px){#libraryArea>.hero{height:210px!important;min-height:210px!important}#libraryArea>.hero .hero-emblem{max-height:185px!important}#libraryArea>.portal{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+
+/* Design refinement: larger top arched navigation and ornate dashboard */
+@media(min-width:761px){
+ #libraryArea>.portal{max-width:1160px!important;gap:15px!important;margin:10px auto 23px!important;padding:0 12px!important}
+ #libraryArea>.portal>.portal-card{height:155px!important;min-height:155px!important;padding:35px 9px 19px!important;border-radius:48% 48% 5px 5px / 35% 35% 5px 5px!important}
+ #libraryArea>.portal>.portal-card .portal-icon{font-size:37px!important;line-height:1.2!important}
+ #libraryArea>.portal>.portal-card .portal-icon svg{width:45px!important;height:45px!important}
+ #libraryArea>.portal>.portal-card strong{font-size:17px!important;line-height:1.25!important}
+ #libraryArea>.portal>.portal-card small{font-size:12px!important;line-height:1.25!important}
+ #libraryArea>.portal>.portal-card::before{font-size:14px!important;top:11px!important}
+ #libraryArea>.portal>.portal-card::after{font-size:13px!important;bottom:8px!important}
+}
+#libraryArea>.portal>.portal-card:hover{transform:translateY(-4px)!important;box-shadow:inset 0 0 0 2px #180b05,inset 0 0 0 4px #e8c47b,0 0 24px #d5a04a7a!important}
+#libraryArea>.kzn-dashboard{border:2px solid #c89b53!important;border-radius:9px!important;box-shadow:0 22px 65px #000b,inset 0 0 0 3px #170d07,inset 0 0 0 5px #c99e5675!important;background:linear-gradient(145deg,rgba(27,17,11,.94),rgba(18,12,8,.92))!important;padding:28px 26px 34px!important}
+#libraryArea>.kzn-dashboard::before,#libraryArea>.kzn-dashboard::after{content:'❦ ───── ✥ ۞ ✥ ───── ❦'!important;color:#e7bd72!important;text-shadow:0 0 8px #bf803f!important;letter-spacing:5px!important;font-size:17px!important}
+.kzn-dash-search{border:1.5px solid #d2a25c!important;border-radius:7px!important;box-shadow:inset 0 0 0 3px #c69b4c1a,0 0 12px #0008!important}
+.kzn-dash-stat{border:1.5px solid #d2a15b!important;border-radius:8px!important;background:radial-gradient(ellipse at 50% 0,#6a442b66,transparent 78%),linear-gradient(145deg,#322114,#100d0b)!important;box-shadow:inset 0 0 0 3px #c9a15a29,0 5px 14px #0008!important}
+.kzn-section-label{position:relative!important;border-bottom:1px solid #b98b48!important;padding:12px 5px 13px!important;margin-bottom:18px!important}
+.kzn-section-label::after{content:'❧ ✥ ❧';position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);padding:0 12px;background:#1b120c;color:#d7aa62;font-size:12px;letter-spacing:4px}
+.kzn-section-label h3{font-size:24px!important;color:#f0d59b!important;text-shadow:0 2px 8px #000!important}
+.kzn-categories{gap:15px!important;margin-bottom:28px!important}
+.kzn-categories button{min-height:139px!important;border:2px solid #d4a35d!important;border-radius:48% 48% 7px 7px / 30% 30% 7px 7px!important;background:radial-gradient(ellipse at 50% 0,#7e502e99,transparent 80%),linear-gradient(145deg,#332015,#110c09)!important;box-shadow:inset 0 0 0 3px #1d110b,inset 0 0 0 4px #b88d4c80,0 5px 14px #0009!important;font-size:16px!important;position:relative!important;overflow:hidden!important}
+.kzn-categories button::before{content:'✥';position:absolute;top:8px;font-size:12px;color:#d8ae6c}
+.kzn-categories button span{font-size:33px!important;filter:drop-shadow(0 0 7px #a46d32)}
+.kzn-side-card{border:1.5px solid #d2a15b!important;border-radius:9px!important;box-shadow:inset 0 0 0 3px #160c08,inset 0 0 0 4px #bc8d4766,0 5px 16px #0008!important;position:relative!important;padding-top:24px!important}
+.kzn-side-card::before{content:'❧ ✥ ❧';display:block;text-align:center;color:#dbb36e;font-size:13px;letter-spacing:4px;margin:-12px 0 9px}
+.kzn-side-card h3{font-size:20px!important}
+.kzn-recent-item{border:1.5px solid #c99b55!important;border-radius:7px!important;box-shadow:inset 0 0 0 3px #c79c4c24,0 5px 12px #0008!important;background:linear-gradient(#3b2719,#1a120d)!important}
+.kzn-recent-placeholder{background:radial-gradient(ellipse at center,#9e6c38,#2c1b10)!important;border:1px solid #caa05d!important}
+@media(max-width:760px){#libraryArea>.portal>.portal-card{min-height:125px!important;height:125px!important;padding:28px 8px 14px!important}#libraryArea>.portal>.portal-card strong{font-size:14px!important}.kzn-categories button{min-height:115px!important}.kzn-dashboard{padding:18px 12px!important}}
+
+
+/* Themed category illustration cards — visible even before any book is added */
+.kzn-categories button{padding:0!important;display:flex!important;flex-direction:column!important;justify-content:stretch!important;gap:0!important;min-height:174px!important;border-radius:42% 42% 7px 7px / 16% 16% 7px 7px!important}
+.kzn-categories button::before{display:none!important}
+.kzn-cat-image{display:block;width:100%;height:120px;object-fit:cover;object-position:center;border-radius:42% 42% 0 0 / 23% 23% 0 0;filter:saturate(.9);border-bottom:1px solid #b78b50}
+.kzn-categories button .kzn-cat-name{display:flex!important;align-items:center;justify-content:center;flex:1;width:100%;padding:10px 5px!important;font-size:14px!important;line-height:1.25;color:#f5deb2!important;font-family:Georgia,serif;background:linear-gradient(#3b2819,#1a120d);filter:none!important}
+@media(max-width:760px){.kzn-categories button{min-height:150px!important}.kzn-cat-image{height:95px}}
+
+
+.auto-cover-choices{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0}
+.auto-cover-choice{width:108px;padding:6px;border:1px solid #a88045;background:#211710;color:#f4dcb1;cursor:pointer}
+.auto-cover-choice[aria-pressed="true"]{outline:2px solid #e8c77c;outline-offset:2px;background:#49311a}
+.auto-cover-choice img{width:94px;height:132px;object-fit:cover;display:block;margin:auto}
+.auto-cover-choice span{display:block;text-align:center;font-size:12px;margin-top:5px}
+.auto-cover-toggle{display:flex;align-items:center;gap:8px;font-size:13px}
+.auto-cover-toggle input{width:auto}
 </style>
 </head>
 <body>
@@ -1142,7 +1189,7 @@ main::before,main:before{display:none!important;content:none!important}
  <section class="kzn-dashboard" id="kznDashboard" aria-label="Bibliotheksübersicht">
 <div class="kzn-dash-search"><span aria-hidden="true">⌕</span><input id="dashboardSearch" type="search" placeholder="Bücher, Autoren und Themen durchsuchen …" aria-label="Bibliothek durchsuchen"><button type="button" id="dashboardAdd">＋ Buch hinzufügen</button></div>
 <div class="kzn-dash-stats"><div class="kzn-dash-stat"><span>▤</span><strong id="dashBooks">—</strong><small>Bücher insgesamt</small></div><div class="kzn-dash-stat"><span>♧</span><strong id="dashMembers">—</strong><small>Mitglieder</small></div><div class="kzn-dash-stat"><span>↗</span><strong id="dashLoans">—</strong><small>Aktive Ausleihen</small></div><div class="kzn-dash-stat"><span>♡</span><strong id="dashWishlist">—</strong><small>Wunschliste</small></div></div>
-<div class="kzn-dash-columns"><div class="kzn-dash-main"><div class="kzn-section-label"><h3>Kategorien entdecken</h3><span>WISSEN · İLİM</span></div><div class="kzn-categories"><button data-dash-category="Koranwissenschaften"><span>☪</span>Kur’an & Tafsir</button><button data-dash-category="Hadith"><span>✦</span>Hadith & Sunna</button><button data-dash-category="Islam"><span>❖</span>Akâid & İtikad</button><button data-dash-category="Islam"><span>۞</span>Fıkıh & İbadet</button><button data-dash-category="Geschichte"><span>⌛</span>Siyer & Tarih</button><button data-dash-category="Sprache"><span>✧</span>Arapça & Dil</button></div><div class="kzn-section-label"><h3>Neue Hinzufügungen</h3><button type="button" id="dashAllBooks">Alle Bücher ansehen ›</button></div><div id="dashRecent" class="kzn-recent"><p class="kzn-muted">Deine Bücher werden geladen …</p></div></div><aside class="kzn-dash-aside"><div class="kzn-side-card kzn-ai"><div class="kzn-side-icon">✦</div><h3>MENBA AI</h3><p>Dein Wissensassistent für die digitale Bibliothek.</p><button type="button" id="dashMenba">MENBA AI öffnen ›</button><small>Der KI-Assistent ist noch in Entwicklung.</small></div><div class="kzn-side-card"><h3>↗ &nbsp; Aktive Ausleihen</h3><p class="kzn-muted">Noch keine verknüpften Ausleihdaten verfügbar.</p></div><div class="kzn-side-card"><h3>♡ &nbsp; Wunschliste</h3><p class="kzn-muted">Noch keine verknüpfte Wunschliste verfügbar.</p></div></aside></div></section>
+<div class="kzn-dash-columns"><div class="kzn-dash-main"><div class="kzn-section-label"><h3>Kategorien entdecken</h3><span>WISSEN · İLİM</span></div><div class="kzn-categories"><button data-dash-category="Koranwissenschaften"><img class="kzn-cat-image" src="kategorie-quran.jpg" alt="" loading="lazy"><span class="kzn-cat-name">Kur’an & Tafsir</span></button><button data-dash-category="Hadith"><img class="kzn-cat-image" src="kategorie-hadith.jpg" alt="" loading="lazy"><span class="kzn-cat-name">Hadith & Sunna</span></button><button data-dash-category="Islam"><img class="kzn-cat-image" src="kategorie-aqidah.jpg" alt="" loading="lazy"><span class="kzn-cat-name">Akâid & İtikad</span></button><button data-dash-category="Islam"><img class="kzn-cat-image" src="kategorie-fiqh.jpg" alt="" loading="lazy"><span class="kzn-cat-name">Fıkıh & İbadet</span></button><button data-dash-category="Geschichte"><img class="kzn-cat-image" src="kategorie-siyer.jpg" alt="" loading="lazy"><span class="kzn-cat-name">Siyer & Tarih</span></button><button data-dash-category="Sprache"><img class="kzn-cat-image" src="kategorie-arabic.jpg" alt="" loading="lazy"><span class="kzn-cat-name">Arapça & Dil</span></button></div><div class="kzn-section-label"><h3>Neue Hinzufügungen</h3><button type="button" id="dashAllBooks">Alle Bücher ansehen ›</button></div><div id="dashRecent" class="kzn-recent"><p class="kzn-muted">Deine Bücher werden geladen …</p></div></div><aside class="kzn-dash-aside"><div class="kzn-side-card kzn-ai"><div class="kzn-side-icon">✦</div><h3>MENBA AI</h3><p>Dein Wissensassistent für die digitale Bibliothek.</p><button type="button" id="dashMenba">MENBA AI öffnen ›</button><small>Der KI-Assistent ist noch in Entwicklung.</small></div><div class="kzn-side-card"><h3>↗ &nbsp; Aktive Ausleihen</h3><p class="kzn-muted">Noch keine verknüpften Ausleihdaten verfügbar.</p></div><div class="kzn-side-card"><h3>♡ &nbsp; Wunschliste</h3><p class="kzn-muted">Noch keine verknüpfte Wunschliste verfügbar.</p></div></aside></div></section>
  <div class="section-head"><div><h2 id="sectionTitle">Kütüphane</h2><p id="sectionDescription">Deine Bibliothek im Überblick</p></div><button class="primary" id="addBtn">＋ Buch hinzufügen</button></div>
  <section class="stats">
   <div class="stat"><b id="total">0</b><span data-de="Bücher insgesamt" data-tr="Toplam kitap">Bücher insgesamt</span></div>
@@ -1173,6 +1220,12 @@ main::before,main:before{display:none!important;content:none!important}
      <div class="field"><label>Standort</label><select name="location"><option>Zuhause</option><option>Im Kurs</option></select></div>
      <div class="field"><label>Sammlung</label><select name="visibility"><option value="personal">Persönlich</option><option value="shared" disabled>Gemeinsam (Admin-Freigabe folgt)</option></select></div>
      <div class="field"><label>Buchcover (JPG, PNG oder WebP, max. 5 MB)</label><input name="cover" type="file" accept="image/jpeg,image/png,image/webp"></div>
+     <div class="field full" id="autoCoverBox">
+       <label>Kein Cover vorhanden? Wähle eine automatisch gestaltete Buchcover-Vorlage.</label>
+       <p class="note">Die Vorschläge sind dekorative Platzhalter – keine behaupteten Originalcover. Ein hochgeladenes echtes Cover hat Vorrang.</p>
+       <div id="autoCoverChoices" class="auto-cover-choices"></div>
+       <label class="auto-cover-toggle"><input type="checkbox" id="autoCoverEnabled" checked> Ausgewähltes Cover automatisch speichern, wenn kein eigenes hochgeladen wurde</label>
+     </div>
      <div class="field"><label>PDF-Datei (max. 25 MB)</label><input name="document" type="file" accept="application/pdf,.pdf"></div>
      <div class="field full"><label>Notizen</label><textarea name="notes"></textarea></div>
     </div><div class="actions"><button type="button" id="cancelBtn">Abbrechen</button><button class="primary" type="submit">Buch speichern</button></div></form>
@@ -1236,6 +1289,64 @@ document.querySelectorAll('[data-dash-category]').forEach(b=>b.addEventListener(
   render();
   $('catalogPanel').scrollIntoView({behavior:'smooth'});
 }));
+
+
+// Locally generated book-cover templates; no external image services or invented original covers.
+let selectedAutoCover=0;
+const coverStyles=[
+ {name:'Smaragd',bg:'#103b38',accent:'#e6c17b'},
+ {name:'Saphir',bg:'#102c59',accent:'#edcb87'},
+ {name:'Bordeaux',bg:'#55212d',accent:'#e6c18b'}
+];
+function autoCoverSvg(title,author,category,styleIndex){
+ const st=coverStyles[styleIndex]||coverStyles[0];
+ const safe=t=>String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const wrap=(t,n)=>{let a=[],line='';for(const word of String(t||'Unbenannt').split(/\s+/)){if((line+' '+word).trim().length>n&&line){a.push(line);line=word}else line=(line+' '+word).trim()}if(line)a.push(line);return a.slice(0,4)};
+ const lines=wrap(title,17);
+ const text=lines.map((l,i)=>'<text x="210" y="'+(285+i*43)+'" text-anchor="middle" fill="#fff2d2" font-family="Georgia,serif" font-size="32" font-weight="bold">'+safe(l)+'</text>').join('');
+ return '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="600" viewBox="0 0 420 600">'+
+ '<rect width="420" height="600" fill="'+st.bg+'"/><rect x="15" y="15" width="390" height="570" rx="5" fill="none" stroke="'+st.accent+'" stroke-width="5"/>'+
+ '<rect x="27" y="27" width="366" height="546" fill="none" stroke="'+st.accent+'" stroke-width="1"/>'+
+ '<path d="M210 45 Q275 105 210 165 Q145 105 210 45ZM75 88Q120 135 75 182M345 88Q300 135 345 182" fill="none" stroke="'+st.accent+'" stroke-width="3"/>'+
+ '<text x="210" y="204" text-anchor="middle" font-family="Georgia,serif" font-size="23" fill="'+st.accent+'">✦ ❖ ✦</text>'+
+ text+'<path d="M95 493H325" stroke="'+st.accent+'" stroke-width="2"/>'+
+ '<text x="210" y="525" text-anchor="middle" font-family="Georgia,serif" font-size="18" fill="'+st.accent+'">'+safe(String(author||category||'KZN · SD').slice(0,32))+'</text>'+
+ '</svg>';
+}
+function autoCoverDataUrl(title,author,category,i){
+ return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(autoCoverSvg(title,author,category,i));
+}
+function renderAutoCoverChoices(){
+ const form=$('bookForm');
+ if(!form)return;
+ const title=form.elements.namedItem('title').value||'Buchtitel';
+ const author=form.elements.namedItem('author').value;
+ const category=form.elements.namedItem('category').value;
+ $('autoCoverChoices').innerHTML=coverStyles.map((st,i)=>'<button type="button" class="auto-cover-choice" data-style="'+i+'" aria-pressed="'+(selectedAutoCover===i)+'"><img alt="Vorschau '+st.name+'" src="'+autoCoverDataUrl(title,author,category,i)+'"><span>'+st.name+'</span></button>').join('');
+}
+async function makeAutoCoverFile(title,author,category,i){
+ const svg=autoCoverSvg(title,author,category,i);
+ const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
+ try{
+   const img=new Image();
+   await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url});
+   const canvas=document.createElement('canvas');canvas.width=420;canvas.height=600;
+   canvas.getContext('2d').drawImage(img,0,0);
+   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Cover konnte nicht erstellt werden.')),'image/png'));
+   return new File([blob],'automatisches-cover.png',{type:'image/png'});
+ }finally{URL.revokeObjectURL(url)}
+}
+$('bookForm').addEventListener('input',e=>{
+ if(['title','author','category'].includes(e.target.name))renderAutoCoverChoices();
+});
+$('bookForm').addEventListener('change',e=>{
+ if(['title','author','category'].includes(e.target.name))renderAutoCoverChoices();
+});
+$('autoCoverChoices').addEventListener('click',e=>{
+ const b=e.target.closest('[data-style]');if(!b)return;
+ selectedAutoCover=Number(b.dataset.style);renderAutoCoverChoices();
+});
+renderAutoCoverChoices();
 
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 document.querySelectorAll('[data-view]').forEach(btn=>btn.onclick=()=>{view=btn.dataset.view;document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x===btn));render()});
@@ -1355,7 +1466,10 @@ $('bookForm').onsubmit=async e=>{
   let newBookId=null;
   const uploaded=[];
   try{
-    const cover=validateUpload(f.get('cover'),'cover');
+    let cover=validateUpload(f.get('cover'),'cover');
+    if(!cover && $('autoCoverEnabled').checked){
+      cover=await makeAutoCoverFile(String(f.get('title')||'').trim(),String(f.get('author')||'').trim(),String(f.get('category')||''),selectedAutoCover);
+    }
     const pdf=validateUpload(f.get('document'),'pdf');
     const payload={owner_id:currentUser.id,visibility:'private',
       title:String(f.get('title')||'').trim(),author:String(f.get('author')||'').trim(),
