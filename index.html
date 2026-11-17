@@ -1215,6 +1215,8 @@ main::before,main:before{display:none!important;content:none!important}
 .kzn-top-empty{padding:35px;text-align:center;border:1px solid #987241;color:#e2c69a}
 @media(max-width:850px){.kzn-top-books{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:500px){.kzn-top-results-heading{align-items:flex-start;flex-direction:column}.kzn-top-books{grid-template-columns:1fr}}
+.password-reset-row{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:12px;border:1px solid #b8955b;margin:10px 0;color:#f3d5a0;flex-wrap:wrap}
+.password-reset-row button{padding:10px;background:#b68c4d;color:#1d1109;border:1px solid #f2ce84;cursor:pointer}
 </style>
 </head>
 <body>
@@ -1287,6 +1289,13 @@ main::before,main:before{display:none!important;content:none!important}
   </section>
  </div>
  </div>
+<section id="passwordApprovalPanel" class="panel" style="max-width:960px;margin:20px auto;padding:22px">
+<h2>Passworthilfe mit Zustimmung</h2>
+<p>Ein Mitglied beantragt selbst eine Passwort-Zurücksetzung. Nach Admin-Freigabe wird ein persönlicher Reset-Link an seine hinterlegte E-Mail gesendet. Der Administrator sieht niemals das Passwort.</p>
+<div id="memberResetControls" class="hidden"><button type="button" id="memberRequestReset" class="primary">Passwort-Hilfe beim Admin beantragen</button></div>
+<div id="adminResetControls" class="hidden"><h3>Offene Passwort-Anfragen</h3><button type="button" id="refreshResetRequests">Anfragen aktualisieren</button><div id="resetRequestList"></div></div>
+<p id="resetApprovalFeedback" role="status" aria-live="polite"></p>
+</section>
  <p class="note">Version 0.7.1 · Persönliche Buchdaten werden in Supabase gespeichert, sofern die bestehenden Datenbankrichtlinien dies erlauben. PDF-/Cover-Upload ist für private Bücher verfügbar. Gemeinsame Freigaben bleiben bis zur Admin-Prüfung deaktiviert. Bestehende lokale Bücher werden nicht gelöscht oder automatisch übertragen.</p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -1482,6 +1491,7 @@ $('books').addEventListener('click',async event=>{
       const {error}=await db.from('books').update({deleted_at:restore?null:new Date().toISOString()}).eq('id',selected.id).eq('owner_id',currentUser.id).eq('visibility','private');
       if(error)throw error;
       await loadBooks();
+      await refreshPasswordApprovalControls(Boolean(data.is_admin));
     }catch(error){alert('Aktion fehlgeschlagen: '+error.message)}finally{action.disabled=false}
     return;
   }
@@ -1569,6 +1579,7 @@ function showAccess(state, message = '') {
   if(state!=='approved'){books=[];booksLoaded=false;booksError='';}
   $('accessPanel').classList.toggle('hidden', state === 'approved');
   $('loginForm').classList.toggle('hidden', state !== 'guest');
+  if(state!=='approved'){$('memberResetControls').classList.add('hidden');$('adminResetControls').classList.add('hidden');}
   $('passwordBtn').classList.toggle('hidden', !currentUser);
   $('passwordForm').classList.add('hidden');
   $('loginFeedback').textContent = state === 'guest' ? $('loginFeedback').textContent : '';
@@ -1763,6 +1774,71 @@ render();
  const oldRender=render;
  render=function(){oldRender();if(!top.hidden&&portal!=='menba')content.innerHTML=bookResults()};
 })();
+
+
+// Explicit consent is the member's own authenticated request. RLS enforces identity/admin approval.
+let passwordResetIsAdmin=false;
+async function refreshPasswordApprovalControls(isAdmin){
+ passwordResetIsAdmin=isAdmin;
+ $('memberResetControls').classList.toggle('hidden',isAdmin);
+ $('adminResetControls').classList.toggle('hidden',!isAdmin);
+ if(isAdmin)await loadResetRequests();
+}
+$('memberRequestReset').addEventListener('click',async()=>{
+ const button=$('memberRequestReset');button.disabled=true;
+ const feedback=$('resetApprovalFeedback');
+ try{
+  if(!currentUser)throw Error('Bitte zuerst anmelden.');
+  const {error}=await db.from('password_reset_requests').insert({user_id:currentUser.id});
+  if(error)throw error;
+  feedback.textContent='Deine Anfrage wurde gespeichert. Der Admin kann sie jetzt freigeben.';
+ }catch(e){feedback.textContent='Anfrage nicht gespeichert: '+e.message}
+ finally{button.disabled=false}
+});
+async function loadResetRequests(){
+ const feedback=$('resetApprovalFeedback'),list=$('resetRequestList');
+ if(!passwordResetIsAdmin||!currentUser)return;
+ const {data,error}=await db.from('password_reset_requests')
+   .select('id,email,created_at,status').eq('status','pending').order('created_at',{ascending:true}).limit(50);
+ if(error){feedback.textContent='Anfragen konnten nicht geladen werden: '+error.message;return}
+ list.replaceChildren();
+ if(!data.length){list.textContent='Keine offenen Anfragen.';return}
+ data.forEach(r=>{
+  const row=document.createElement('div');row.className='password-reset-row';
+  const info=document.createElement('span');
+  info.textContent=r.email+' · '+new Date(r.created_at).toLocaleString('de-DE');
+  const btn=document.createElement('button');btn.type='button';btn.textContent='Freigeben & Reset-Mail senden';
+  btn.addEventListener('click',async()=>{
+   btn.disabled=true;
+   try{
+    // Approval is recorded first and checked by database RLS.
+    const {data:updated,error:approvalError}=await db.from('password_reset_requests')
+      .update({status:'approved',approved_at:new Date().toISOString()})
+      .eq('id',r.id).eq('status','pending').select('id').single();
+    if(approvalError||!updated)throw approvalError||Error('Freigabe fehlgeschlagen');
+    const redirectTo=new URL(window.location.pathname,window.location.origin).href;
+    const {error:mailError}=await db.auth.resetPasswordForEmail(r.email,{redirectTo});
+    if(mailError)throw mailError;
+    feedback.textContent='Freigabe gespeichert. Supabase hat die Reset-E-Mail-Anfrage angenommen.';
+    await loadResetRequests();
+   }catch(e){feedback.textContent='Fehler: '+e.message+' (Eine bereits genehmigte Anfrage bitte nicht erneut versenden.)'}
+   finally{btn.disabled=false}
+  });
+  row.append(info,btn);list.append(row);
+ });
+}
+$('refreshResetRequests').addEventListener('click',loadResetRequests);
+// Supabase PASSWORD_RECOVERY link allows a signed-in user to choose their own password.
+db.auth.onAuthStateChange((event)=>{
+ if(event==='PASSWORD_RECOVERY'){
+  setTimeout(()=>{
+   $('passwordForm').classList.remove('hidden');
+   $('accessPanel').classList.remove('hidden');
+   $('accessPanel').scrollIntoView({behavior:'smooth'});
+   $('loginFeedback').textContent='Bitte jetzt dein neues Passwort festlegen.';
+  },0);
+ }
+});
 
 </script>
 </body></html>
