@@ -1,6 +1,7 @@
-1. Sicherung der aktuellen Website behalten.
-2. SUPABASE-SETUP.sql einmal im Supabase SQL Editor ausführen.
-3. In Supabase Authentication > URL Configuration die GitHub-Pages-URL als erlaubte Redirect URL hinzufügen.
-4. Dateien aus dieser ZIP ins Repo hochladen.
-5. Mit zwei Testkonten prüfen: Mitglied stellt Anfrage, Admin genehmigt, Mitglied erhält E-Mail und legt selbst Passwort fest.
-Hinweis: Supabase E-Mail-Limits und SMTP-Konfiguration können Versand verhindern. Der Admin sieht oder setzt keine Passwörter.
+1. Alle Dateien aus der ZIP ins GitHub-Repository hochladen.
+2. In Supabase Authentication > URL Configuration die veröffentlichte GitHub-Pages-URL unter Redirect URLs erlauben.
+3. Selbstservice: Auf der Login-Seite E-Mail eingeben und Passwort vergessen? anklicken.
+4. Admin: Mit freigegebenem Admin-Konto anmelden; im Passwortverwaltungsbereich E-Mail des Mitglieds eingeben und Reset-Mail senden.
+5. Optional bleibt die Mitgliederanfrage mit Admin-Freigabe erhalten (benötigt SUPABASE-SETUP.sql).
+6. Reset-Link und neues Passwort mit Testkonten prüfen.
+Hinweis: SMTP/E-Mail-Limits von Supabase gelten. Browserseitig ist nicht garantiert, dass die E-Mail tatsächlich zugestellt wurde. Die Funktion wurde nicht live getestet.

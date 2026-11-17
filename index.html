@@ -1227,7 +1227,7 @@ main::before,main:before{display:none!important;content:none!important}
  <div><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
 </header>
 <main>
- <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="username" required placeholder="name@beispiel.de"></div><div class="field"><label for="loginPassword">Passwort</label><input type="password" id="loginPassword" autocomplete="current-password" minlength="8" required placeholder="Passwort eingeben"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Mit Passwort anmelden</button><button type="button" id="magicLinkBtn">Einmaligen E-Mail-Link anfordern</button></div></form><form id="passwordForm" class="hidden"><h3>Passwort festlegen / ändern</h3><p>Nur für dein aktuell angemeldetes Konto.</p><div class="field"><label for="newPassword">Neues Passwort (mindestens 12 Zeichen)</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="field"><label for="confirmPassword">Passwort wiederholen</label><input id="confirmPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="actions"><button class="primary" type="submit" id="savePassword">Passwort speichern</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
+ <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="username" required placeholder="name@beispiel.de"></div><div class="field"><label for="loginPassword">Passwort</label><input type="password" id="loginPassword" autocomplete="current-password" minlength="8" required placeholder="Passwort eingeben"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Mit Passwort anmelden</button><button type="button" id="magicLinkBtn">Einmaligen E-Mail-Link anfordern</button><button type="button" id="forgotPasswordBtn">Passwort vergessen?</button></div></form><form id="passwordForm" class="hidden"><h3>Passwort festlegen / ändern</h3><p>Nur für dein aktuell angemeldetes Konto.</p><div class="field"><label for="newPassword">Neues Passwort (mindestens 12 Zeichen)</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="field"><label for="confirmPassword">Passwort wiederholen</label><input id="confirmPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="actions"><button class="primary" type="submit" id="savePassword">Passwort speichern</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
  <div id="libraryArea" class="hidden">
  <section class="hero"><img class="hero-emblem" alt="Darül İlm" src="darul-ilm-logo-transparent.png"><div class="hero-arabic" lang="ar" dir="rtl">دار العلم</div><div class="hero-line"></div><h2>KZN · SD</h2><p data-de="Die digitale Bibliothek des Wissens" data-tr="İlmin dijital kütüphanesi">Die digitale Bibliothek des Wissens</p></section>
  <nav class="portal" aria-label="Hauptbereiche">
@@ -1290,10 +1290,10 @@ main::before,main:before{display:none!important;content:none!important}
  </div>
  </div>
 <section id="passwordApprovalPanel" class="panel" style="max-width:960px;margin:20px auto;padding:22px">
-<h2>Passworthilfe mit Zustimmung</h2>
-<p>Ein Mitglied beantragt selbst eine Passwort-Zurücksetzung. Nach Admin-Freigabe wird ein persönlicher Reset-Link an seine hinterlegte E-Mail gesendet. Der Administrator sieht niemals das Passwort.</p>
+<h2>Passwortverwaltung</h2>
+<p>Mitglieder können ihr Passwort selbst per E-Mail zurücksetzen. Optional können sie zusätzlich beim Admin Hilfe beantragen. Der Administrator sieht niemals das Passwort.</p>
 <div id="memberResetControls" class="hidden"><button type="button" id="memberRequestReset" class="primary">Passwort-Hilfe beim Admin beantragen</button></div>
-<div id="adminResetControls" class="hidden"><h3>Offene Passwort-Anfragen</h3><button type="button" id="refreshResetRequests">Anfragen aktualisieren</button><div id="resetRequestList"></div></div>
+<div id="adminResetControls" class="hidden"><h3>Passwort-Hilfe für Mitglieder</h3><p>Eine Reset-Mail kannst du an die bestätigte E-Mail-Adresse eines Mitglieds senden. Bitte nur auf dessen Wunsch.</p><div class="field"><label for="adminResetEmail">E-Mail-Adresse des Mitglieds</label><input id="adminResetEmail" type="email" autocomplete="off" placeholder="mitglied@beispiel.de"></div><button type="button" id="adminSendReset">Reset-Mail senden</button><h3>Offene Passwort-Anfragen</h3><button type="button" id="refreshResetRequests">Anfragen aktualisieren</button><div id="resetRequestList"></div></div>
 <p id="resetApprovalFeedback" role="status" aria-live="polite"></p>
 </section>
  <p class="note">Version 0.7.1 · Persönliche Buchdaten werden in Supabase gespeichert, sofern die bestehenden Datenbankrichtlinien dies erlauben. PDF-/Cover-Upload ist für private Bücher verfügbar. Gemeinsame Freigaben bleiben bis zur Admin-Prüfung deaktiviert. Bestehende lokale Bücher werden nicht gelöscht oder automatisch übertragen.</p>
@@ -1491,7 +1491,6 @@ $('books').addEventListener('click',async event=>{
       const {error}=await db.from('books').update({deleted_at:restore?null:new Date().toISOString()}).eq('id',selected.id).eq('owner_id',currentUser.id).eq('visibility','private');
       if(error)throw error;
       await loadBooks();
-      await refreshPasswordApprovalControls(Boolean(data.is_admin));
     }catch(error){alert('Aktion fehlgeschlagen: '+error.message)}finally{action.disabled=false}
     return;
   }
@@ -1625,6 +1624,7 @@ async function refreshAccess() {
       showAccess('approved');
       $('loginBtn').textContent = data.is_admin ? 'Admin · Abmelden' : 'Abmelden';
       await loadBooks();
+      await refreshPasswordApprovalControls(Boolean(data.is_admin));
     } else if (data.status === 'pending') showAccess('pending');
     else showAccess('rejected');
   } catch (error) {
@@ -1775,6 +1775,33 @@ render();
  render=function(){oldRender();if(!top.hidden&&portal!=='menba')content.innerHTML=bookResults()};
 })();
 
+
+
+// Public self-service: Supabase sends the recovery email; no admin approval required.
+$('forgotPasswordBtn').addEventListener('click',async()=>{
+ const email=$('loginEmail').value.trim();
+ if(!$('loginEmail').reportValidity())return;
+ const btn=$('forgotPasswordBtn');btn.disabled=true;
+ try{
+  const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});
+  if(error)throw error;
+  $('loginFeedback').textContent='Wenn die E-Mail-Adresse registriert ist, erhältst du einen Link zum Zurücksetzen deines Passworts. Bitte auch den Spam-Ordner prüfen.';
+ }catch(e){$('loginFeedback').textContent='Die Reset-Mail konnte nicht angefordert werden: '+e.message}
+ finally{btn.disabled=false}
+});
+// Admin-assisted reset: email is entered by admin; no access to or disclosure of password.
+$('adminSendReset').addEventListener('click',async()=>{
+ if(!passwordResetIsAdmin)return;
+ const input=$('adminResetEmail');if(!input.reportValidity())return;
+ const btn=$('adminSendReset');btn.disabled=true;
+ try{
+  const {error}=await db.auth.resetPasswordForEmail(input.value.trim(),{redirectTo:window.location.origin+window.location.pathname});
+  if(error)throw error;
+  $('resetApprovalFeedback').textContent='Wenn die Adresse registriert ist, wurde die Reset-Mail angefordert.';
+  input.value='';
+ }catch(e){$('resetApprovalFeedback').textContent='Reset-Mail konnte nicht angefordert werden: '+e.message}
+ finally{btn.disabled=false}
+});
 
 // Explicit consent is the member's own authenticated request. RLS enforces identity/admin approval.
 let passwordResetIsAdmin=false;
