@@ -1572,6 +1572,19 @@ $('langBtn').onclick=()=>{lang=lang==='de'?'tr':'de';document.querySelectorAll('
 // Version 0.2: Zugangsschranke für die Oberfläche. Server-RLS/Storage muss separat abgesichert werden.
 let currentUser = null;
 let accessState = 'loading';
+// Keep the recovery screen visible across auth events and membership refreshes.
+let recoveryMode = /(?:[?#&])type=recovery(?:[&#]|$)/.test(window.location.href);
+function showRecoveryScreen(){
+ if(!recoveryMode)return;
+ $('libraryArea').classList.add('hidden');
+ $('accessPanel').classList.remove('hidden');
+ $('loginForm').classList.add('hidden');
+ $('passwordForm').classList.remove('hidden');
+ $('accessTitle').textContent='Neues Passwort festlegen';
+ $('accessText').textContent='Der E-Mail-Link wurde geöffnet. Bitte wähle jetzt ein neues Passwort für dieses Konto.';
+ $('loginFeedback').textContent='Bitte beide Passwortfelder ausfüllen und speichern.';
+}
+
 function showAccess(state, message = '') {
   accessState = state;
   $('libraryArea').classList.toggle('hidden', state !== 'approved');
@@ -1581,6 +1594,7 @@ function showAccess(state, message = '') {
   if(state!=='approved'){$('memberResetControls').classList.add('hidden');$('adminResetControls').classList.add('hidden');}
   $('passwordBtn').classList.toggle('hidden', !currentUser);
   $('passwordForm').classList.add('hidden');
+  if(recoveryMode)showRecoveryScreen();
   $('loginFeedback').textContent = state === 'guest' ? $('loginFeedback').textContent : '';
   const titles = {
     guest: ['Mitgliedszugang', 'Mit E-Mail und Passwort anmelden. Wenn du noch kein Passwort hast, kannst du den bisherigen E-Mail-Link verwenden (sofern das Versandlimit es erlaubt). Neue Registrierungen werden später freigeschaltet.'],
@@ -1594,6 +1608,7 @@ function showAccess(state, message = '') {
   $('accessText').textContent = message || item[1];
   $('loginBtn').disabled = state === 'loading';
   $('loginBtn').textContent = currentUser ? 'Abmelden' : (lang === 'de' ? 'Anmelden' : 'Giriş yap');
+  if(recoveryMode)showRecoveryScreen();
 }
 let accessRequest = 0;
 async function refreshAccess() {
@@ -1680,7 +1695,8 @@ $('passwordBtn').onclick=()=>{
 };
 $('passwordForm').onsubmit=async event=>{
   event.preventDefault();
-  if(!currentUser) return;
+  const {data:activeSession}=await db.auth.getSession();
+  if(!activeSession?.session){$('loginFeedback').textContent='Reset-Link ungültig oder abgelaufen. Bitte eine neue Reset-E-Mail anfordern.';return;}
   const password=$('newPassword').value;
   if(password.length<12 || password!==$('confirmPassword').value){alert('Passwörter müssen übereinstimmen und mindestens 12 Zeichen lang sein.');return;}
   const btn=$('savePassword'); btn.disabled=true;
@@ -1688,8 +1704,10 @@ $('passwordForm').onsubmit=async event=>{
     const {error}=await db.auth.updateUser({password});
     if(error) throw error;
     $('passwordForm').reset();
+    recoveryMode=false;
     $('passwordForm').classList.add('hidden');
     $('accessPanel').classList.add('hidden');
+    await refreshAccess();
     alert('Passwort erfolgreich gespeichert. Du kannst dich künftig mit E-Mail und Passwort anmelden.');
   } catch(error) {
     console.error('Passwortänderung fehlgeschlagen:',error);
@@ -1855,17 +1873,19 @@ async function loadResetRequests(){
  });
 }
 $('refreshResetRequests').addEventListener('click',loadResetRequests);
-// Supabase PASSWORD_RECOVERY link allows a signed-in user to choose their own password.
+// Supabase emits PASSWORD_RECOVERY after the link is exchanged for a session.
+// Unlike the old implementation, refreshAccess() cannot hide this form.
 db.auth.onAuthStateChange((event)=>{
  if(event==='PASSWORD_RECOVERY'){
+  recoveryMode=true;
   setTimeout(()=>{
-   $('passwordForm').classList.remove('hidden');
-   $('accessPanel').classList.remove('hidden');
-   $('accessPanel').scrollIntoView({behavior:'smooth'});
-   $('loginFeedback').textContent='Bitte jetzt dein neues Passwort festlegen.';
+   showRecoveryScreen();
+   $('accessPanel').scrollIntoView({behavior:'smooth',block:'start'});
   },0);
  }
 });
+// If the URL has an explicit recovery marker, show the form immediately.
+if(recoveryMode)showRecoveryScreen();
 
 </script>
 </body></html>

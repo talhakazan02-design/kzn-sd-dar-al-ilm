@@ -1,7 +1,8 @@
-1. Alle Dateien aus der ZIP ins GitHub-Repository hochladen.
-2. In Supabase Authentication > URL Configuration die veröffentlichte GitHub-Pages-URL unter Redirect URLs erlauben.
-3. Selbstservice: Auf der Login-Seite E-Mail eingeben und Passwort vergessen? anklicken.
-4. Admin: Mit freigegebenem Admin-Konto anmelden; im Passwortverwaltungsbereich E-Mail des Mitglieds eingeben und Reset-Mail senden.
-5. Optional bleibt die Mitgliederanfrage mit Admin-Freigabe erhalten (benötigt SUPABASE-SETUP.sql).
-6. Reset-Link und neues Passwort mit Testkonten prüfen.
-Hinweis: SMTP/E-Mail-Limits von Supabase gelten. Browserseitig ist nicht garantiert, dass die E-Mail tatsächlich zugestellt wurde. Die Funktion wurde nicht live getestet.
+RESET-FIX: Ersetzt die bisherige Version. SQL muss nicht erneut ausgeführt werden.
+1. index.html und Assets im GitHub-Repo aktualisieren.
+2. Supabase Authentication > URL Configuration: Website-URL als Redirect URL erlauben.
+3. Neues Reset-Mail mit der Testadresse anfordern. Alten Link nicht verwenden.
+4. Link möglichst im selben Browser öffnen, in dem kein anderes Konto angemeldet ist.
+5. Neues Passwort zweimal eingeben und speichern.
+6. Prüfen, welches Konto die Mail erhält: Supabase Authentication > Users und ggf. Weiterleitungen des Postfachs.
+Hinweis: noch kein Live-Test mit Supabase durchgeführt.
