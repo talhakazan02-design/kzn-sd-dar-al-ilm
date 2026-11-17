@@ -1190,6 +1190,31 @@ main::before,main:before{display:none!important;content:none!important}
 .kzn-side-card{border:3px double #cda45a!important;box-shadow:0 0 0 2px #4a3016,inset 0 0 0 4px #cba35a12,0 6px 22px #0008!important}
 .kzn-dash-stat{border:2px solid #c99a4f!important;box-shadow:inset 0 0 0 3px #15100b,inset 0 0 0 4px #926b3b!important}
 @media(max-width:700px){.kzn-categories{gap:13px!important}.kzn-categories .kzn-cat-image{height:105px!important}.kzn-categories button{min-height:160px!important}}
+
+/* Prominent gilded architectural frames and top-of-page in-place navigation */
+#libraryArea>.portal>.portal-card{
+ position:relative!important;isolation:isolate!important;
+ border:3px double #f5d58d!important;
+ box-shadow:0 0 0 2px #241408,0 0 0 5px #9d642d,0 8px 20px #000b,
+ inset 0 0 0 3px #1c1009,inset 0 0 0 6px #dfb46c!important;
+ background:radial-gradient(ellipse at 50% 3%,#795127,#25170e 68%,#100b08)!important;
+}
+#libraryArea>.portal>.portal-card:before{content:'❦ ✧ ❦'!important;position:absolute!important;top:9px!important;left:0!important;right:0!important;text-align:center!important;color:#ffdb91!important;font-size:15px!important;letter-spacing:4px!important;pointer-events:none!important}
+#libraryArea>.portal>.portal-card:after{content:'❧'!important;position:absolute!important;bottom:5px!important;left:0!important;right:0!important;text-align:center!important;color:#efc477!important;font-size:18px!important;pointer-events:none!important}
+#libraryArea>.portal>.portal-card strong{color:#fff0c5!important;text-shadow:0 2px 5px #000!important}
+#libraryArea>.portal>.portal-card.selected{box-shadow:0 0 0 2px #271409,0 0 0 5px #f3c56b,0 0 24px #d99a4677,inset 0 0 0 6px #edc67c!important}
+.kzn-top-results{position:relative;z-index:5;margin:18px auto 22px;max-width:1500px;padding:24px;background:linear-gradient(130deg,#21160ef7,#110c08f7);border:3px double #dcb36b;box-shadow:0 0 0 4px #5b391d,0 12px 40px #000a,inset 0 0 0 6px #d5a45a18;color:#f6e4c4}
+.kzn-top-results[hidden]{display:none!important}
+.kzn-top-results-heading{display:flex;justify-content:space-between;align-items:center;gap:15px;padding-bottom:13px;margin-bottom:16px;border-bottom:1px solid #c9a05b}
+.kzn-top-results h2{margin:3px 0 5px;color:#f4d394;font-family:Georgia,serif;font-size:27px}
+.kzn-top-results p{margin:0;color:#d5bd94}
+.kzn-ornament{font-size:19px;color:#e9bd73;letter-spacing:7px}
+#kznTopClose{border:1px solid #d4ad68;background:#3d2917;color:#f6d79c;padding:10px 14px;cursor:pointer}
+.kzn-top-books{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.kzn-top-books .book{margin:0;min-width:0}
+.kzn-top-empty{padding:35px;text-align:center;border:1px solid #987241;color:#e2c69a}
+@media(max-width:850px){.kzn-top-books{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:500px){.kzn-top-results-heading{align-items:flex-start;flex-direction:column}.kzn-top-books{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1210,7 +1235,11 @@ main::before,main:before{display:none!important;content:none!important}
   <button class="portal-card" data-portal="categories"><span class="portal-icon category-books" aria-hidden="true"><svg viewBox="0 0 64 64" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h12v40H9zM25 8h12v44H25zM42 15h12v37H42zM12 20h6M12 44h6M28 18h6M28 43h6M45 25h6M45 44h6M6 55h52"/></svg></span><strong>Kategoriler</strong><small>Kategorien</small></button>
   <button class="portal-card" data-portal="menba"><span class="portal-icon" lang="ar">منبع</span><strong>MENBA AI</strong><small>Kaynaklı Bilgi Asistanı</small></button>
  </nav>
- <section class="kzn-dashboard" id="kznDashboard" aria-label="Bibliotheksübersicht">
+ <section id="kznTopResults" class="kzn-top-results" hidden aria-live="polite">
+ <div class="kzn-top-results-heading"><div><span class="kzn-ornament">❦ ✧ ❦</span><h2 id="kznTopTitle">Bibliothek</h2><p id="kznTopDescription">Bücher aus deiner Bibliothek</p></div><button type="button" id="kznTopClose">✕ Übersicht schließen</button></div>
+ <div id="kznTopContent"></div>
+</section>
+<section class="kzn-dashboard" id="kznDashboard" aria-label="Bibliotheksübersicht">
 <div class="kzn-dash-search"><span aria-hidden="true">⌕</span><input id="dashboardSearch" type="search" placeholder="Bücher, Autoren und Themen durchsuchen …" aria-label="Bibliothek durchsuchen"><button type="button" id="dashboardAdd">＋ Buch hinzufügen</button></div>
 <div class="kzn-dash-stats"><div class="kzn-dash-stat"><span>▤</span><strong id="dashBooks">—</strong><small>Bücher insgesamt</small></div><div class="kzn-dash-stat"><span>♧</span><strong id="dashMembers">—</strong><small>Mitglieder</small></div><div class="kzn-dash-stat"><span>↗</span><strong id="dashLoans">—</strong><small>Aktive Ausleihen</small></div><div class="kzn-dash-stat"><span>♡</span><strong id="dashWishlist">—</strong><small>Wunschliste</small></div></div>
 <div class="kzn-dash-columns"><div class="kzn-dash-main"><div class="kzn-section-label"><h3>Kategorien entdecken</h3><span>WISSEN · İLİM</span></div><div class="kzn-categories"><button data-dash-category="Koranwissenschaften"><img class="kzn-cat-image" src="kategorie-quran.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Kur’an & Tafsir</span></button><button data-dash-category="Hadith"><img class="kzn-cat-image" src="kategorie-hadith.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Hadith & Sunna</span></button><button data-dash-category="Islam"><img class="kzn-cat-image" src="kategorie-aqidah.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Akâid & İtikad</span></button><button data-dash-category="Islam"><img class="kzn-cat-image" src="kategorie-fiqh.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Fıkıh & İbadet</span></button><button data-dash-category="Geschichte"><img class="kzn-cat-image" src="kategorie-siyer.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Siyer & Tarih</span></button><button data-dash-category="Sprache"><img class="kzn-cat-image" src="kategorie-arabic.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Arapça & Dil</span></button></div><div class="kzn-section-label"><h3>Neue Hinzufügungen</h3><button type="button" id="dashAllBooks">Alle Bücher ansehen ›</button></div><div id="dashRecent" class="kzn-recent"><p class="kzn-muted">Deine Bücher werden geladen …</p></div></div><aside class="kzn-dash-aside"><div class="kzn-side-card kzn-ai"><div class="kzn-side-icon">✦</div><h3>MENBA AI</h3><p>Dein Wissensassistent für die digitale Bibliothek.</p><button type="button" id="dashMenba">MENBA AI öffnen ›</button><small>Der KI-Assistent ist noch in Entwicklung.</small></div><div class="kzn-side-card"><h3>↗ &nbsp; Aktive Ausleihen</h3><p class="kzn-muted">Noch keine verknüpften Ausleihdaten verfügbar.</p></div><div class="kzn-side-card"><h3>♡ &nbsp; Wunschliste</h3><p class="kzn-muted">Noch keine verknüpfte Wunschliste verfügbar.</p></div></aside></div></section>
@@ -1673,5 +1702,67 @@ document.querySelectorAll('[data-side-placeholder]').forEach(b=>b.addEventListen
 db.auth.onAuthStateChange(() => { setTimeout(refreshAccess, 0); });
 refreshAccess();
 render();
+
+// Show chosen upper navigation destination immediately below the gold arches.
+// Keep the original catalog and Supabase data handling unchanged.
+(function(){
+ const top=$('kznTopResults'),title=$('kznTopTitle'),desc=$('kznTopDescription'),content=$('kznTopContent');
+ function openTop(name,description,html){
+  title.textContent=name;desc.textContent=description;
+  content.innerHTML=html;
+  top.hidden=false;
+  // Keep the selection in the top viewport; never jump to the catalog below.
+  const rect=top.getBoundingClientRect();
+  if(rect.top<0||rect.top>window.innerHeight-110)top.scrollIntoView({block:'start',behavior:'instant'});
+ }
+ function bookResults(){
+  const markup=$('books').innerHTML.trim();
+  return markup?'<div class="kzn-top-books">'+markup+'</div>':'<div class="kzn-top-empty">'+$('empty').textContent+'</div>';
+ }
+ function selectTopPortal(name){
+  $('category').value='';$('search').value='';$('dashboardSearch').value='';
+  switchPortal(name);
+  if(name==='menba'){
+   openTop('MENBA AI','Dein Wissensassistent', $('featurePanel').innerHTML);
+  }else if(name==='categories'){
+   top.hidden=true;
+   $('kznDashboard').scrollIntoView({block:'start',behavior:'instant'});
+  }else{
+   const labels={library:'Kütüphane · Bibliothek',mine:'Benim Kitaplarım · Meine Bücher',shared:'Ortak Kütüphane · Gemeinsame Bibliothek'};
+   openTop(labels[name]||'Bibliothek','Deine Bücher direkt oben anzeigen',bookResults());
+  }
+ }
+ // Capture phase prevents old handlers from forcing the user down to the catalog.
+ document.querySelectorAll('#libraryArea>.portal [data-portal]').forEach(b=>b.addEventListener('click',e=>{
+  e.preventDefault();e.stopImmediatePropagation();selectTopPortal(b.dataset.portal);
+ },true));
+ document.querySelectorAll('[data-dash-category]').forEach(b=>b.addEventListener('click',e=>{
+  e.preventDefault();e.stopImmediatePropagation();
+  switchPortal('library');
+  $('search').value='';$('dashboardSearch').value='';
+  $('category').value=b.dataset.dashCategory;
+  render();
+  const name=b.querySelector('.kzn-cat-name')?.textContent||'Kategorie';
+  openTop(name,'Bücher aus dieser Kategorie',bookResults());
+  document.querySelectorAll('[data-dash-category]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+ },true));
+ document.querySelectorAll('[data-side-portal]').forEach(b=>b.addEventListener('click',e=>{
+  e.preventDefault();e.stopImmediatePropagation();selectTopPortal(b.dataset.sidePortal);
+  document.querySelectorAll('[data-side-portal]').forEach(x=>x.classList.toggle('active',x===b));
+ },true));
+ $('kznTopClose').addEventListener('click',()=>{
+  top.hidden=true;$('category').value='';switchPortal('library');render();
+ });
+ $('dashAllBooks').addEventListener('click',e=>{
+  e.preventDefault();e.stopImmediatePropagation();selectTopPortal('library');
+ },true);
+ $('dashMenba').addEventListener('click',e=>{
+  e.preventDefault();e.stopImmediatePropagation();selectTopPortal('menba');
+ },true);
+ // Re-render the visible top results when the underlying catalog changes.
+ const oldRender=render;
+ render=function(){oldRender();if(!top.hidden&&portal!=='menba')content.innerHTML=bookResults()};
+})();
+
 </script>
 </body></html>
