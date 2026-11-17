@@ -1243,19 +1243,19 @@ main::before,main:before{display:none!important;content:none!important}
 @media(max-width:760px){#libraryArea>.portal{gap:9px}#libraryArea>.portal>.portal-card{min-height:155px;padding:24px 5px 17px}#libraryArea>.portal>.portal-card:before{font-size:12px;letter-spacing:2px;top:12px}#libraryArea>.portal>.portal-card:after{font-size:16px;bottom:5px}.kzn-top-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){#libraryArea>.portal>.portal-card,.kzn-categories button{transition:none}}
 
-/* v3: gilded category portals and accessible compact account controls */
-#passwordManageBtn{border:1px solid #cda85d;background:linear-gradient(145deg,#35230f,#15100b);color:#f5d89c;box-shadow:inset 0 0 0 2px #5d431d,0 2px 12px #0007;white-space:nowrap}
-#passwordManageBtn:hover,#passwordManageBtn[aria-expanded="true"]{border-color:#ffe1a0;background:#523719}
-#passwordApprovalPanel{scroll-margin-top:90px;border:2px solid #c49a51!important;box-shadow:inset 0 0 0 4px #271708,inset 0 0 0 5px #8c652e,0 14px 40px #0009!important;margin:20px auto!important}
-.kzn-categories{gap:22px!important;padding:16px 10px 22px!important}
-.kzn-categories button{border-radius:52% 52% 9px 9px / 24% 24% 9px 9px!important;min-height:216px!important;background:linear-gradient(#30200e,#0e0906)!important;border:2px solid #e3b869!important;box-shadow:inset 0 0 0 4px #241407,inset 0 0 0 6px #a77b37,0 0 0 2px #553714,0 10px 24px #000b!important;overflow:visible!important}
-.kzn-categories button:before,.kzn-categories button:after{content:'❦'!important;position:absolute!important;top:8px!important;font-size:30px!important;color:#ffe1a1!important;z-index:5!important;text-shadow:0 2px 7px #000!important}
-.kzn-categories button:before{left:8px!important;transform:rotate(-18deg)!important}
-.kzn-categories button:after{right:8px!important;transform:scaleX(-1) rotate(-18deg)!important}
-.kzn-categories .kzn-cat-image{height:158px!important;border-radius:49% 49% 0 0 / 22% 22% 0 0!important;object-fit:cover!important;filter:brightness(.86) contrast(1.07)!important}
-.kzn-categories .kzn-cat-name{min-height:46px!important;margin:-12px 9px 8px!important;width:calc(100% - 18px)!important;border-radius:8px!important;border:1px solid #e2bb6b!important;box-shadow:0 0 0 3px #241506,0 4px 14px #000a!important;letter-spacing:.35px!important}
-.kzn-categories button:hover,.kzn-categories button[aria-pressed="true"]{transform:translateY(-4px)!important;box-shadow:inset 0 0 0 4px #241407,inset 0 0 0 6px #e9c477,0 0 18px #c99646a0!important}
-@media(max-width:700px){.kzn-categories{gap:15px!important;padding:12px 4px!important}.kzn-categories button{min-height:175px!important}.kzn-categories .kzn-cat-image{height:116px!important}header>div:last-child{display:flex;flex-wrap:wrap;gap:5px}}
+/* Approved November design: replace old floral/fruit-like marks with distinct topic emblems. */
+.kzn-categories{gap:19px 17px!important}
+.kzn-categories button{position:relative!important;overflow:visible!important;isolation:isolate!important;border:2px solid #e9c06e!important;border-radius:48% 48% 10px 10px / 23% 23% 10px 10px!important;box-shadow:0 0 0 3px #1c1008,0 0 0 5px #986c32,inset 0 0 0 4px #f4d58d55,0 10px 20px #000a!important;padding:7px 7px 6px!important;background:#160d07!important}
+.kzn-categories button::before,.kzn-categories button::after{content:none!important;display:none!important}
+.kzn-categories button .kzn-category-emblem{position:absolute!important;z-index:7!important;top:-18px!important;left:50%!important;transform:translateX(-50%)!important;width:49px!important;height:49px!important;min-height:49px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:3px!important;border:2px solid #f1cb79!important;border-radius:50% 50% 12% 12%!important;background:linear-gradient(145deg,#44290e,#0b0805)!important;color:#f7d688!important;font:26px Georgia,serif!important;line-height:1!important;letter-spacing:0!important;filter:none!important;text-shadow:0 2px 4px #000!important;box-shadow:0 0 0 3px #1c1109,0 2px 12px #0009!important;pointer-events:none!important}
+.kzn-categories button .kzn-cat-image{width:100%!important;height:143px!important;object-fit:cover!important;border-radius:46% 46% 4px 4px / 24% 24% 4px 4px!important;border:1px solid #b68b4c!important;filter:saturate(.96) contrast(1.05)!important}
+.kzn-categories button .kzn-cat-name{position:relative!important;z-index:2!important;min-height:42px!important;margin:0!important;border:1px solid #d8ac60!important;border-radius:8px!important;background:linear-gradient(100deg,#1b1009,#43290e 50%,#1b1009)!important;color:#ffe6b5!important;font-size:14px!important;filter:none!important}
+.kzn-categories button:hover,.kzn-categories button:focus-visible{transform:translateY(-3px)!important;box-shadow:0 0 0 3px #2b190b,0 0 0 5px #e6bb67,0 0 22px #b8864166!important}
+.kzn-menba-arabic{font:normal 38px 'Amiri','Noto Naskh Arabic',serif;color:#f2c879;text-shadow:0 0 12px #b7803755;margin:8px auto 1px;line-height:1.3}
+.kzn-ai .kzn-side-icon{display:none!important}
+#libraryArea>.portal>.portal-card[data-portal="menba"] .portal-icon{font-family:'Amiri','Noto Naskh Arabic',serif!important;font-size:36px!important}
+@media(max-width:760px){.kzn-categories{gap:23px 13px!important}.kzn-categories button .kzn-category-emblem{width:40px!important;height:40px!important;min-height:40px!important;top:-15px!important;font-size:21px!important}.kzn-categories button .kzn-cat-image{height:106px!important}}
+
 </style>
 </head>
 <body>
@@ -1263,17 +1263,9 @@ main::before,main:before{display:none!important;content:none!important}
 
 <header>
  <div class="brand"><div class="mark">ك</div><div><h1>KZN · SD</h1><small>دَارُ الْعِلْمِ · HAUS DES WISSENS</small></div></div>
- <div><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button id="passwordManageBtn" class="hidden" type="button" aria-expanded="false" aria-controls="passwordApprovalPanel">Passwortverwaltung</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
+ <div><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
 </header>
 <main>
-<section id="passwordApprovalPanel" class="panel hidden" style="max-width:960px;margin:20px auto;padding:22px">
-<h2>Passwortverwaltung</h2>
-<p>Mitglieder können ihr Passwort selbst per E-Mail zurücksetzen. Optional können sie zusätzlich beim Admin Hilfe beantragen. Der Administrator sieht niemals das Passwort.</p>
-<div id="memberResetControls" class="hidden"><button type="button" id="memberRequestReset" class="primary">Passwort-Hilfe beim Admin beantragen</button></div>
-<div id="adminResetControls" class="hidden"><h3>Passwort-Hilfe für Mitglieder</h3><p>Eine Reset-Mail kannst du an die bestätigte E-Mail-Adresse eines Mitglieds senden. Bitte nur auf dessen Wunsch.</p><div class="field"><label for="adminResetEmail">E-Mail-Adresse des Mitglieds</label><input id="adminResetEmail" type="email" autocomplete="off" placeholder="mitglied@beispiel.de"></div><button type="button" id="adminSendReset">Reset-Mail senden</button><h3>Offene Passwort-Anfragen</h3><button type="button" id="refreshResetRequests">Anfragen aktualisieren</button><div id="resetRequestList"></div></div>
-<p id="resetApprovalFeedback" role="status" aria-live="polite"></p>
-</section>
-
  <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="username" required placeholder="name@beispiel.de"></div><div class="field"><label for="loginPassword">Passwort</label><input type="password" id="loginPassword" autocomplete="current-password" minlength="8" required placeholder="Passwort eingeben"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Mit Passwort anmelden</button><button type="button" id="magicLinkBtn">Einmaligen E-Mail-Link anfordern</button><button type="button" id="forgotPasswordBtn">Passwort vergessen?</button></div></form><form id="passwordForm" class="hidden"><h3>Passwort festlegen / ändern</h3><p>Nur für dein aktuell angemeldetes Konto.</p><div class="field"><label for="newPassword">Neues Passwort (mindestens 12 Zeichen)</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="field"><label for="confirmPassword">Passwort wiederholen</label><input id="confirmPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="actions"><button class="primary" type="submit" id="savePassword">Passwort speichern</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
  <div id="libraryArea" class="hidden">
  <section class="hero"><img class="hero-emblem" alt="Darül İlm" src="darul-ilm-logo-transparent.png"><div class="hero-arabic" lang="ar" dir="rtl">دار العلم</div><div class="hero-line"></div><h2>KZN · SD</h2><p data-de="Die digitale Bibliothek des Wissens" data-tr="İlmin dijital kütüphanesi">Die digitale Bibliothek des Wissens</p></section>
@@ -1291,7 +1283,7 @@ main::before,main:before{display:none!important;content:none!important}
 <section class="kzn-dashboard" id="kznDashboard" aria-label="Bibliotheksübersicht">
 <div class="kzn-dash-search"><span aria-hidden="true">⌕</span><input id="dashboardSearch" type="search" placeholder="Bücher, Autoren und Themen durchsuchen …" aria-label="Bibliothek durchsuchen"><button type="button" id="dashboardAdd">＋ Buch hinzufügen</button></div>
 <div class="kzn-dash-stats"><div class="kzn-dash-stat"><span>▤</span><strong id="dashBooks">—</strong><small>Bücher insgesamt</small></div><div class="kzn-dash-stat"><span>♧</span><strong id="dashMembers">—</strong><small>Mitglieder</small></div><div class="kzn-dash-stat"><span>↗</span><strong id="dashLoans">—</strong><small>Aktive Ausleihen</small></div><div class="kzn-dash-stat"><span>♡</span><strong id="dashWishlist">—</strong><small>Wunschliste</small></div></div>
-<div class="kzn-dash-columns"><div class="kzn-dash-main"><div class="kzn-section-label"><h3>Kategorien entdecken</h3><span>WISSEN · İLİM</span></div><div class="kzn-categories"><button data-dash-category="Koranwissenschaften"><img class="kzn-cat-image" src="kategorie-quran.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Kur’an & Tafsir</span></button><button data-dash-category="Hadith"><img class="kzn-cat-image" src="kategorie-hadith.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Hadith & Sunna</span></button><button data-dash-category="Islam"><img class="kzn-cat-image" src="kategorie-aqidah.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Akâid & İtikad</span></button><button data-dash-category="Islam"><img class="kzn-cat-image" src="kategorie-fiqh.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Fıkıh & İbadet</span></button><button data-dash-category="Geschichte"><img class="kzn-cat-image" src="kategorie-siyer.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Siyer & Tarih</span></button><button data-dash-category="Sprache"><img class="kzn-cat-image" src="kategorie-arabic.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Arapça & Dil</span></button></div><div class="kzn-section-label"><h3>Neue Hinzufügungen</h3><button type="button" id="dashAllBooks">Alle Bücher ansehen ›</button></div><div id="dashRecent" class="kzn-recent"><p class="kzn-muted">Deine Bücher werden geladen …</p></div></div><aside class="kzn-dash-aside"><div class="kzn-side-card kzn-ai"><div class="kzn-side-icon">✦</div><h3>MENBA AI</h3><p>Dein Wissensassistent für die digitale Bibliothek.</p><button type="button" id="dashMenba">MENBA AI öffnen ›</button><small>Der KI-Assistent ist noch in Entwicklung.</small></div><div class="kzn-side-card"><h3>↗ &nbsp; Aktive Ausleihen</h3><p class="kzn-muted">Noch keine verknüpften Ausleihdaten verfügbar.</p></div><div class="kzn-side-card"><h3>♡ &nbsp; Wunschliste</h3><p class="kzn-muted">Noch keine verknüpfte Wunschliste verfügbar.</p></div></aside></div></section>
+<div class="kzn-dash-columns"><div class="kzn-dash-main"><div class="kzn-section-label"><h3>Kategorien entdecken</h3><span>WISSEN · İLİM</span></div><div class="kzn-categories"><button data-dash-category="Koranwissenschaften"><span class="kzn-category-emblem" aria-hidden="true">📖</span><img class="kzn-cat-image" src="kategorie-quran.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Kur’an & Tafsir</span></button><button data-dash-category="Hadith"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-hadith.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Hadith & Sunna</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">✒</span><img class="kzn-cat-image" src="kategorie-aqidah.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Akâid & İtikad</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">⚖</span><img class="kzn-cat-image" src="kategorie-fiqh.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Fıkıh & İbadet</span></button><button data-dash-category="Geschichte"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-siyer.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Siyer & Tarih</span></button><button data-dash-category="Sprache"><span class="kzn-category-emblem" aria-hidden="true">ع</span><img class="kzn-cat-image" src="kategorie-arabic.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Arapça & Dil</span></button></div><div class="kzn-section-label"><h3>Neue Hinzufügungen</h3><button type="button" id="dashAllBooks">Alle Bücher ansehen ›</button></div><div id="dashRecent" class="kzn-recent"><p class="kzn-muted">Deine Bücher werden geladen …</p></div></div><aside class="kzn-dash-aside"><div class="kzn-side-card kzn-ai"><div class="kzn-menba-arabic" lang="ar" dir="rtl">منبع</div><h3>MENBA AI</h3><p>Dein Wissensassistent für die digitale Bibliothek.</p><button type="button" id="dashMenba">MENBA AI öffnen ›</button><small>Der KI-Assistent ist noch in Entwicklung.</small></div><div class="kzn-side-card"><h3>↗ &nbsp; Aktive Ausleihen</h3><p class="kzn-muted">Noch keine verknüpften Ausleihdaten verfügbar.</p></div><div class="kzn-side-card"><h3>♡ &nbsp; Wunschliste</h3><p class="kzn-muted">Noch keine verknüpfte Wunschliste verfügbar.</p></div></aside></div></section>
  <div class="section-head"><div><h2 id="sectionTitle">Kütüphane</h2><p id="sectionDescription">Deine Bibliothek im Überblick</p></div><button class="primary" id="addBtn">＋ Buch hinzufügen</button></div>
  <section class="stats">
   <div class="stat"><b id="total">0</b><span data-de="Bücher insgesamt" data-tr="Toplam kitap">Bücher insgesamt</span></div>
@@ -1336,7 +1328,13 @@ main::before,main:before{display:none!important;content:none!important}
   </section>
  </div>
  </div>
-
+<section id="passwordApprovalPanel" class="panel" style="max-width:960px;margin:20px auto;padding:22px">
+<h2>Passwortverwaltung</h2>
+<p>Mitglieder können ihr Passwort selbst per E-Mail zurücksetzen. Optional können sie zusätzlich beim Admin Hilfe beantragen. Der Administrator sieht niemals das Passwort.</p>
+<div id="memberResetControls" class="hidden"><button type="button" id="memberRequestReset" class="primary">Passwort-Hilfe beim Admin beantragen</button></div>
+<div id="adminResetControls" class="hidden"><h3>Passwort-Hilfe für Mitglieder</h3><p>Eine Reset-Mail kannst du an die bestätigte E-Mail-Adresse eines Mitglieds senden. Bitte nur auf dessen Wunsch.</p><div class="field"><label for="adminResetEmail">E-Mail-Adresse des Mitglieds</label><input id="adminResetEmail" type="email" autocomplete="off" placeholder="mitglied@beispiel.de"></div><button type="button" id="adminSendReset">Reset-Mail senden</button><h3>Offene Passwort-Anfragen</h3><button type="button" id="refreshResetRequests">Anfragen aktualisieren</button><div id="resetRequestList"></div></div>
+<p id="resetApprovalFeedback" role="status" aria-live="polite"></p>
+</section>
  <p class="note">Version 0.7.1 · Persönliche Buchdaten werden in Supabase gespeichert, sofern die bestehenden Datenbankrichtlinien dies erlauben. PDF-/Cover-Upload ist für private Bücher verfügbar. Gemeinsame Freigaben bleiben bis zur Admin-Prüfung deaktiviert. Bestehende lokale Bücher werden nicht gelöscht oder automatisch übertragen.</p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -1930,21 +1928,5 @@ db.auth.onAuthStateChange((event)=>{
 // If the URL has an explicit recovery marker, show the form immediately.
 if(recoveryMode)showRecoveryScreen();
 
-
-// Keep password management near the top; no long scroll to the footer.
-(function(){
- const manage=document.getElementById('passwordManageBtn');
- const panel=document.getElementById('passwordApprovalPanel');
- const password=document.getElementById('passwordBtn');
- const sync=()=>{manage.classList.toggle('hidden',password.classList.contains('hidden'));if(manage.classList.contains('hidden')){panel.classList.add('hidden');manage.setAttribute('aria-expanded','false')}};
- new MutationObserver(sync).observe(password,{attributes:true,attributeFilter:['class']});sync();
- manage.addEventListener('click',()=>{
-  const open=panel.classList.contains('hidden');
-  panel.classList.toggle('hidden',!open);
-  manage.setAttribute('aria-expanded',String(open));
-  if(open){document.getElementById('accessPanel').classList.add('hidden');panel.scrollIntoView({block:'start',behavior:'smooth'});}
- });
- password.addEventListener('click',()=>{panel.classList.add('hidden');manage.setAttribute('aria-expanded','false')});
-})();
 </script>
 </body></html>
