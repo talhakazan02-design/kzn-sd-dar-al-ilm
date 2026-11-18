@@ -1318,11 +1318,11 @@ main::before,main:before{display:none!important;content:none!important}
    <div id="books" class="grid"></div>
    <div id="empty" class="empty">Noch keine Bücher eingetragen. Füge dein erstes Buch hinzu.</div>
    <section id="formPanel" class="panel" style="padding:18px;margin-top:18px;display:none">
-    <h3 id="formTitle">Neues Buch eintragen</h3><p id="editHint" class="note" style="display:none">Beim Bearbeiten bleiben vorhandene PDF- und Coverdateien erhalten. Neue Dateien können hier nicht ersetzt werden.</p>
+    <h3 id="formTitle">Neues Buch eintragen</h3><p id="editHint" class="note" style="display:none">Wähle eine neue PDF- oder Coverdatei aus, um die bisherige Datei zu ersetzen.</p>
     <form id="bookForm"><div class="formgrid">
      <div class="field"><label>Titel *</label><input name="title" required></div><div class="field"><label>Autor</label><input name="author"></div>
      <div class="field"><label>Thema / Kategorie</label><select name="category"><option>Islam</option><option>Koranwissenschaften</option><option>Hadith</option><option>Geschichte</option><option>Sprache</option><option>Sonstiges</option></select></div>
-     <div class="field"><label>Standort</label><select name="location"><option>Zuhause</option><option>Im Kurs</option></select></div>
+     <div class="field"><label>Standort</label><select name="location"><option value="">Nicht angegeben</option><option>Zuhause</option><option>Im Kurs</option></select></div>
      <div class="field"><label>Sammlung</label><select name="visibility"><option value="personal">Persönlich</option><option value="shared" disabled>Gemeinsam (Admin-Freigabe folgt)</option></select></div>
      <div class="field"><label>Buchcover (JPG, PNG oder WebP, max. 5 MB)</label><input name="cover" type="file" accept="image/jpeg,image/png,image/webp"></div>
      <div class="field full" id="autoCoverBox">
@@ -1369,15 +1369,15 @@ function render(){
   if(document.getElementById("kznDashboard")) updateKznDashboard();
  $('total').textContent=books.filter(b=>!b.deleted_at).length;$('home').textContent=books.filter(b=>b.location==='Zuhause').length;$('course').textContent=books.filter(b=>b.location==='Im Kurs').length;$('loan').textContent=books.filter(b=>b.loaned).length;
  const q=$('search').value.toLowerCase(),cat=$('category').value;
- let shown=books.filter(b=>(trashMode?(Boolean(b.deleted_at)&&Date.now()-new Date(b.deleted_at).getTime()<7*86400000):!b.deleted_at)&&(portal==='mine'?b.visibility==='private':portal==='shared'?b.visibility==='shared':true)&&(view==='all'||(view==='home'&&b.location==='Zuhause')||(view==='course'&&b.location==='Im Kurs')||(view==='loans'&&b.loaned)||(view==='wishlist'&&b.wish))&&(!cat||b.category===cat)&&(!q||(b.title+' '+b.author+' '+b.category).toLowerCase().includes(q)));
- $('books').innerHTML=shown.map(b=>`<article class="book"><div class="cover">${b.cover_url?`<img src="${esc(b.cover_url)}" alt="Buchcover">`:'▤'}</div><div class="bookbody"><h3>${esc(b.title)}</h3><p>${esc(b.author||'Autor unbekannt')}</p><span class="tag">${esc(b.category)}</span>${!trashMode&&b.file_path?` <button type="button" class="open-pdf" data-book-id="${esc(b.id)}">PDF öffnen</button>`:''}${b.visibility==='private'&&b.owner_id===currentUser?.id?(trashMode?` <button type="button" class="restore-book" data-book-id="${esc(b.id)}">↩ Wiederherstellen</button> <small>Bis ${new Date(new Date(b.deleted_at).getTime()+7*86400000).toLocaleDateString('de-DE')}</small>`:` <button type="button" class="edit-book" data-book-id="${esc(b.id)}">✎ Bearbeiten</button> <button type="button" class="trash-book" data-book-id="${esc(b.id)}">🗑 Löschen</button>`):''}</div></article>`).join('');
+ let shown=books.filter(b=>(trashMode?(Boolean(b.deleted_at)&&Date.now()-new Date(b.deleted_at).getTime()<7*86400000):!b.deleted_at)&&(trashMode||portal==='mine'?b.visibility==='private'&&b.owner_id===currentUser?.id:portal==='shared'?b.visibility==='shared':true)&&(view==='all'||(view==='home'&&b.location==='Zuhause')||(view==='course'&&b.location==='Im Kurs')||(view==='loans'&&b.loaned)||(view==='wishlist'&&b.wish))&&(!cat||b.category===cat)&&(!q||(b.title+' '+b.author+' '+b.category).toLowerCase().includes(q)));
+ $('books').innerHTML=shown.map(b=>`<article class="book"><div class="cover">${b.cover_url?`<img src="${esc(b.cover_url)}" alt="${localize('Buchcover')}">`:'▤'}</div><div class="bookbody"><h3>${esc(b.title)}</h3><p>${esc(b.author||tr('Autor unbekannt','Yazarı bilinmiyor'))}</p><span class="tag">${esc(categoryLabel(b.category))}</span>${!trashMode&&b.file_path?` <button type="button" class="open-pdf" data-book-id="${esc(b.id)}">${localize("PDF öffnen")}</button>`:''}${b.visibility==='private'&&b.owner_id===currentUser?.id?(trashMode?` <button type="button" class="restore-book" data-book-id="${esc(b.id)}">${localize("↩ Wiederherstellen")}</button> <small>${tr('Bis','Son tarih')} ${new Date(new Date(b.deleted_at).getTime()+7*86400000).toLocaleDateString(lang==='tr'?'tr-TR':'de-DE')}</small>`:` <button type="button" class="edit-book" data-book-id="${esc(b.id)}">${localize("✎ Bearbeiten")}</button> <button type="button" class="trash-book" data-book-id="${esc(b.id)}">${localize("🗑 Löschen")}</button>`):''}</div></article>`).join('');
  $('empty').style.display=shown.length?'none':'block';
- $('empty').textContent=booksError || (booksLoaded ? (trashMode?'Der Papierkorb ist leer.':'Noch keine Bücher in deiner persönlichen Online-Bibliothek.') : 'Bücher werden geladen …');
+ $('empty').textContent=booksError || localize(booksLoaded ? (trashMode?'Der Papierkorb ist leer.':'Noch keine Bücher in deiner persönlichen Online-Bibliothek.') : 'Bücher werden geladen …');
 }
 
 // Dashboard is a presentation layer; the existing Supabase application remains authoritative.
 function updateKznDashboard(){
-  const active = books.filter(b=>!b.deleted_at);
+  const active = books.filter(b=>!b.deleted_at && (portal==='shared'?b.visibility==='shared':portal==='mine'?b.owner_id===currentUser?.id&&b.visibility==='private':true));
   $('dashBooks').textContent = booksLoaded ? String(active.length) : '—';
   // The current app has no connected member/loan/wishlist queries. Do not fabricate counts.
   $('dashMembers').textContent = '—';
@@ -1387,7 +1387,7 @@ function updateKznDashboard(){
     ? active.slice(0,4).map(b=>'<div class="kzn-recent-item">'+
         (b.cover_url?'<img alt="" src="'+esc(b.cover_url)+'">':'<div class="kzn-recent-placeholder">▤</div>')+
         '<strong title="'+esc(b.title)+'">'+esc(b.title)+'</strong><small>'+esc(b.author||'Autor unbekannt')+'</small></div>').join('')
-    : '<p class="kzn-muted">'+(booksLoaded?'Noch keine Bücher vorhanden.':'Deine Bücher werden geladen …')+'</p>';
+    : '<p class="kzn-muted">'+localize(booksLoaded?'Noch keine Bücher vorhanden.':'Deine Bücher werden geladen …')+'</p>';
 }
 $('dashboardSearch').addEventListener('input',e=>{
   $('search').value=e.target.value;
@@ -1473,37 +1473,44 @@ const portalInfo={
 function switchPortal(next){
  portal=next;view='all';document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view==='all'));
  document.querySelectorAll('[data-portal]').forEach(b=>b.classList.toggle('selected',b.dataset.portal===next));
- $('sectionTitle').textContent=portalInfo[next][0];$('sectionDescription').textContent=portalInfo[next][1];
+ updatePortalLanguage();
  const isMenba=next==='menba';$('catalogPanel').classList.toggle('hidden',isMenba);
  $('featurePanel').classList.toggle('hidden',!isMenba);
  $('addBtn').classList.toggle('hidden',isMenba);
  if(isMenba){$('featurePanel').innerHTML='<h3>منبع · MENBA AI</h3><p>Hier entsteht unser KI-Assistent. In einer späteren Entwicklungsphase beantwortet er Fragen ausschließlich anhand der Bücher, für die du eine Berechtigung hast, und nennt Buch, Ausgabe und Seitenzahl als Quelle.</p><span class="tag">In Entwicklung · Noch keine KI-Anfragen möglich</span>';}
+ updatePortalLanguage();
  if(next==='categories'){$('category').focus();}
  if(!isMenba)render();
+ document.dispatchEvent(new Event('library-portal'));
 }
 document.querySelectorAll('[data-portal]').forEach(b=>b.addEventListener('click',()=>switchPortal(b.dataset.portal)));
 $('search').oninput=render;$('category').onchange=render;
-$('trashToggle').onclick=()=>{trashMode=!trashMode;$('trashToggle').textContent=trashMode?'← Zur Bibliothek':'🗑 Papierkorb (7 Tage)';$('formPanel').style.display='none';render()};
-$('addBtn').onclick=()=>{editingBookId=null;$('bookForm').reset();$('formTitle').textContent='Neues Buch eintragen';$('editHint').style.display='none';$('bookForm').querySelectorAll('input[type=file]').forEach(x=>x.disabled=false);$('formPanel').style.display='block';$('formPanel').scrollIntoView({behavior:'smooth'})};
+$('trashToggle').onclick=()=>{trashMode=!trashMode;$('trashToggle').textContent=localize(trashMode?'← Zur Bibliothek':'🗑 Papierkorb (7 Tage)');$('formPanel').style.display='none';render()};
+$('addBtn').onclick=()=>{editingBookId=null;$('bookForm').reset();$('formTitle').textContent=localize('Neues Buch eintragen');$('editHint').style.display='none';$('autoCoverBox').hidden=false;$('formPanel').style.display='block';$('formPanel').scrollIntoView({behavior:'smooth'})};
 $('cancelBtn').onclick=()=>{$('formPanel').style.display='none';$('bookForm').reset();editingBookId=null};
 // v0.6: Private PDFs und Cover. Voraussetzung: SQL-Sicherheitsmigration ist installiert.
 async function loadBooks(){
   if(!currentUser || accessState!=='approved') return;
+  const userId=currentUser.id, session=accessRequest;
+  const isCurrent=()=>currentUser?.id===userId && accessState==='approved' && accessRequest===session;
   booksLoaded=false;booksError='';render();
   const {data,error}=await db.from('books')
-    .select('id,owner_id,title,author,description,category,visibility,created_at,file_path,file_name,mime_type,file_size,cover_path,deleted_at')
-    .eq('owner_id',currentUser.id)
+    .select('id,owner_id,title,author,description,category,location,visibility,created_at,file_path,file_name,mime_type,file_size,cover_path,deleted_at')
+    .or('owner_id.eq.'+userId+',visibility.eq.shared')
     .order('created_at',{ascending:false});
+  if(!isCurrent())return;
   if(error){
     console.error('Bücher konnten nicht geladen werden:',error);
     booksError='Online-Bücher konnten nicht geladen werden. Bitte Datenbankrechte prüfen. ('+error.message+')';
     books=[];
   }else{
-    books=(data||[]).map(b=>({...b,location:'Nicht angegeben',loaned:false,wish:false,cover_url:null}));
-    await Promise.all(books.filter(b=>b.cover_path).map(async b=>{
+    const loaded=(data||[]).filter(b=>b.owner_id===userId||b.visibility==='shared').map(b=>({...b,loaned:false,wish:false,cover_url:null}));
+    await Promise.all(loaded.filter(b=>b.cover_path&&!b.deleted_at).map(async b=>{
       const {data: signed,error: signedError}=await db.storage.from(STORAGE_BUCKET).createSignedUrl(b.cover_path,3600);
       if(!signedError && signed?.signedUrl) b.cover_url=signed.signedUrl;
     }));
+    if(!isCurrent())return;
+    books=loaded;
   }
   booksLoaded=true;render();
 }
@@ -1520,17 +1527,38 @@ async function uploadPrivateFile(file,path){
   if(error) throw error;
   return path;
 }
-$('books').addEventListener('click',async event=>{
+async function handleBookAction(event){
   const action=event.target.closest('button[data-book-id]');if(!action)return;
   const selected=books.find(b=>b.id===action.dataset.bookId);
-  if(!selected || selected.owner_id!==currentUser?.id || selected.visibility!=='private')return;
+  if(!selected || !currentUser || accessState!=='approved')return;
+  if(action.classList.contains('open-pdf')){
+    if(!selected.file_path || selected.deleted_at)return;
+    const reader=window.open('about:blank','_blank');
+    if(!reader){alert(tr('Bitte Pop-ups für diese Website erlauben.','Lütfen bu site için açılır pencerelere izin verin.'));return;}
+    reader.opener=null;
+    const userId=currentUser.id;
+    const session=accessRequest;
+    try{
+      const {data,error}=await db.storage.from(STORAGE_BUCKET).createSignedUrl(selected.file_path,900);
+      if(error)throw error;
+      if(currentUser?.id!==userId || accessRequest!==session || accessState!=='approved'){reader.close();return;}
+      reader.location.replace(data.signedUrl);
+    }catch(error){reader.close();alert(tr('PDF konnte nicht geöffnet werden: ','PDF açılamadı: ')+error.message);}
+    return;
+  }
+  if(selected.owner_id!==currentUser.id || selected.visibility!=='private')return;
   if(action.classList.contains('edit-book')){
     editingBookId=selected.id;
     const form=$('bookForm');form.reset();
     form.elements.title.value=selected.title||'';form.elements.author.value=selected.author||'';
-    form.elements.category.value=selected.category||'Sonstiges';form.elements.notes.value=selected.description||'';
-    form.querySelectorAll('input[type=file]').forEach(x=>x.disabled=true);
-    $('formTitle').textContent='Buch bearbeiten';$('editHint').style.display='block';
+    const category=form.elements.namedItem('category');
+    const value=selected.category||'Sonstiges';
+    if(![...category.options].some(option=>option.value===value))category.add(new Option(categoryLabel(value),value));
+    category.value=value;
+    form.elements.notes.value=selected.description||'';
+    form.elements.location.value=selected.location||'';
+    $('autoCoverBox').hidden=true;
+    $('formTitle').textContent=localize('Buch bearbeiten');$('editHint').style.display='block';
     $('formPanel').style.display='block';$('formPanel').scrollIntoView({behavior:'smooth'});return;
   }
   if(action.classList.contains('trash-book') || action.classList.contains('restore-book')){
@@ -1539,23 +1567,15 @@ $('books').addEventListener('click',async event=>{
     if(!restore&&!confirm('Buch „'+selected.title+'“ in den Papierkorb verschieben? Nach 7 Tagen soll es endgültig gelöscht werden.'))return;
     action.disabled=true;
     try{
-      const {error}=await db.from('books').update({deleted_at:restore?null:new Date().toISOString()}).eq('id',selected.id).eq('owner_id',currentUser.id).eq('visibility','private');
+      const {error}=await db.from('books').update({deleted_at:restore?null:new Date().toISOString()}).eq('id',selected.id).eq('owner_id',currentUser.id).eq('visibility','private').select('id').single();
       if(error)throw error;
       await loadBooks();
     }catch(error){alert('Aktion fehlgeschlagen: '+error.message)}finally{action.disabled=false}
     return;
   }
-  const btn=action.classList.contains('open-pdf')?action:null;if(!btn)return;
-  const book=books.find(b=>b.id===btn.dataset.bookId);
-  if(!book?.file_path || !currentUser || accessState!=='approved')return;
-  btn.disabled=true;
-  try{
-    const {data,error}=await db.storage.from(STORAGE_BUCKET).createSignedUrl(book.file_path,60);
-    if(error)throw error;
-    window.open(data.signedUrl,'_blank','noopener,noreferrer');
-  }catch(error){alert('PDF konnte nicht geöffnet werden: '+error.message);}
-  finally{btn.disabled=false;}
-});
+}
+$('books').addEventListener('click',handleBookAction);
+$('kznTopContent').addEventListener('click',handleBookAction);
 $('bookForm').onsubmit=async e=>{
   e.preventDefault();
   if(!currentUser || accessState!=='approved') return;
@@ -1566,14 +1586,45 @@ $('bookForm').onsubmit=async e=>{
   const submit=e.target.querySelector('button[type="submit"]');
   submit.disabled=true;
   if(editingBookId){
+    const ownerId=currentUser.id;
+    const book=books.find(b=>b.id===editingBookId && b.owner_id===ownerId && b.visibility==='private' && !b.deleted_at);
+    const uploaded=[];
+    let saved=false;
     try{
-      const changes={title:String(f.get('title')||'').trim(),author:String(f.get('author')||'').trim(),category:String(f.get('category')||'').trim(),description:String(f.get('notes')||'').trim()};
-      if(!changes.title)throw new Error('Bitte einen Buchtitel eingeben.');
-      const {error}=await db.from('books').update(changes).eq('id',editingBookId).eq('owner_id',currentUser.id).eq('visibility','private').is('deleted_at',null);
+      if(!book)throw new Error(tr('Buch nicht verfügbar.','Kitap kullanılamıyor.'));
+      const changes={title:String(f.get('title')||'').trim(),author:String(f.get('author')||'').trim(),category:String(f.get('category')||'').trim(),location:f.get('location')||null,description:String(f.get('notes')||'').trim()};
+      if(!changes.title)throw new Error(tr('Bitte einen Buchtitel eingeben.','Lütfen bir kitap adı girin.'));
+      const pdf=validateUpload(f.get('document'),'pdf');
+      const cover=validateUpload(f.get('cover'),'cover');
+      const prefix=ownerId+'/'+book.id+'/'+crypto.randomUUID();
+      if(pdf){
+        const path=await uploadPrivateFile(pdf,prefix+'-document.pdf');
+        uploaded.push(path);
+        Object.assign(changes,{file_path:path,file_name:pdf.name,mime_type:pdf.type,file_size:pdf.size});
+      }
+      if(cover){
+        const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[cover.type];
+        changes.cover_path=await uploadPrivateFile(cover,prefix+'-cover.'+ext);
+        uploaded.push(changes.cover_path);
+      }
+      let update=db.from('books').update(changes).eq('id',book.id).eq('owner_id',ownerId).eq('visibility','private').is('deleted_at',null);
+      for(const field of ['file_path','cover_path']){
+        if(field in changes)update=book[field]?update.eq(field,book[field]):update.is(field,null);
+      }
+      const {error}=await update.select('id').single();
       if(error)throw error;
+      saved=true;
+      const replaced=[pdf&&book.file_path,cover&&book.cover_path].filter(path=>path&&path.startsWith(ownerId+'/'+book.id+'/'));
+      if(replaced.length){
+        const {error:cleanupError}=await db.storage.from(STORAGE_BUCKET).remove(replaced);
+        if(cleanupError)console.warn(cleanupError.message);
+      }
       editingBookId=null;e.target.reset();$('formPanel').style.display='none';
-      await loadBooks();alert('Buchinformationen aktualisiert.');
-    }catch(error){alert('Bearbeiten fehlgeschlagen: '+error.message)}finally{submit.disabled=false}
+      await loadBooks();alert(tr('Buch aktualisiert.','Kitap güncellendi.'));
+    }catch(error){
+      if(!saved&&uploaded.length)await db.storage.from(STORAGE_BUCKET).remove(uploaded);
+      alert(tr('Bearbeiten fehlgeschlagen: ','Düzenleme başarısız: ')+error.message);
+    }finally{submit.disabled=false}
     return;
   }
   let newBookId=null;
@@ -1586,7 +1637,7 @@ $('bookForm').onsubmit=async e=>{
     const pdf=validateUpload(f.get('document'),'pdf');
     const payload={owner_id:currentUser.id,visibility:'private',
       title:String(f.get('title')||'').trim(),author:String(f.get('author')||'').trim(),
-      category:String(f.get('category')||'').trim(),description:String(f.get('notes')||'').trim()};
+      category:String(f.get('category')||'').trim(),location:f.get('location')||null,description:String(f.get('notes')||'').trim()};
     if(!payload.title) throw new Error('Bitte einen Buchtitel eingeben.');
     const {data:inserted,error:insertError}=await db.from('books').insert(payload).select('id').single();
     if(insertError)throw insertError;
@@ -1619,7 +1670,68 @@ $('bookForm').onsubmit=async e=>{
     alert('Speichern fehlgeschlagen: '+error.message+'\nPrüfe, ob das SQL-Sicherheitsskript ausgeführt wurde.');
   }finally{submit.disabled=false;}
 };
-$('langBtn').onclick=()=>{lang=lang==='de'?'tr':'de';document.querySelectorAll('[data-de]').forEach(el=>el.textContent=el.dataset[lang]);$('addBtn').textContent=lang==='de'?'＋ Buch hinzufügen':'＋ Kitap ekle';if(!currentUser)$('loginBtn').textContent=lang==='de'?'Anmelden':'Giriş yap';$('search').placeholder=lang==='de'?'Titel, Autor oder Thema suchen …':'Kitap, yazar veya konu ara …'};
+
+const turkish={"Nicht angegeben":"Belirtilmedi","Mitgliedszugang":"Üye girişi","Anmeldestatus wird überprüft …":"Oturum durumu kontrol ediliyor …","E-Mail-Adresse":"E-posta adresi","Passwort":"Şifre","Passwort eingeben":"Şifreyi girin","Mit Passwort anmelden":"Şifreyle giriş yap","Einmaligen E-Mail-Link anfordern":"Tek kullanımlık e-posta bağlantısı iste","Passwort vergessen?":"Şifrenizi mi unuttunuz?","Passwort festlegen / ändern":"Şifre belirle / değiştir","Nur für dein aktuell angemeldetes Konto.":"Yalnızca oturum açtığın hesap için.","Neues Passwort (mindestens 12 Zeichen)":"Yeni şifre (en az 12 karakter)","Passwort wiederholen":"Şifreyi tekrarla","Passwort speichern":"Şifreyi kaydet","Passwort ändern":"Şifreyi değiştir","Passwortverwaltung":"Şifre yönetimi","Genehmigung ausstehend":"Onay bekleniyor","Kein Zugang":"Erişim yok","Zugriff konnte nicht geprüft werden":"Erişim doğrulanamadı","Zugang wird geprüft":"Erişim kontrol ediliyor","Einen Moment bitte …":"Lütfen bekleyin …","Dein Konto ist vorhanden. Bitte warte auf die Freigabe durch den Administrator.":"Hesabın mevcut. Lütfen yönetici onayını bekle.","Deine Mitgliedschaft ist nicht freigegeben. Wende dich an den Administrator.":"Üyeliğin onaylanmadı. Yöneticiyle iletişime geç.","Die Mitgliederdaten konnten nicht sicher überprüft werden. Bitte versuche es später erneut.":"Üyelik bilgileri doğrulanamadı. Lütfen daha sonra tekrar dene.","Mit E-Mail und Passwort anmelden. Wenn du noch kein Passwort hast, kannst du den bisherigen E-Mail-Link verwenden (sofern das Versandlimit es erlaubt). Neue Registrierungen werden später freigeschaltet.":"E-posta adresin ve şifrenle giriş yap. Şifren yoksa gönderim sınırı izin verdiğinde e-posta bağlantısını kullanabilirsin. Yeni kayıtlar daha sonra açılacak.","Für dieses Konto liegt noch keine freigegebene Mitgliedschaft vor.":"Bu hesabın üyeliği henüz onaylanmadı.","Neues Passwort festlegen":"Yeni şifre belirle","Der E-Mail-Link wurde geöffnet. Bitte wähle jetzt ein neues Passwort für dieses Konto.":"E-posta bağlantısı açıldı. Bu hesap için yeni bir şifre belirle.","Bitte beide Passwortfelder ausfüllen und speichern.":"Her iki şifre alanını doldur ve kaydet.","Bibliothek":"Kütüphane","Meine Bücher":"Kitaplarım","Gemeinsame Bibliothek":"Ortak kütüphane","Kategorien":"Kategoriler","Hauptbereiche":"Ana bölümler","Deine Bibliothek im Überblick":"Kütüphanene genel bakış","Deine persönlichen Bücher in Supabase":"Supabase'deki kişisel kitapların","Gemeinsame Bibliothek (Freigabe noch in Entwicklung)":"Ortak kütüphane (paylaşım geliştirme aşamasında)","Bücher nach Themen entdecken":"Konulara göre kitapları keşfet","Bücher, Autoren und Themen durchsuchen …":"Kitap, yazar ve konu ara …","Bibliothek durchsuchen":"Kütüphanede ara","Bibliotheksübersicht":"Kütüphaneye genel bakış","＋ Buch hinzufügen":"＋ Kitap ekle","Bücher insgesamt":"Toplam kitap","Mitglieder":"Üyeler","Aktive Ausleihen":"Aktif ödünçler","Wunschliste":"İstek listesi","Kategorien entdecken":"Kategorileri keşfet","Meine Kategorien verwalten":"Kategorilerimi yönet","⚙ Kategorien verwalten":"⚙ Kategorileri yönet","Neue Hinzufügungen":"Son eklenenler","Alle Bücher ansehen ›":"Tüm kitapları gör ›","Dein Wissensassistent für die digitale Bibliothek.":"Dijital kütüphanenin bilgi asistanı.","MENBA AI öffnen ›":"MENBA AI'ı aç ›","Der KI-Assistent ist noch in Entwicklung.":"Yapay zekâ asistanı geliştirme aşamasında.","Noch keine verknüpften Ausleihdaten verfügbar.":"Henüz ödünç kayıtları yok.","Noch keine verknüpfte Wunschliste verfügbar.":"Henüz bir istek listesi yok.","Titel, Autor oder Thema suchen …":"Kitap, yazar veya konu ara …","Alle Themen":"Tüm konular","Koranwissenschaften":"Kur’an ilimleri","Hadith":"Hadis","Geschichte":"Tarih","Sprache":"Dil","Sonstiges":"Diğer","Islam":"İslam","Zuhause":"Evde","Im Kurs":"Kursta","Neues Buch eintragen":"Yeni kitap ekle","Buch bearbeiten":"Kitabı düzenle","Wähle eine neue PDF- oder Coverdatei aus, um die bisherige Datei zu ersetzen.":"Mevcut dosyayı değiştirmek için yeni bir PDF veya kapak seç.","Titel *":"Kitap adı *","Autor":"Yazar","Thema / Kategorie":"Konu / kategori","Standort":"Konum","Sammlung":"Koleksiyon","Persönlich":"Kişisel","Gemeinsam (Admin-Freigabe folgt)":"Ortak (yönetici onayı gerekli)","Buchcover (JPG, PNG oder WebP, max. 5 MB)":"Kitap kapağı (JPG, PNG veya WebP, en fazla 5 MB)","PDF-Datei (max. 25 MB)":"PDF dosyası (en fazla 25 MB)","Notizen":"Notlar","Abbrechen":"İptal","Buch speichern":"Kitabı kaydet","Kategorien verwalten":"Kategorileri yönet","✕ Schließen":"✕ Kapat","Persönliche Kategorien gelten nur für dein Konto. Gemeinsame Kategorien darf nur der Admin bearbeiten. Beim Löschen bleiben Bücher erhalten.":"Kişisel kategoriler yalnızca hesabında görünür. Ortak kategorileri yalnızca yönetici düzenleyebilir. Kategori silindiğinde kitaplar korunur.","Meine Kategorien":"Kategorilerim","Gemeinsame Kategorien (Admin)":"Ortak kategoriler (yönetici)","Kategorie hinzufügen":"Kategori ekle","Kategorie bearbeiten":"Kategoriyi düzenle","Name":"Ad","z. B. Tecvid":"Örn. Tecvid","Zuordnung vorhandener Bücher":"Mevcut kitapları eşleştir","Eigener Kategoriename":"Özel kategori adı","Bild (JPG, PNG, WebP; max. 5 MB)":"Görsel (JPG, PNG, WebP, en fazla 5 MB)","Kategorie anzeigen":"Kategoriyi göster","Speichern":"Kaydet","✕ Übersicht schließen":"✕ Görünümü kapat","Bearbeiten":"Düzenle","Ein/Aus":"Göster/Gizle","Löschen":"Sil","Noch keine Kategorien vorhanden.":"Henüz kategori yok.","Noch keine Bücher vorhanden.":"Henüz kitap yok.","Deine Bücher werden geladen …":"Kitapların yükleniyor …","Bücher werden geladen …":"Kitaplar yükleniyor …","Der Papierkorb ist leer.":"Çöp kutusu boş.","Noch keine Bücher in deiner persönlichen Online-Bibliothek.":"Bu kitaplıkta henüz kitap yok.","← Zur Bibliothek":"← Kütüphaneye dön","🗑 Papierkorb (7 Tage)":"🗑 Çöp kutusu (7 gün)","PDF öffnen":"PDF'yi aç","✎ Bearbeiten":"✎ Düzenle","🗑 Löschen":"🗑 Sil","↩ Wiederherstellen":"↩ Geri yükle","Buchcover":"Kitap kapağı","Abmelden":"Çıkış yap","Admin · Abmelden":"Yönetici · Çıkış yap","Wähle eine Kategorie direkt hier oben aus.":"Yukarıdan bir kategori seç.","Deine Bücher direkt oben anzeigen":"Kitapların yukarıda gösteriliyor","Bücher aus dieser Kategorie":"Bu kategorideki kitaplar","Dein Wissensassistent":"Bilgi asistanın","Kein Cover vorhanden? Wähle eine automatisch gestaltete Buchcover-Vorlage.":"Kapağın yok mu? Hazır bir kapak şablonu seç.","Die Vorschläge sind dekorative Platzhalter – keine behaupteten Originalcover. Ein hochgeladenes echtes Cover hat Vorrang.":"Şablonlar dekoratif kapaklardır. Yüklediğin gerçek kapak önceliklidir.","Ausgewähltes Cover automatisch speichern, wenn kein eigenes hochgeladen wurde":"Kapak yüklenmezse seçilen şablonu kaydet","Hier entsteht unser KI-Assistent. In einer späteren Entwicklungsphase beantwortet er Fragen ausschließlich anhand der Bücher, für die du eine Berechtigung hast, und nennt Buch, Ausgabe und Seitenzahl als Quelle.":"Yapay zekâ asistanımız geliştiriliyor. Daha sonra yalnızca erişim iznin olan kitaplara dayanarak yanıt verecek ve kaynak olarak kitap, baskı ve sayfa numarasını belirtecek.","In Entwicklung · Noch keine KI-Anfragen möglich":"Geliştirme aşamasında · Henüz soru sorulamıyor"};
+function localize(text){return lang==='tr' && Object.hasOwn(turkish,text)?turkish[text]:text}
+function categoryLabel(value){return localize(value||'Alle Themen')}
+const staticTranslations=[];
+function prepareLanguage(){
+ for(const section of ['header','main','#catEditorOverlay']){
+  const root=document.querySelector(section);
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  while(walker.nextNode()){
+   const node=walker.currentNode, key=node.nodeValue.trim();
+   if(!Object.hasOwn(turkish,key)||node.parentElement.closest('[data-de]'))continue;
+   if(node.parentElement.matches('option:not([value])'))node.parentElement.value=key;
+   staticTranslations.push([node,key]);
+  }
+  for(const element of root.querySelectorAll('[placeholder],[aria-label],[title]')){
+   for(const attr of ['placeholder','aria-label','title']){
+    const key=element.getAttribute(attr);
+    if(Object.hasOwn(turkish,key))staticTranslations.push([element,key,attr]);
+   }
+  }
+ }
+}
+function updatePortalLanguage(){
+ const labels={library:'Bibliothek',mine:'Meine Bücher',shared:'Gemeinsame Bibliothek',categories:'Kategorien',menba:'MENBA AI'};
+ $('sectionTitle').textContent=localize(labels[portal]);
+ $('sectionDescription').textContent=localize(portalInfo[portal][1]);
+ for(const card of document.querySelectorAll('[data-portal]')){
+  const name=card.dataset.portal;
+  card.querySelector('strong').textContent=localize(labels[name]);
+  if(name!=='menba')card.querySelector('small').textContent=lang==='tr'?labels[name]:portalInfo[name][0];
+ }
+ document.querySelectorAll('[data-side-portal]').forEach(button=>{
+  const label=button.querySelector('span:last-child');
+  if(label&&labels[button.dataset.sidePortal])label.textContent=localize(labels[button.dataset.sidePortal]);
+ });
+ $('featurePanel').querySelector('p')?.replaceChildren(localize('Hier entsteht unser KI-Assistent. In einer späteren Entwicklungsphase beantwortet er Fragen ausschließlich anhand der Bücher, für die du eine Berechtigung hast, und nennt Buch, Ausgabe und Seitenzahl als Quelle.'));
+ $('featurePanel').querySelector('.tag')?.replaceChildren(localize('In Entwicklung · Noch keine KI-Anfragen möglich'));
+}
+function applyLanguage(){
+ document.documentElement.lang=lang;
+ $('langBtn').textContent=lang==='de'?'Türkçe':'Deutsch';
+ for(const [element,key,attr] of staticTranslations){
+  if(attr)element.setAttribute(attr,localize(key));
+  else element.nodeValue=localize(key);
+ }
+ document.querySelectorAll('[data-de]').forEach(el=>el.textContent=el.dataset[lang]);
+ $('dashboardAdd').textContent=$('addBtn').textContent=localize('＋ Buch hinzufügen');
+ $('trashToggle').textContent=localize(trashMode?'← Zur Bibliothek':'🗑 Papierkorb (7 Tage)');
+ $('formTitle').textContent=localize(editingBookId?'Buch bearbeiten':'Neues Buch eintragen');
+ $('catFormTitle').textContent=localize($('catFormTitle').dataset.editing==='true'?'Kategorie bearbeiten':'Kategorie hinzufügen');
+ updateAccessLanguage();
+ updatePortalLanguage();
+ render();
+ document.dispatchEvent(new Event('library-language'));
+}
+prepareLanguage();
+$('langBtn').onclick=()=>{
+ lang=lang==='de'?'tr':'de';
+ try{localStorage.setItem('library-language',lang)}catch{}
+ applyLanguage();
+};
 // Version 0.2: Zugangsschranke für die Oberfläche. Server-RLS/Storage muss separat abgesichert werden.
 let currentUser = null;
 let accessState = 'loading';
@@ -1631,15 +1743,22 @@ function showRecoveryScreen(){
  $('accessPanel').classList.remove('hidden');
  $('loginForm').classList.add('hidden');
  $('passwordForm').classList.remove('hidden');
- $('accessTitle').textContent='Neues Passwort festlegen';
- $('accessText').textContent='Der E-Mail-Link wurde geöffnet. Bitte wähle jetzt ein neues Passwort für dieses Konto.';
+ $('accessTitle').textContent=localize('Neues Passwort festlegen');
+ $('accessText').textContent=localize('Der E-Mail-Link wurde geöffnet. Bitte wähle jetzt ein neues Passwort für dieses Konto.');
  $('loginFeedback').textContent='Bitte beide Passwortfelder ausfüllen und speichern.';
 }
 
 function showAccess(state, message = '') {
   accessState = state;
+  accessMessage=message;
+  if(state!=='approved')memberAdmin=false;
   $('libraryArea').classList.toggle('hidden', state !== 'approved');
-  if(state!=='approved'){books=[];booksLoaded=false;booksError='';}
+  if(state!=='approved'){
+    books=[];booksLoaded=false;booksError='';editingBookId=null;
+    $('formPanel').style.display='none';$('bookForm').reset();
+    $('kznTopResults').hidden=true;$('kznTopContent').replaceChildren();render();
+    document.dispatchEvent(new CustomEvent('library-access',{detail:{approved:false,admin:false}}));
+  }
   $('accessPanel').classList.toggle('hidden', state === 'approved');
   $('loginForm').classList.toggle('hidden', state !== 'guest');
   if(state!=='approved'){$('memberResetControls').classList.add('hidden');$('adminResetControls').classList.add('hidden');}
@@ -1647,6 +1766,12 @@ function showAccess(state, message = '') {
   $('passwordForm').classList.add('hidden');
   if(recoveryMode)showRecoveryScreen();
   $('loginFeedback').textContent = state === 'guest' ? $('loginFeedback').textContent : '';
+  $('loginBtn').disabled = state === 'loading';
+  updateAccessLanguage();
+}
+let accessMessage='', memberAdmin=false;
+function updateAccessLanguage(){
+  const state=accessState;
   const titles = {
     guest: ['Mitgliedszugang', 'Mit E-Mail und Passwort anmelden. Wenn du noch kein Passwort hast, kannst du den bisherigen E-Mail-Link verwenden (sofern das Versandlimit es erlaubt). Neue Registrierungen werden später freigeschaltet.'],
     pending: ['Genehmigung ausstehend', 'Dein Konto ist vorhanden. Bitte warte auf die Freigabe durch den Administrator.'],
@@ -1655,10 +1780,10 @@ function showAccess(state, message = '') {
     loading: ['Zugang wird geprüft', 'Einen Moment bitte …']
   };
   const item = titles[state] || titles.error;
-  $('accessTitle').textContent = item[0];
-  $('accessText').textContent = message || item[1];
+  $('accessTitle').textContent = localize(item[0]);
+  $('accessText').textContent = localize(accessMessage || item[1]);
   $('loginBtn').disabled = state === 'loading';
-  $('loginBtn').textContent = currentUser ? 'Abmelden' : (lang === 'de' ? 'Anmelden' : 'Giriş yap');
+  $('loginBtn').textContent = currentUser ? localize(memberAdmin?'Admin · Abmelden':'Abmelden') : tr('Anmelden','Giriş yap');
   if(recoveryMode)showRecoveryScreen();
 }
 let accessRequest = 0;
@@ -1687,8 +1812,9 @@ async function refreshAccess() {
     if (request !== accessRequest) return;
     if (!data) { showAccess('pending', 'Für dieses Konto liegt noch keine freigegebene Mitgliedschaft vor.'); return; }
     if (data.status === 'approved') {
+      memberAdmin=Boolean(data.is_admin);
       showAccess('approved');
-      $('loginBtn').textContent = data.is_admin ? 'Admin · Abmelden' : 'Abmelden';
+      document.dispatchEvent(new CustomEvent('library-access',{detail:{approved:true,admin:Boolean(data.is_admin)}}));
       await loadBooks();
       await refreshPasswordApprovalControls(Boolean(data.is_admin));
     } else if (data.status === 'pending') showAccess('pending');
@@ -1799,35 +1925,39 @@ render();
   const markup=$('books').innerHTML.trim();
   return markup?'<div class="kzn-top-books">'+markup+'</div>':'<div class="kzn-top-empty">'+$('empty').textContent+'</div>';
  }
+ function showTopCategories(){
+   const cards=[...document.querySelectorAll('[data-dash-category]')];
+   const grid='<div class="kzn-top-category-grid">'+cards.map((b,i)=>'<button type="button" data-top-cat="'+i+'"><img src="'+esc(b.querySelector('img').getAttribute('src'))+'" alt=""><span>'+esc(b.querySelector('.kzn-cat-name').textContent)+'</span></button>').join('')+'</div>';
+   openTop(localize('Kategorien'),localize('Wähle eine Kategorie direkt hier oben aus.'),grid);
+   content.querySelectorAll('[data-top-cat]').forEach(btn=>btn.addEventListener('click',()=>document.querySelectorAll('[data-dash-category]')[Number(btn.dataset.topCat)]?.click()));
+ }
  function selectTopPortal(name){
   $('category').value='';$('search').value='';$('dashboardSearch').value='';
   switchPortal(name);
   if(name==='menba'){
-   openTop('MENBA AI','Dein Wissensassistent', $('featurePanel').innerHTML);
+   openTop('MENBA AI',localize('Dein Wissensassistent'), $('featurePanel').innerHTML);
   }else if(name==='categories'){
-   const cards=[...document.querySelectorAll('[data-dash-category]')];
-   const grid='<div class="kzn-top-category-grid">'+cards.map((b,i)=>'<button type="button" data-top-cat="'+i+'"><img src="'+b.querySelector('img').getAttribute('src')+'" alt=""><span>'+b.querySelector('.kzn-cat-name').textContent+'</span></button>').join('')+'</div>';
-   openTop('Kategoriler · Kategorien','Wähle eine Kategorie direkt hier oben aus.',grid);
-   content.querySelectorAll('[data-top-cat]').forEach(btn=>btn.addEventListener('click',()=>cards[Number(btn.dataset.topCat)].click()));
+   showTopCategories();
   }else{
-   const labels={library:'Kütüphane · Bibliothek',mine:'Benim Kitaplarım · Meine Bücher',shared:'Ortak Kütüphane · Gemeinsame Bibliothek'};
-   openTop(labels[name]||'Bibliothek','Deine Bücher direkt oben anzeigen',bookResults());
+   const labels={library:'Bibliothek',mine:'Meine Bücher',shared:'Gemeinsame Bibliothek'};
+   openTop(localize(labels[name]||'Bibliothek'),localize('Deine Bücher direkt oben anzeigen'),bookResults());
   }
  }
  // Capture phase prevents old handlers from forcing the user down to the catalog.
  document.querySelectorAll('#libraryArea>.portal [data-portal]').forEach(b=>b.addEventListener('click',e=>{
   e.preventDefault();e.stopImmediatePropagation();selectTopPortal(b.dataset.portal);
  },true));
- document.querySelectorAll('[data-dash-category]').forEach(b=>b.addEventListener('click',e=>{
+ document.querySelector('.kzn-categories').addEventListener('click',e=>{
+  const b=e.target.closest('[data-dash-category]');if(!b)return;
   e.preventDefault();e.stopImmediatePropagation();
-  switchPortal('library');
+  if(portal!=='shared')switchPortal('library');
   $('search').value='';$('dashboardSearch').value='';
   $('category').value=b.dataset.dashCategory;
   render();
   const name=b.querySelector('.kzn-cat-name')?.textContent||'Kategorie';
-  openTop(name,'Bücher aus dieser Kategorie',bookResults());
+  openTop(name,localize('Bücher aus dieser Kategorie'),bookResults());
   document.querySelectorAll('[data-dash-category]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
- },true));
+ },true);
  document.querySelectorAll('[data-side-portal]').forEach(b=>b.addEventListener('click',e=>{
   e.preventDefault();e.stopImmediatePropagation();selectTopPortal(b.dataset.sidePortal);
   document.querySelectorAll('[data-side-portal]').forEach(x=>x.classList.toggle('active',x===b));
@@ -1842,8 +1972,17 @@ render();
   e.preventDefault();e.stopImmediatePropagation();selectTopPortal('menba');
  },true);
  // Re-render the visible top results when the underlying catalog changes.
+ document.addEventListener('library-categories',()=>{
+  if(!top.hidden&&content.querySelector('.kzn-top-category-grid'))showTopCategories();
+ });
+ document.addEventListener('library-language',()=>{
+  if(top.hidden)return;
+  if(portal==='menba'||content.querySelector('.kzn-top-category-grid'))selectTopPortal(portal);
+  else if($('category').value)desc.textContent=localize('Bücher aus dieser Kategorie');
+  else {title.textContent=$('sectionTitle').textContent;desc.textContent=localize('Deine Bücher direkt oben anzeigen');}
+ });
  const oldRender=render;
- render=function(){oldRender();if(!top.hidden&&portal!=='menba')content.innerHTML=bookResults()};
+ render=function(){oldRender();if(!top.hidden&&portal!=='menba'&&!content.querySelector('.kzn-top-category-grid'))content.innerHTML=bookResults()};
 })();
 
 
@@ -1966,90 +2105,152 @@ if(recoveryMode)showRecoveryScreen();
 /* Category manager v1: categories are stored per owner in Supabase with RLS. */
 (()=>{
 'use strict';
-const defaults=[
- ['Kur’an & Tafsir','Koranwissenschaften','kategorie-quran.jpg'],['Hadith & Sunna','Hadith','kategorie-hadith.jpg'],['Akâid & İtikad','Islam','kategorie-aqidah.jpg'],['Fıkıh & İbadet','Islam','kategorie-fiqh.jpg'],['Siyer & Tarih','Geschichte','kategorie-siyer.jpg'],['Arapça & Dil','Sprache','kategorie-arabic.jpg'],['Tecvid','Tecvid','']];
-let entries=[],scope='personal',editing=null,isAdmin=false,ready=false;
+let entries=[],scope='personal',editing=null,isAdmin=false;
+let editorRequest=0, cardsRequest=0, writing=false, shownScope=null;
 const el=id=>document.getElementById(id);
 const msg=t=>el('catEditorStatus').textContent=t;
-const safe=t=>String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const cardArea=document.querySelector('.kzn-categories');
-const originalCards=[...cardArea.querySelectorAll('[data-dash-category]')].map((b,i)=>({name:b.querySelector('.kzn-cat-name')?.textContent||defaults[i]?.[0],category:b.dataset.dashCategory,image:b.querySelector('img')?.getAttribute('src')||''}));
-const template=originalCards.length?originalCards:defaults.map(d=>({name:d[0],category:d[1],image:d[2]}));
-function defaultRows(){return template.map((c,i)=>({name:c.name,source_category:c.category,image_data:c.image,visible:true,position:i,scope,owner_id:currentUser.id}));}
-async function query(){
- if(!currentUser||accessState!=='approved')return;
- const {data,error}=await db.from('user_categories').select('*').eq('scope',scope).order('position');
+const catalog=el('category'), bookCategory=el('bookForm').elements.namedItem('category');
+const defaults=[...catalog.options].map(o=>o.value);
+const cardScope=()=>portal==='shared'?'shared':'personal';
+const categoryValue=c=>c.source_category||c.name;
+async function query(selectedScope){
+ const {data,error}=await db.from('user_categories').select('*').eq('scope',selectedScope).order('position').order('id');
  if(error)throw error;
- entries=data||[];
- if(!entries.length && (scope==='personal'||(scope==='shared'&&isAdmin))){
-  const {error:e}=await db.from('user_categories').insert(defaultRows());if(e)throw e;
-  const r=await db.from('user_categories').select('*').eq('scope',scope).order('position');if(r.error)throw r.error;entries=r.data||[];
- }
+ return data||[];
 }
-function currentCards(){return entries.filter(x=>x.visible)}
-function drawCards(){
- if(!ready)return;
- const bookCategory=document.querySelector('#bookForm select[name=category]');
- if(bookCategory)entries.forEach(c=>{const value=c.source_category||c.name;if(![...bookCategory.options].some(o=>o.value===value))bookCategory.add(new Option(value,value));});
+function drawCards(rows){
+ const active=rows.filter(c=>c.visible);
+ for(const select of [catalog,bookCategory]){
+  const selected=select.value;
+  const values=[...new Set([...defaults,...active.map(categoryValue),...books.map(b=>b.category).filter(Boolean)])];
+  select.replaceChildren(...values.filter(value=>value||select===catalog).map(value=>new Option(categoryLabel(value),value)));
+  if(values.includes(selected))select.value=selected;
+ }
  cardArea.replaceChildren();
- currentCards().forEach(cat=>{
-  const b=document.createElement('button');b.type='button';b.dataset.dashCategory=cat.source_category||cat.name;
+ for(const cat of active){
+  const button=document.createElement('button');button.type='button';button.dataset.dashCategory=categoryValue(cat);
   const img=document.createElement('img');img.className='kzn-cat-image';img.alt='';img.loading='lazy';img.src=cat.image_data||'kategorie-quran.jpg';
   const label=document.createElement('span');label.className='kzn-cat-name';label.textContent=cat.name;
-  b.append(img,label);
-  b.addEventListener('click',()=>{
-   // Update catalog filter and show matching books at the top; no forced scroll to bottom.
-   const sel=el('category');const value=cat.source_category||cat.name;
-   if(![...sel.options].some(o=>o.value===value))sel.add(new Option(value,value));
-   switchPortal('library');sel.value=value;render();
-   if(typeof openTop==='function'&&typeof bookResults==='function')openTop(cat.name,'Bücher dieser Kategorie',bookResults());
-  });
-  cardArea.append(b);
- });
- // Keep top category navigation in sync when already open; its next opening reads cards dynamically.
+  button.append(img,label);
+  cardArea.append(button);
+ }
+}
+async function refreshCards(){
+ const request=++cardsRequest, session=accessRequest;
+ const selectedScope=cardScope();
+ if(!currentUser||accessState!=='approved'){shownScope=null;drawCards([]);return;}
+ if(shownScope!==selectedScope){shownScope=selectedScope;drawCards([]);}
+ try{
+  const rows=await query(selectedScope);
+  if(request===cardsRequest&&session===accessRequest){drawCards(rows);render();document.dispatchEvent(new Event('library-categories'));}
+ }catch(error){
+  if(request===cardsRequest&&session===accessRequest){drawCards([]);console.warn(error.message);}
+ }
+}
+async function refreshEditor(){
+ const request=++editorRequest, session=accessRequest;
+ entries=[];drawEditor();
+ try{
+  const rows=await query(scope);
+  if(request!==editorRequest||session!==accessRequest)return;
+  entries=rows;drawEditor();msg('');
+ }catch(error){if(request===editorRequest&&session===accessRequest)msg(error.message);}
 }
 function drawEditor(){
  const list=el('catEditorList');list.replaceChildren();
  entries.sort((a,b)=>a.position-b.position).forEach((c,i)=>{
   const row=document.createElement('div');row.className='cat-editor-row';
   const img=document.createElement('img');img.className='cat-editor-preview';img.alt='';img.src=c.image_data||'kategorie-quran.jpg';
-  const label=document.createElement('span');label.textContent=c.name+(c.visible?'':' (ausgeblendet)');label.style.flex='1';
+  const label=document.createElement('span');label.textContent=c.name+(c.visible?'':tr(' (ausgeblendet)',' (gizli)'));label.style.flex='1';
   row.append(img,label);
   for(const [name,fn] of [['↑',()=>move(i,-1)],['↓',()=>move(i,1)],['Bearbeiten',()=>edit(c)],['Ein/Aus',()=>toggle(c)],['Löschen',()=>remove(c)]]){
-   const b=document.createElement('button');b.type='button';b.textContent=name;b.addEventListener('click',fn);row.append(b);
+   const b=document.createElement('button');b.type='button';b.textContent=localize(name);b.addEventListener('click',fn);row.append(b);
   }
   list.append(row);
  });
- if(!entries.length)list.textContent='Noch keine Kategorien vorhanden.';
+ if(!entries.length)list.textContent=localize('Noch keine Kategorien vorhanden.');
 }
-async function saveUpdate(id,patch){const {error}=await db.from('user_categories').update(patch).eq('id',id);if(error)throw error;await query();drawEditor();drawCards()}
-async function move(i,delta){const other=i+delta;if(other<0||other>=entries.length)return;try{const a=entries[i],b=entries[other];await saveUpdate(a.id,{position:b.position});await saveUpdate(b.id,{position:a.position});msg('Reihenfolge gespeichert.')}catch(e){msg(e.message)}}
-function edit(c){editing=c.id;el('catFormTitle').textContent='Kategorie bearbeiten';el('catName').value=c.name;el('catSource').value=c.source_category||'';el('catVisible').checked=c.visible;el('catImage').value='';el('catName').focus()}
-async function toggle(c){try{await saveUpdate(c.id,{visible:!c.visible});msg('Sichtbarkeit gespeichert.')}catch(e){msg(e.message)}}
-async function remove(c){if(!confirm('Kategorie „'+c.name+'“ löschen? Die Bücher bleiben erhalten.'))return;const {error}=await db.from('user_categories').delete().eq('id',c.id);if(error){msg(error.message);return}await query();drawEditor();drawCards();msg('Kategorie gelöscht. Bücher wurden nicht verändert.')}
-function resetForm(){editing=null;el('catEditorForm').reset();el('catFormTitle').textContent='Kategorie hinzufügen';el('catVisible').checked=true}
+async function mutate(operation,success){
+ if(writing)return;
+ writing=true;
+ const session=accessRequest;
+ el('catEditorScope').disabled=true;
+ el('catSave').disabled=true;
+ try{
+  const {error}=await operation();
+  if(error)throw error;
+  if(session!==accessRequest)return;
+  await Promise.all([refreshEditor(),refreshCards()]);
+  msg(success);
+ }catch(error){if(session===accessRequest)msg(error.message);}
+ finally{writing=false;el('catEditorScope').disabled=false;el('catSave').disabled=false;}
+}
+async function saveUpdate(id,patch,success){
+ return mutate(()=>db.from('user_categories').update(patch).eq('id',id).select('id').single(),success);
+}
+async function move(i,delta){
+ const other=i+delta;
+ if(other<0||other>=entries.length)return;
+ const ids=entries.map(c=>c.id);
+ [ids[i],ids[other]]=[ids[other],ids[i]];
+ await mutate(()=>db.rpc('reorder_library_categories',{category_scope:scope,category_ids:ids}),tr('Reihenfolge gespeichert.','Sıralama kaydedildi.'));
+}
+function edit(c){editing=c.id;el('catFormTitle').dataset.editing='true';el('catFormTitle').textContent=localize('Kategorie bearbeiten');el('catName').value=c.name;const source=el('catSource');
+ const custom=c.source_category&&c.source_category!==c.name?c.source_category:'';
+ if(custom&&![...source.options].some(o=>o.value===custom))source.add(new Option(categoryLabel(custom),custom));
+ source.value=custom;el('catVisible').checked=c.visible;el('catImage').value='';el('catName').focus()}
+async function toggle(c){await saveUpdate(c.id,{visible:!c.visible},tr('Sichtbarkeit gespeichert.','Görünürlük kaydedildi.'))}
+async function remove(c){
+ if(!confirm(tr('Kategorie löschen? Die Bücher bleiben erhalten.','Kategori silinsin mi? Kitaplar korunur.')))return;
+ await mutate(()=>db.from('user_categories').delete().eq('id',c.id).select('id').single(),tr('Kategorie gelöscht.','Kategori silindi.'));
+ if(editing===c.id)resetForm();
+}
+function resetForm(){editing=null;el('catEditorForm').reset();el('catFormTitle').dataset.editing='false';el('catFormTitle').textContent=localize('Kategorie hinzufügen');el('catVisible').checked=true}
 async function shrinkImage(file){if(!file)return null;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5e6)throw Error('Nur JPG, PNG oder WebP bis 5 MB.');const bmp=await createImageBitmap(file);const scale=Math.min(1,640/bmp.width,440/bmp.height);const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bmp.width*scale));canvas.height=Math.max(1,Math.round(bmp.height*scale));canvas.getContext('2d').drawImage(bmp,0,0,canvas.width,canvas.height);bmp.close();return canvas.toDataURL('image/jpeg',.78)}
-async function openEditor(){if(!currentUser||accessState!=='approved')return;el('catEditorOverlay').hidden=false;scope='personal';el('catEditorScope').value=scope;el('catEditorScope').querySelector('option[value=shared]').disabled=!isAdmin;resetForm();try{await query();drawEditor();msg('')}catch(e){msg('Supabase-Einrichtung fehlt oder Zugriff verweigert: '+e.message)}}
+async function openEditor(){
+ if(!currentUser||accessState!=='approved')return;
+ el('catEditorOverlay').hidden=false;
+ scope=cardScope()==='shared'&&isAdmin?'shared':'personal';
+ el('catEditorScope').value=scope;
+ el('catEditorScope').querySelector('option[value=shared]').disabled=!isAdmin;
+ resetForm();await refreshEditor();
+}
 el('manageCategories').addEventListener('click',openEditor);
-el('catEditorClose').addEventListener('click',()=>el('catEditorOverlay').hidden=true);
+el('catEditorClose').addEventListener('click',()=>{el('catEditorOverlay').hidden=true;editorRequest++;});
 el('catCancel').addEventListener('click',resetForm);
-el('catEditorScope').addEventListener('change',async e=>{scope=e.target.value;resetForm();try{await query();drawEditor();msg('')}catch(err){msg(err.message)}});
+el('catEditorScope').addEventListener('change',async e=>{scope=e.target.value;resetForm();await refreshEditor();});
 el('catEditorForm').addEventListener('submit',async e=>{
- e.preventDefault();const btn=el('catSave');btn.disabled=true;
- try{const image=await shrinkImage(el('catImage').files[0]);const payload={name:el('catName').value.trim(),source_category:el('catSource').value||el('catName').value.trim(),visible:el('catVisible').checked};if(image)payload.image_data=image;
- if(!payload.name)throw Error('Bitte einen Namen eingeben.');
- let result;if(editing){result=await db.from('user_categories').update(payload).eq('id',editing)}else{result=await db.from('user_categories').insert({...payload,scope,owner_id:currentUser.id,position:entries.length,image_data:image||'kategorie-quran.jpg'})}
- if(result.error)throw result.error;resetForm();await query();drawEditor();drawCards();msg('Gespeichert.');
- }catch(err){msg('Speichern fehlgeschlagen: '+err.message)}finally{btn.disabled=false}
+ e.preventDefault();
+ const scopeAtSubmit=scope, id=editing, ownerId=currentUser?.id;
+ if(!ownerId||accessState!=='approved'||(scopeAtSubmit==='shared'&&!isAdmin))return;
+ const previous=entries.find(category=>category.id===id);
+ const name=el('catName').value.trim();
+ const payload={name,source_category:el('catSource').value||previous?.source_category||previous?.name||name,visible:el('catVisible').checked};
+ const file=el('catImage').files[0], position=Math.max(-1,...entries.map(c=>c.position))+1;
+ await mutate(async()=>{
+  if(!payload.name)throw Error(tr('Bitte einen Namen eingeben.','Lütfen bir ad girin.'));
+  const image=await shrinkImage(file);
+  if(currentUser?.id!==ownerId||accessState!=='approved')throw Error(tr('Sitzung beendet.','Oturum sona erdi.'));
+  if(image)payload.image_data=image;
+  const result=id
+   ?await db.from('user_categories').update(payload).eq('id',id).select('id').single()
+   :await db.from('user_categories').insert({...payload,scope:scopeAtSubmit,owner_id:ownerId,position,image_data:image||'kategorie-quran.jpg'});
+  if(!result.error)resetForm();
+  return result;
+ },tr('Gespeichert.','Kaydedildi.'));
 });
-async function init(){if(!currentUser||accessState!=='approved')return;try{const {data,error}=await db.from('library_members').select('is_admin').eq('user_id',currentUser.id).maybeSingle();if(error)throw error;isAdmin=Boolean(data?.is_admin);scope='personal';await query();ready=true;drawCards();}catch(e){console.warn('Kategorienverwaltung:',e.message);ready=false;}}
-// Observe the existing app's authenticated state without changing auth logic.
-const observer=new MutationObserver(()=>{if(!el('libraryArea').classList.contains('hidden')&&currentUser&&!ready)init();if(el('libraryArea').classList.contains('hidden')){ready=false;el('catEditorOverlay').hidden=true}});
-observer.observe(el('libraryArea'),{attributes:true,attributeFilter:['class']});
-// Switch visible category cards with the active personal/shared library section.
-async function followPortal(){if(!ready||el('catEditorOverlay').hidden===false)return;const next=portal==='shared'?'shared':'personal';if(next===scope)return;scope=next;try{await query();drawCards()}catch(e){console.warn(e.message)}}
-document.querySelectorAll('[data-portal],[data-side-portal]').forEach(b=>b.addEventListener('click',()=>setTimeout(followPortal,0)));
-if(!el('libraryArea').classList.contains('hidden'))init();
+document.addEventListener('library-access',event=>{
+ isAdmin=event.detail.admin;
+ if(!event.detail.approved){
+  editorRequest++;entries=[];el('catEditorOverlay').hidden=true;resetForm();
+ }
+ refreshCards();
+});
+document.addEventListener('library-portal',refreshCards);
+document.addEventListener('library-language',()=>{drawEditor();refreshCards();});
+
 })();
 </script>
+<script>try{if(localStorage.getItem('library-language')==='tr')lang='tr'}catch{}applyLanguage();</script>
 </body></html>
