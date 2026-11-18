@@ -1322,9 +1322,13 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
  #libraryArea>.hero{margin-top:8px!important}
 }
 </style><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri&display=swap">
+<link rel="stylesheet" href="member-tools.css">
+<link rel="stylesheet" href="lending.css">
+<link rel="stylesheet" href="admin-beta.css">
+<link rel="stylesheet" href="shared-library.css">
 </head>
 <body>
-<aside class="sidebar-main" aria-label="Hauptnavigation"><div class="sidebar-logo"><img class="heritage-logo" alt="Darül İlm Logo" src="darul-ilm-logo-transparent.png"><span class="arabic" lang="ar">دار العلم</span><small>Dijital Kütüphane</small></div><nav class="sidebar-nav"><button class="active" data-side-portal="library"><span class="symbol" aria-hidden="true">⌂</span><span class="sidebar-label" data-de="Startseite" data-tr="Ana Sayfa">Startseite</span></button><button data-side-portal="library"><span class="symbol" aria-hidden="true">▤</span><span class="sidebar-label" data-de="Bibliothek" data-tr="Kütüphane">Bibliothek</span></button><button data-side-portal="mine"><span class="symbol" aria-hidden="true">▣</span><span class="sidebar-label" data-de="Meine Bücher" data-tr="Kitaplarım">Meine Bücher</span></button><button data-side-portal="shared"><span class="symbol" aria-hidden="true">♧</span><span class="sidebar-label" data-de="Gemeinsame Bibliothek" data-tr="Ortak Kütüphane">Gemeinsame Bibliothek</span></button><button data-side-portal="categories"><span class="symbol" aria-hidden="true">▦</span><span class="sidebar-label" data-de="Kategorien" data-tr="Kategoriler">Kategorien</span></button><button data-side-portal="menba"><span class="symbol" aria-hidden="true">✦</span><span class="sidebar-label" data-de="MENBA AI" data-tr="MENBA AI">MENBA AI</span></button><div class="sidebar-divider"></div><button data-side-view="loans"><span class="symbol" aria-hidden="true">▤</span><span class="sidebar-label" data-de="Ausleihe" data-tr="Ödünç">Ausleihe</span></button><button data-side-view="wishlist"><span class="symbol" aria-hidden="true">♡</span><span class="sidebar-label" data-de="Wunschliste" data-tr="İstek Listesi">Wunschliste</span></button><button data-side-placeholder="Notizen"><span class="symbol" aria-hidden="true">✎</span><span class="sidebar-label" data-de="Meine Notizen" data-tr="Notlarım">Meine Notizen</span></button><button data-side-placeholder="Statistiken"><span class="symbol" aria-hidden="true">▥</span><span class="sidebar-label" data-de="Statistiken" data-tr="İstatistikler">Statistiken</span></button><div class="sidebar-divider"></div><button data-side-placeholder="Adminbereich"><span class="symbol" aria-hidden="true">⚙</span><span class="sidebar-label" data-de="Verwaltung (Admin)" data-tr="Yönetim (Admin)">Verwaltung (Admin)</span></button></nav><div class="sidebar-account">KZN · SD<br><small>Private Mitgliederbibliothek</small></div></aside>
+<aside class="sidebar-main" aria-label="Hauptnavigation"><div class="sidebar-logo"><img class="heritage-logo" alt="Darül İlm Logo" src="darul-ilm-logo-transparent.png"><span class="arabic" lang="ar">دار العلم</span><small>Dijital Kütüphane</small></div><nav class="sidebar-nav"><button class="active" data-side-portal="library"><span class="symbol" aria-hidden="true">⌂</span><span class="sidebar-label" data-de="Startseite" data-tr="Ana Sayfa">Startseite</span></button><button data-side-portal="library"><span class="symbol" aria-hidden="true">▤</span><span class="sidebar-label" data-de="Bibliothek" data-tr="Kütüphane">Bibliothek</span></button><button data-side-portal="mine"><span class="symbol" aria-hidden="true">▣</span><span class="sidebar-label" data-de="Meine Bücher" data-tr="Kitaplarım">Meine Bücher</span></button><button data-side-portal="shared"><span class="symbol" aria-hidden="true">♧</span><span class="sidebar-label" data-de="Gemeinsame Bibliothek" data-tr="Ortak Kütüphane">Gemeinsame Bibliothek</span></button><button data-side-portal="categories"><span class="symbol" aria-hidden="true">▦</span><span class="sidebar-label" data-de="Kategorien" data-tr="Kategoriler">Kategorien</span></button><button data-side-portal="menba"><span class="symbol" aria-hidden="true">✦</span><span class="sidebar-label" data-de="MENBA AI" data-tr="MENBA AI">MENBA AI</span></button><div class="sidebar-divider"></div><button type="button" id="betaLoansNav" hidden><span class="symbol" aria-hidden="true">▤</span><span class="sidebar-label" data-de="Ausleihe" data-tr="Ödünç">Ausleihe</span></button><button type="button" id="betaWishlistNav" hidden><span class="symbol" aria-hidden="true">♡</span><span class="sidebar-label" data-de="Wunschliste" data-tr="İstek Listesi">Wunschliste</span></button><button type="button" id="betaNotesNav" hidden><span class="symbol" aria-hidden="true">✎</span><span class="sidebar-label" data-de="Meine Notizen" data-tr="Notlarım">Meine Notizen</span></button><div class="sidebar-divider"></div><button type="button" id="betaAdminNav" hidden><span class="symbol" aria-hidden="true">⚙</span><span class="sidebar-label" data-de="Verwaltung (Admin)" data-tr="Yönetim (Admin)">Verwaltung (Admin)</span></button></nav><div class="sidebar-account">KZN · SD<br><small>Private Mitgliederbibliothek</small></div></aside>
 
 <header>
  <div class="brand"><div class="mark">ك</div><div><h1>KZN · SD</h1><small>دَارُ الْعِلْمِ · HAUS DES WISSENS</small></div></div>
@@ -1342,7 +1346,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
   </div>
   <p id="publicHadisStatus" role="status">Hadis wird geladen …</p>
 </section>
- <div class="header-actions"><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button type="button" id="passwordAdminNav" class="hidden" aria-expanded="false" aria-controls="passwordApprovalPanel">Passwortverwaltung</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
+ <div class="header-actions"><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button type="button" id="passwordAdminNav" class="hidden" aria-expanded="false" aria-controls="passwordApprovalPanel">Passwort-Hilfe</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
 </header>
 <script src="hadis-header.js"></script>
 <main>
@@ -1361,9 +1365,197 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
  <div class="kzn-top-results-heading"><div><span class="kzn-ornament">❦ ✧ ❦</span><h2 id="kznTopTitle">Bibliothek</h2><p id="kznTopDescription">Bücher aus deiner Bibliothek</p></div><button type="button" id="kznTopClose">✕ Übersicht schließen</button></div>
  <div id="kznTopContent"></div>
 </section>
+<section id="betaSharedLibrary" class="beta-shared-library" aria-labelledby="betaSharedLibraryTitle" hidden>
+  <div class="beta-share-header">
+    <h2 id="betaSharedLibraryTitle" tabindex="-1" data-share-de="Gemeinsame Bibliothek" data-share-tr="Ortak kütüphane">Gemeinsame Bibliothek</h2>
+    <button id="betaShareClose" type="button" data-share-de="Schließen" data-share-tr="Kapat">Schließen</button>
+  </div>
+  <p id="betaShareFeedback" class="beta-share-feedback" role="status"></p>
+  <div class="beta-share-columns">
+    <div>
+      <h3 data-share-de="Freigegebene Bücher" data-share-tr="Paylaşılan kitaplar">Freigegebene Bücher</h3>
+      <p id="betaShareCatalogState" class="beta-share-feedback" role="status"></p>
+      <ul id="betaShareCatalogList" class="beta-share-list"></ul>
+      <div id="betaShareCatalogPages" class="beta-share-actions" hidden>
+        <button id="betaShareCatalogPrevious" type="button" data-share-de="Zurück" data-share-tr="Önceki">Zurück</button>
+        <span id="betaShareCatalogPageLabel"></span>
+        <button id="betaShareCatalogNext" type="button" data-share-de="Weiter" data-share-tr="Sonraki">Weiter</button>
+      </div>
+    </div>
+    <div>
+      <form id="betaShareForm" class="beta-share-form">
+        <h3 data-share-de="Eigenes Buch zur Freigabe einreichen" data-share-tr="Kitabını paylaşım onayına gönder">Eigenes Buch zur Freigabe einreichen</h3>
+        <p data-share-de="Nach Freigabe sehen Mitglieder Titel, Autor und Kategorie. Die PDF wird nur mit deiner Zustimmung verfügbar."
+           data-share-tr="Onaydan sonra üyeler başlığı, yazarı ve kategoriyi görür. PDF yalnızca senin izninle açılabilir.">Nach Freigabe sehen Mitglieder Titel, Autor und Kategorie. Die PDF wird nur mit deiner Zustimmung verfügbar.</p>
+        <label><span data-share-de="Mein Buch" data-share-tr="Kitabım">Mein Buch</span><select name="book" required></select></label>
+        <label class="beta-share-check"><input name="includePdf" type="checkbox" disabled><span data-share-de="Auch die PDF zur Freigabe einreichen" data-share-tr="PDF dosyasını da onaya gönder">Auch die PDF zur Freigabe einreichen</span></label>
+        <button type="submit" data-share-de="Zur Freigabe einreichen" data-share-tr="Onaya gönder">Zur Freigabe einreichen</button>
+      </form>
+      <h3 data-share-de="Meine Freigaben" data-share-tr="Paylaşımlarım">Meine Freigaben</h3>
+      <p id="betaShareOwnState" class="beta-share-feedback" role="status"></p>
+      <ul id="betaShareOwnList" class="beta-share-list"></ul>
+      <div id="betaShareOwnPages" class="beta-share-actions" hidden>
+        <button id="betaShareOwnPrevious" type="button" data-share-de="Zurück" data-share-tr="Önceki">Zurück</button>
+        <span id="betaShareOwnPageLabel"></span>
+        <button id="betaShareOwnNext" type="button" data-share-de="Weiter" data-share-tr="Sonraki">Weiter</button>
+      </div>
+    </div>
+  </div>
+  <section id="betaShareReviewSection" class="beta-share-review" aria-labelledby="betaShareReviewTitle" hidden>
+    <h3 id="betaShareReviewTitle" tabindex="-1" data-share-de="Freigaben prüfen" data-share-tr="Paylaşım isteklerini incele">Freigaben prüfen</h3>
+    <p id="betaShareReviewState" class="beta-share-feedback" role="status"></p>
+    <ul id="betaShareReviewList" class="beta-share-list"></ul>
+    <div id="betaShareReviewPages" class="beta-share-actions" hidden>
+      <button id="betaShareReviewPrevious" type="button" data-share-de="Zurück" data-share-tr="Önceki">Zurück</button>
+      <span id="betaShareReviewPageLabel"></span>
+      <button id="betaShareReviewNext" type="button" data-share-de="Weiter" data-share-tr="Sonraki">Weiter</button>
+    </div>
+  </section>
+  <button id="betaShareReload" type="button" data-share-de="Erneut laden" data-share-tr="Tekrar yükle" hidden>Erneut laden</button>
+</section>
 <section class="kzn-dashboard" id="kznDashboard" aria-label="Bibliotheksübersicht">
 <div class="kzn-dash-search"><span aria-hidden="true">⌕</span><input id="dashboardSearch" type="search" placeholder="Bücher, Autoren und Themen durchsuchen …" aria-label="Bibliothek durchsuchen"><button type="button" id="dashboardAdd">＋ Buch hinzufügen</button></div>
 <div class="kzn-dash-stats"><div class="kzn-dash-stat"><span>▤</span><strong id="dashBooks">—</strong><small>Bücher insgesamt</small></div><div class="kzn-dash-stat"><span>♧</span><strong id="dashMembers">—</strong><small>Mitglieder</small></div><div class="kzn-dash-stat"><span>↗</span><strong id="dashLoans">—</strong><small>Aktive Ausleihen</small></div><div class="kzn-dash-stat"><span>♡</span><strong id="dashWishlist">—</strong><small>Wunschliste</small></div></div>
+<section id="betaMemberTools" class="beta-member-tools" aria-labelledby="betaToolsTitle" hidden>
+  <div class="beta-tools-header">
+    <h2 id="betaToolsTitle" tabindex="-1">Meine Notizen</h2>
+    <button id="betaToolsClose" type="button" data-beta-de="Schließen" data-beta-tr="Kapat">Schließen</button>
+  </div>
+  <div class="beta-tools-content">
+    <form id="betaNotesForm" class="beta-tools-form">
+      <h3 id="betaNotesFormTitle">Neue Notiz</h3>
+      <label><span data-beta-de="Titel" data-beta-tr="Başlık">Titel</span><input name="title" type="text" required maxlength="160"></label>
+      <label><span data-beta-de="Notiz" data-beta-tr="Not">Notiz</span><textarea name="body" rows="6" maxlength="12000" required></textarea></label>
+      <div class="beta-tools-actions">
+        <button type="submit" data-beta-de="Speichern" data-beta-tr="Kaydet">Speichern</button>
+        <button id="betaNotesCancel" type="button" data-beta-de="Bearbeitung beenden" data-beta-tr="Düzenlemeyi bitir" hidden>Bearbeitung beenden</button>
+      </div>
+    </form>
+    <form id="betaWishlistForm" class="beta-tools-form" hidden>
+      <h3 id="betaWishlistFormTitle">Buch vormerken</h3>
+      <label><span data-beta-de="Buchtitel" data-beta-tr="Kitap adı">Buchtitel</span><input name="title" type="text" required maxlength="160"></label>
+      <label><span data-beta-de="Autor/in (optional)" data-beta-tr="Yazar (isteğe bağlı)">Autor/in (optional)</span><input name="author" type="text" maxlength="160"></label>
+      <div class="beta-tools-actions">
+        <button type="submit" data-beta-de="Speichern" data-beta-tr="Kaydet">Speichern</button>
+        <button id="betaWishlistCancel" type="button" data-beta-de="Bearbeitung beenden" data-beta-tr="Düzenlemeyi bitir" hidden>Bearbeitung beenden</button>
+      </div>
+    </form>
+    <div class="beta-tools-results">
+      <p id="betaToolsState" class="beta-tools-state" role="status"></p>
+      <button id="betaToolsRetry" type="button" data-beta-de="Erneut laden" data-beta-tr="Tekrar yükle" hidden>Erneut laden</button>
+      <ul id="betaToolsList" class="beta-tools-list"></ul>
+      <div id="betaToolsPages" class="beta-tools-actions" hidden>
+        <button id="betaPagePrev" type="button" data-beta-de="Zurück" data-beta-tr="Önceki">Zurück</button>
+        <span id="betaToolsPageLabel" role="status"></span>
+        <button id="betaPageNext" type="button" data-beta-de="Weiter" data-beta-tr="Sonraki">Weiter</button>
+      </div>
+    </div>
+  </div>
+  <p id="betaToolsFeedback" class="beta-tools-feedback" role="status"></p>
+</section>
+<section id="betaLending" class="beta-lending" aria-labelledby="betaLendingTitle" hidden>
+  <div class="beta-lending-header">
+    <h2 id="betaLendingTitle" tabindex="-1" data-lend-de="Ausleihen" data-lend-tr="Ödünç işlemleri">Ausleihen</h2>
+    <button type="button" id="betaLendingClose" data-lend-de="Schließen" data-lend-tr="Kapat">Schließen</button>
+  </div>
+  <div class="beta-lending-actions" aria-label="Ausleihen">
+    <button type="button" id="betaLendingPersonal" aria-controls="betaLendingPersonalPane" aria-pressed="true" data-lend-de="Meine Ausleihen" data-lend-tr="Ödünç kayıtlarım">Meine Ausleihen</button>
+    <button type="button" id="betaLendingShared" aria-controls="betaLendingSharedPane" aria-pressed="false" data-lend-de="Ausleihe unter Mitgliedern" data-lend-tr="Üyeler arası ödünç">Ausleihe unter Mitgliedern</button>
+  </div>
+  <p id="betaLendingFeedback" class="beta-lending-feedback" role="status"></p>
+  <div id="betaLendingPersonalPane" class="beta-lending-content">
+    <form id="betaPersonalLoanForm" class="beta-lending-form">
+      <h3 data-lend-de="Private Ausleihe eintragen" data-lend-tr="Kişisel ödünç kaydı ekle">Private Ausleihe eintragen</h3>
+      <label><span data-lend-de="Mein Buch" data-lend-tr="Kitabım">Mein Buch</span><select name="book" required></select></label>
+      <label><span data-lend-de="Ausgeliehen an" data-lend-tr="Ödünç alan">Ausgeliehen an</span><input name="borrower" maxlength="120" required></label>
+      <label><span data-lend-de="Rückgabedatum (optional)" data-lend-tr="İade tarihi (isteğe bağlı)">Rückgabedatum (optional)</span><input name="due" type="date"></label>
+      <button type="submit" data-lend-de="Ausleihe speichern" data-lend-tr="Ödünç kaydını kaydet">Ausleihe speichern</button>
+    </form>
+    <div>
+      <h3 data-lend-de="Meine Ausleihhistorie" data-lend-tr="Ödünç geçmişim">Meine Ausleihhistorie</h3>
+      <p id="betaPersonalLoanState" class="beta-lending-feedback" role="status"></p>
+      <ul id="betaPersonalLoanList" class="beta-lending-list"></ul>
+      <div id="betaPersonalLoanPages" class="beta-lending-actions" hidden>
+        <button type="button" id="betaPersonalLoanPrevious" data-lend-de="Zurück" data-lend-tr="Önceki">Zurück</button>
+        <span id="betaPersonalLoanPageLabel"></span>
+        <button type="button" id="betaPersonalLoanNext" data-lend-de="Weiter" data-lend-tr="Sonraki">Weiter</button>
+      </div>
+    </div>
+  </div>
+  <div id="betaLendingSharedPane" hidden>
+    <form id="betaSharedOfferForm" class="beta-lending-form">
+      <h3 data-lend-de="Ein eigenes Buch anbieten" data-lend-tr="Kitabımı ödünç vermeyi teklif et">Ein eigenes Buch anbieten</h3>
+      <p data-lend-de="Freigegebene Mitglieder sehen beim Angebot Titel und Autor. Deine Buchdateien bleiben privat."
+         data-lend-tr="Onaylı üyeler teklifin başlığını ve yazarını görür. Kitap dosyaların özel kalır.">Freigegebene Mitglieder sehen beim Angebot Titel und Autor. Deine Buchdateien bleiben privat.</p>
+      <label><span data-lend-de="Mein Buch" data-lend-tr="Kitabım">Mein Buch</span><select name="book" required></select></label>
+      <div class="beta-lending-actions">
+        <button type="submit" data-lend-de="Als physisches Buch anbieten" data-lend-tr="Basılı kitabı ödünç ver">Als physisches Buch anbieten</button>
+        <button type="button" id="betaSharedWithdraw" data-lend-de="Angebot zurückziehen" data-lend-tr="Teklifi geri çek">Angebot zurückziehen</button>
+      </div>
+    </form>
+    <div class="beta-lending-content beta-lending-shared-content">
+      <div>
+        <h3 data-lend-de="Angebote" data-lend-tr="Teklifler">Angebote</h3>
+        <p id="betaSharedOfferState" class="beta-lending-feedback" role="status"></p>
+        <ul id="betaSharedOfferList" class="beta-lending-list"></ul>
+        <div id="betaSharedOfferPages" class="beta-lending-actions" hidden>
+          <button type="button" id="betaSharedOfferPrevious" data-lend-de="Zurück" data-lend-tr="Önceki">Zurück</button>
+          <span id="betaSharedOfferPageLabel"></span>
+          <button type="button" id="betaSharedOfferNext" data-lend-de="Weiter" data-lend-tr="Sonraki">Weiter</button>
+        </div>
+        <form id="betaSharedRequestForm" class="beta-lending-form beta-lending-request-form" hidden>
+          <h3 id="betaSharedRequestTitle"></h3>
+          <label><span data-lend-de="Hinweis zur Übergabe (optional)" data-lend-tr="Teslim notu (isteğe bağlı)">Hinweis zur Übergabe (optional)</span><textarea name="note" maxlength="500" rows="2"></textarea></label>
+          <p data-lend-de="Den Hinweis sehen der Buchbesitzer und berechtigte Admins." data-lend-tr="Notu kitap sahibi ve yetkili yöneticiler görür.">Den Hinweis sehen der Buchbesitzer und berechtigte Admins.</p>
+          <div class="beta-lending-actions">
+            <button type="submit" data-lend-de="Anfrage senden" data-lend-tr="İstek gönder">Anfrage senden</button>
+            <button type="button" id="betaSharedCancelDraft" data-lend-de="Abbrechen" data-lend-tr="Vazgeç">Abbrechen</button>
+          </div>
+        </form>
+      </div>
+      <div>
+        <h3 data-lend-de="Anfragen" data-lend-tr="İstekler">Anfragen</h3>
+        <p id="betaSharedRequestState" class="beta-lending-feedback" role="status"></p>
+        <ul id="betaSharedRequestList" class="beta-lending-list"></ul>
+        <div id="betaSharedRequestPages" class="beta-lending-actions" hidden>
+          <button type="button" id="betaSharedRequestPrevious" data-lend-de="Zurück" data-lend-tr="Önceki">Zurück</button>
+          <span id="betaSharedRequestPageLabel"></span>
+          <button type="button" id="betaSharedRequestNext" data-lend-de="Weiter" data-lend-tr="Sonraki">Weiter</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button type="button" id="betaLendingReload" data-lend-de="Erneut laden" data-lend-tr="Tekrar yükle" hidden>Erneut laden</button>
+</section>
+<section id="betaAdminPanel" class="beta-admin" aria-labelledby="betaAdminTitle" hidden>
+  <div class="beta-admin-heading">
+    <h2 id="betaAdminTitle" tabindex="-1" data-beta-admin-de="Co-Admins verwalten" data-beta-admin-tr="Yardımcı yöneticileri yönet">Co-Admins verwalten</h2>
+    <button id="betaAdminClose" type="button" data-beta-admin-de="Schließen" data-beta-admin-tr="Kapat">Schließen</button>
+  </div>
+  <form id="betaAdminForm">
+    <label class="beta-admin-member">
+      <span data-beta-admin-de="Freigegebenes Mitglied" data-beta-admin-tr="Onaylı üye">Freigegebenes Mitglied</span>
+      <select id="betaAdminMember" required disabled></select>
+    </label>
+    <fieldset id="betaAdminPermissions" disabled>
+      <legend data-beta-admin-de="Erlaubte Aufgaben" data-beta-admin-tr="İzin verilen görevler">Erlaubte Aufgaben</legend>
+      <label>
+        <input type="checkbox" name="permissions" value="shared_category_manage">
+        <span data-beta-admin-de="Gemeinsame Kategorien verwalten" data-beta-admin-tr="Ortak kategorileri yönetme">Gemeinsame Kategorien verwalten</span>
+      </label>
+      <label>
+        <input type="checkbox" name="permissions" value="shared_loan_review">
+        <span data-beta-admin-de="Gemeinsame Ausleihanfragen bearbeiten" data-beta-admin-tr="Ortak ödünç taleplerini işleme">Gemeinsame Ausleihanfragen bearbeiten</span>
+      </label>
+      <p data-beta-admin-de="Entferne beide Häkchen und speichere, um alle Rechte zu widerrufen." data-beta-admin-tr="Tüm yetkileri geri almak için iki seçeneği de kaldırıp kaydet.">Entferne beide Häkchen und speichere, um alle Rechte zu widerrufen.</p>
+    </fieldset>
+    <div class="beta-admin-actions">
+      <button id="betaAdminSave" type="submit" disabled data-beta-admin-de="Rechte speichern" data-beta-admin-tr="Yetkileri kaydet">Rechte speichern</button>
+      <button id="betaAdminRetry" type="button" hidden data-beta-admin-de="Erneut laden" data-beta-admin-tr="Tekrar yükle">Erneut laden</button>
+    </div>
+  </form>
+  <p id="betaAdminStatus" class="beta-admin-status" role="status"></p>
+</section>
 <div class="kzn-dash-columns"><div class="kzn-dash-main">
 <section class="hadis-reader" id="hadisReader" aria-labelledby="hadisTitle">
   <div class="hadis-heading">
@@ -1384,7 +1576,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
     <button type="button" id="hadisFullPage" hidden>Ganze Originalseite</button>
   </div>
 </section>
-<div class="kzn-section-label"><h3>Kategorien entdecken</h3><button type="button" id="manageCategories" class="cat-manage-btn" title="Meine Kategorien verwalten">⚙ Kategorien verwalten</button><span>WISSEN · İLİM</span></div><div class="kzn-categories"><button data-dash-category="Koranwissenschaften"><span class="kzn-category-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6h14v12H5zM8 10h8M8 14h5M3 3v18M21 3v18"/></svg></span><img class="kzn-cat-image" src="kategorie-quran.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Kur’an & Tafsir</span></button><button data-dash-category="Hadith"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-hadith.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Hadith & Sunna</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">✒</span><img class="kzn-cat-image" src="kategorie-aqidah.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Akâid & İtikad</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">⚖</span><img class="kzn-cat-image" src="kategorie-fiqh.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Fıkıh & İbadet</span></button><button data-dash-category="Geschichte"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-siyer.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Siyer & Tarih</span></button><button data-dash-category="Sprache"><span class="kzn-category-emblem" aria-hidden="true">ع</span><img class="kzn-cat-image" src="kategorie-arabic.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Arapça & Dil</span></button><button data-dash-category="Tecvid"><span class="kzn-category-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M4 8c3-3 5-3 8 0 3-3 5-3 8 0v11c-3-3-5-3-8 0-3-3-5-3-8 0z"/><path d="M7 11h3M14 11h3M7 14h3M14 14h3"/></svg></span><img class="kzn-cat-image" src="https://img.kitapyurdu.com/v1/getImage/fn%3A6571460/wi%3A800/wh%3Aa2cc12818" alt="Buchcover Karabaş Tecvidi" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='kategorie-quran.jpg'"><span class="kzn-cat-name">Tecvid</span></button></div><div class="kzn-section-label"><h3>Neue Hinzufügungen</h3><button type="button" id="dashAllBooks">Alle Bücher ansehen ›</button></div><div id="dashRecent" class="kzn-recent"><p class="kzn-muted">Deine Bücher werden geladen …</p></div></div><aside class="kzn-dash-aside"><div class="kzn-side-card kzn-ai"><div class="kzn-menba-arabic" lang="ar" dir="rtl">منبع</div><h3>MENBA AI</h3><p>Dein Wissensassistent für die digitale Bibliothek.</p><button type="button" id="dashMenba">MENBA AI öffnen ›</button><small>Der KI-Assistent ist noch in Entwicklung.</small></div><div class="kzn-side-card"><h3>↗ &nbsp; Aktive Ausleihen</h3><p class="kzn-muted">Noch keine verknüpften Ausleihdaten verfügbar.</p></div><div class="kzn-side-card"><h3>♡ &nbsp; Wunschliste</h3><p class="kzn-muted">Noch keine verknüpfte Wunschliste verfügbar.</p></div></aside></div></section>
+<div class="kzn-section-label"><h3>Kategorien entdecken</h3><button type="button" id="manageCategories" class="cat-manage-btn" title="Meine Kategorien verwalten">⚙ Kategorien verwalten</button><span>WISSEN · İLİM</span></div><div class="kzn-categories"><button data-dash-category="Koranwissenschaften"><span class="kzn-category-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6h14v12H5zM8 10h8M8 14h5M3 3v18M21 3v18"/></svg></span><img class="kzn-cat-image" src="kategorie-quran.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Kur’an & Tafsir</span></button><button data-dash-category="Hadith"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-hadith.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Hadith & Sunna</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">✒</span><img class="kzn-cat-image" src="kategorie-aqidah.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Akâid & İtikad</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">⚖</span><img class="kzn-cat-image" src="kategorie-fiqh.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Fıkıh & İbadet</span></button><button data-dash-category="Geschichte"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-siyer.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Siyer & Tarih</span></button><button data-dash-category="Sprache"><span class="kzn-category-emblem" aria-hidden="true">ع</span><img class="kzn-cat-image" src="kategorie-arabic.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Arapça & Dil</span></button><button data-dash-category="Tecvid"><span class="kzn-category-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M4 8c3-3 5-3 8 0 3-3 5-3 8 0v11c-3-3-5-3-8 0-3-3-5-3-8 0z"/><path d="M7 11h3M14 11h3M7 14h3M14 14h3"/></svg></span><img class="kzn-cat-image" src="https://img.kitapyurdu.com/v1/getImage/fn%3A6571460/wi%3A800/wh%3Aa2cc12818" alt="Buchcover Karabaş Tecvidi" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='kategorie-quran.jpg'"><span class="kzn-cat-name">Tecvid</span></button></div><div class="kzn-section-label"><h3>Neue Hinzufügungen</h3><button type="button" id="dashAllBooks">Alle Bücher ansehen ›</button></div><div id="dashRecent" class="kzn-recent"><p class="kzn-muted">Deine Bücher werden geladen …</p></div></div><aside class="kzn-dash-aside"><div class="kzn-side-card kzn-ai"><div class="kzn-menba-arabic" lang="ar" dir="rtl">منبع</div><h3>MENBA AI</h3><p>Dein Wissensassistent für die digitale Bibliothek.</p><button type="button" id="dashMenba">MENBA AI öffnen ›</button><small>Der KI-Assistent ist noch in Entwicklung.</small></div><div class="kzn-side-card"><h3>↗ &nbsp; Aktive Ausleihen</h3><button type="button" id="betaLoansDash" data-de="Ausleihen öffnen" data-tr="Ödünç kayıtlarını aç">Ausleihen öffnen</button></div><div class="kzn-side-card"><h3>♡ &nbsp; Wunschliste</h3><button type="button" id="betaWishlistDash" data-de="Wunschliste öffnen" data-tr="İstek listesini aç">Wunschliste öffnen</button></div></aside></div></section>
  <div class="section-head"><div><h2 id="sectionTitle">Kütüphane</h2><p id="sectionDescription">Deine Bibliothek im Überblick</p></div><button class="primary" id="addBtn">＋ Buch hinzufügen</button></div>
  <section class="stats">
   <div class="stat"><b id="total">0</b><span data-de="Bücher insgesamt" data-tr="Toplam kitap">Bücher insgesamt</span></div>
@@ -1413,7 +1605,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
      <div class="field"><label>Titel *</label><input name="title" required></div><div class="field"><label>Autor</label><input name="author"></div>
      <div class="field"><label>Thema / Kategorie</label><select name="category"><option>Islam</option><option>Koranwissenschaften</option><option>Hadith</option><option>Geschichte</option><option>Sprache</option><option>Sonstiges</option></select></div>
      <div class="field"><label>Standort</label><select name="location"><option value="">Nicht angegeben</option><option>Zuhause</option><option>Im Kurs</option></select></div>
-     <div class="field"><label>Sammlung</label><select name="visibility"><option value="personal">Persönlich</option><option value="shared" disabled>Gemeinsam (Admin-Freigabe folgt)</option></select></div>
+     <div class="field"><label>Sammlung</label><select name="visibility"><option value="personal">Persönlich</option></select></div>
      <div class="field"><label>Buchcover (JPG, PNG oder WebP, max. 5 MB)</label><input name="cover" type="file" accept="image/jpeg,image/png,image/webp"></div>
      <div class="field full" id="autoCoverBox">
        <label>Kein Cover vorhanden? Wähle eine automatisch gestaltete Buchcover-Vorlage.</label>
@@ -1430,13 +1622,13 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
  </div>
  </div>
 <section id="passwordApprovalPanel" class="panel hidden" style="max-width:960px;margin:20px auto;padding:22px">
-<h2>Passwortverwaltung</h2>
+<h2 id="passwordApprovalTitle">Passwort-Hilfe</h2>
 <p>Mitglieder können ihr Passwort selbst per E-Mail zurücksetzen. Optional können sie zusätzlich beim Admin Hilfe beantragen. Der Administrator sieht niemals das Passwort.</p>
 <div id="memberResetControls" class="hidden"><button type="button" id="memberRequestReset" class="primary">Passwort-Hilfe beim Admin beantragen</button></div>
 <div id="adminResetControls" class="hidden"><h3>Passwort-Hilfe für Mitglieder</h3><p>Eine Reset-Mail kannst du an die bestätigte E-Mail-Adresse eines Mitglieds senden. Bitte nur auf dessen Wunsch.</p><div class="field"><label for="adminResetEmail">E-Mail-Adresse des Mitglieds</label><input id="adminResetEmail" type="email" autocomplete="off" placeholder="mitglied@beispiel.de"></div><button type="button" id="adminSendReset">Reset-Mail senden</button><h3>Offene Passwort-Anfragen</h3><button type="button" id="refreshResetRequests">Anfragen aktualisieren</button><div id="resetRequestList"></div></div>
 <p id="resetApprovalFeedback" role="status" aria-live="polite"></p>
 </section>
- <p class="note">Version 0.7.1 · Persönliche Buchdaten werden in Supabase gespeichert, sofern die bestehenden Datenbankrichtlinien dies erlauben. PDF-/Cover-Upload ist für private Bücher verfügbar. Gemeinsame Freigaben bleiben bis zur Admin-Prüfung deaktiviert. Bestehende lokale Bücher werden nicht gelöscht oder automatisch übertragen.</p>
+ <p class="note">Version 0.7.1 · Persönliche Buchdaten werden in Supabase gespeichert, sofern die bestehenden Datenbankrichtlinien dies erlauben. PDF-/Cover-Upload ist für private Bücher verfügbar. Bücher und PDFs können in der Gemeinsamen Bibliothek zur Freigabe eingereicht werden. Bestehende lokale Bücher werden nicht gelöscht oder automatisch übertragen.</p>
 </main>
 <div id="catEditorOverlay" class="cat-editor-overlay" hidden><section class="cat-editor" role="dialog" aria-modal="true" aria-labelledby="catEditorTitle"><div class="cat-editor-head"><h2 id="catEditorTitle">Kategorien verwalten</h2><button type="button" id="catEditorClose">✕ Schließen</button></div><p>Persönliche Kategorien gelten nur für dein Konto. Gemeinsame Kategorien darf nur der Admin bearbeiten. Beim Löschen bleiben Bücher erhalten.</p><label>Bibliothek <select id="catEditorScope"><option value="personal">Meine Kategorien</option><option value="shared">Gemeinsame Kategorien (Admin)</option></select></label><div id="catEditorList"></div><form id="catEditorForm"><h3 id="catFormTitle">Kategorie hinzufügen</h3><label>Name <input id="catName" maxlength="80" required placeholder="z. B. Tecvid"></label><label>Zuordnung vorhandener Bücher <select id="catSource"><option value="">Eigener Kategoriename</option><option value="Islam">Islam</option><option value="Koranwissenschaften">Koranwissenschaften</option><option value="Hadith">Hadith</option><option value="Tecvid">Tecvid</option><option value="Geschichte">Geschichte</option><option value="Sprache">Sprache</option><option value="Sonstiges">Sonstiges</option></select></label><label>Bild (JPG, PNG, WebP; max. 5 MB) <input type="file" id="catImage" accept="image/jpeg,image/png,image/webp"></label><label><input type="checkbox" id="catVisible" checked> Kategorie anzeigen</label><div class="cat-editor-actions"><button type="submit" id="catSave">Speichern</button><button type="button" id="catCancel">Abbrechen</button></div></form><p id="catEditorStatus" role="status"></p></section></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -1471,8 +1663,6 @@ function updateKznDashboard(){
   $('dashBooks').textContent = booksLoaded ? String(active.length) : '—';
   // The current app has no connected member/loan/wishlist queries. Do not fabricate counts.
   $('dashMembers').textContent = '—';
-  $('dashLoans').textContent = '—';
-  $('dashWishlist').textContent = '—';
   $('dashRecent').innerHTML = active.length
     ? active.slice(0,4).map(b=>'<div class="kzn-recent-item">'+
         (b.cover_url?'<img alt="" src="'+esc(b.cover_url)+'">':'<div class="kzn-recent-placeholder">▤</div>')+
@@ -1556,7 +1746,7 @@ document.querySelectorAll('[data-view]').forEach(btn=>btn.onclick=()=>{view=btn.
 const portalInfo={
  library:['Kütüphane','Deine Bibliothek im Überblick'],
  mine:['Benim Kitaplarım','Deine persönlichen Bücher in Supabase'],
- shared:['Ortak Kütüphane','Gemeinsame Bibliothek (Freigabe noch in Entwicklung)'],
+ shared:['Ortak Kütüphane','Freigegebene Bücher und PDFs'],
  categories:['Kategoriler','Bücher nach Themen entdecken'],
  menba:['MENBA AI','Kaynaklı Bilgi Asistanı']
 };
@@ -1564,9 +1754,9 @@ function switchPortal(next){
  portal=next;view='all';document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view==='all'));
  document.querySelectorAll('[data-portal]').forEach(b=>b.classList.toggle('selected',b.dataset.portal===next));
  updatePortalLanguage();
- const isMenba=next==='menba';$('catalogPanel').classList.toggle('hidden',isMenba);
+ const isMenba=next==='menba';const isShared=next==='shared';$('catalogPanel').classList.toggle('hidden',isMenba||isShared);
  $('featurePanel').classList.toggle('hidden',!isMenba);
- $('addBtn').classList.toggle('hidden',isMenba);
+ $('addBtn').classList.toggle('hidden',isMenba||isShared);
  if(isMenba){$('featurePanel').innerHTML='<h3>منبع · MENBA AI</h3><p>Hier entsteht unser KI-Assistent. In einer späteren Entwicklungsphase beantwortet er Fragen ausschließlich anhand der Bücher, für die du eine Berechtigung hast, und nennt Buch, Ausgabe und Seitenzahl als Quelle.</p><span class="tag">In Entwicklung · Noch keine KI-Anfragen möglich</span>';}
  updatePortalLanguage();
  if(next==='categories'){$('category').focus();}
@@ -1762,7 +1952,7 @@ $('bookForm').onsubmit=async e=>{
   }finally{submit.disabled=false;}
 };
 
-const turkish={"Nicht angegeben":"Belirtilmedi","Mitgliedszugang":"Üye girişi","Anmeldestatus wird überprüft …":"Oturum durumu kontrol ediliyor …","E-Mail-Adresse":"E-posta adresi","Passwort":"Şifre","Passwort eingeben":"Şifreyi girin","Mit Passwort anmelden":"Şifreyle giriş yap","Einmaligen E-Mail-Link anfordern":"Tek kullanımlık e-posta bağlantısı iste","Passwort vergessen?":"Şifrenizi mi unuttunuz?","Passwort festlegen / ändern":"Şifre belirle / değiştir","Nur für dein aktuell angemeldetes Konto.":"Yalnızca oturum açtığın hesap için.","Neues Passwort (mindestens 12 Zeichen)":"Yeni şifre (en az 12 karakter)","Passwort wiederholen":"Şifreyi tekrarla","Passwort speichern":"Şifreyi kaydet","Passwort ändern":"Şifreyi değiştir","Passwortverwaltung":"Şifre yönetimi","Genehmigung ausstehend":"Onay bekleniyor","Kein Zugang":"Erişim yok","Zugriff konnte nicht geprüft werden":"Erişim doğrulanamadı","Zugang wird geprüft":"Erişim kontrol ediliyor","Einen Moment bitte …":"Lütfen bekleyin …","Dein Konto ist vorhanden. Bitte warte auf die Freigabe durch den Administrator.":"Hesabın mevcut. Lütfen yönetici onayını bekle.","Deine Mitgliedschaft ist nicht freigegeben. Wende dich an den Administrator.":"Üyeliğin onaylanmadı. Yöneticiyle iletişime geç.","Die Mitgliederdaten konnten nicht sicher überprüft werden. Bitte versuche es später erneut.":"Üyelik bilgileri doğrulanamadı. Lütfen daha sonra tekrar dene.","Mit E-Mail und Passwort anmelden. Wenn du noch kein Passwort hast, kannst du den bisherigen E-Mail-Link verwenden (sofern das Versandlimit es erlaubt). Neue Registrierungen werden später freigeschaltet.":"E-posta adresin ve şifrenle giriş yap. Şifren yoksa gönderim sınırı izin verdiğinde e-posta bağlantısını kullanabilirsin. Yeni kayıtlar daha sonra açılacak.","Für dieses Konto liegt noch keine freigegebene Mitgliedschaft vor.":"Bu hesabın üyeliği henüz onaylanmadı.","Neues Passwort festlegen":"Yeni şifre belirle","Der E-Mail-Link wurde geöffnet. Bitte wähle jetzt ein neues Passwort für dieses Konto.":"E-posta bağlantısı açıldı. Bu hesap için yeni bir şifre belirle.","Bitte beide Passwortfelder ausfüllen und speichern.":"Her iki şifre alanını doldur ve kaydet.","Bibliothek":"Kütüphane","Meine Bücher":"Kitaplarım","Gemeinsame Bibliothek":"Ortak kütüphane","Kategorien":"Kategoriler","Hauptbereiche":"Ana bölümler","Deine Bibliothek im Überblick":"Kütüphanene genel bakış","Deine persönlichen Bücher in Supabase":"Supabase'deki kişisel kitapların","Gemeinsame Bibliothek (Freigabe noch in Entwicklung)":"Ortak kütüphane (paylaşım geliştirme aşamasında)","Bücher nach Themen entdecken":"Konulara göre kitapları keşfet","Bücher, Autoren und Themen durchsuchen …":"Kitap, yazar ve konu ara …","Bibliothek durchsuchen":"Kütüphanede ara","Bibliotheksübersicht":"Kütüphaneye genel bakış","＋ Buch hinzufügen":"＋ Kitap ekle","Bücher insgesamt":"Toplam kitap","Mitglieder":"Üyeler","Aktive Ausleihen":"Aktif ödünçler","Wunschliste":"İstek listesi","Kategorien entdecken":"Kategorileri keşfet","Meine Kategorien verwalten":"Kategorilerimi yönet","⚙ Kategorien verwalten":"⚙ Kategorileri yönet","Neue Hinzufügungen":"Son eklenenler","Alle Bücher ansehen ›":"Tüm kitapları gör ›","Dein Wissensassistent für die digitale Bibliothek.":"Dijital kütüphanenin bilgi asistanı.","MENBA AI öffnen ›":"MENBA AI'ı aç ›","Der KI-Assistent ist noch in Entwicklung.":"Yapay zekâ asistanı geliştirme aşamasında.","Noch keine verknüpften Ausleihdaten verfügbar.":"Henüz ödünç kayıtları yok.","Noch keine verknüpfte Wunschliste verfügbar.":"Henüz bir istek listesi yok.","Titel, Autor oder Thema suchen …":"Kitap, yazar veya konu ara …","Alle Themen":"Tüm konular","Koranwissenschaften":"Kur’an ilimleri","Hadith":"Hadis","Geschichte":"Tarih","Sprache":"Dil","Sonstiges":"Diğer","Islam":"İslam","Zuhause":"Evde","Im Kurs":"Kursta","Neues Buch eintragen":"Yeni kitap ekle","Buch bearbeiten":"Kitabı düzenle","Wähle eine neue PDF- oder Coverdatei aus, um die bisherige Datei zu ersetzen.":"Mevcut dosyayı değiştirmek için yeni bir PDF veya kapak seç.","Titel *":"Kitap adı *","Autor":"Yazar","Thema / Kategorie":"Konu / kategori","Standort":"Konum","Sammlung":"Koleksiyon","Persönlich":"Kişisel","Gemeinsam (Admin-Freigabe folgt)":"Ortak (yönetici onayı gerekli)","Buchcover (JPG, PNG oder WebP, max. 5 MB)":"Kitap kapağı (JPG, PNG veya WebP, en fazla 5 MB)","PDF-Datei (max. 25 MB)":"PDF dosyası (en fazla 25 MB)","Notizen":"Notlar","Abbrechen":"İptal","Buch speichern":"Kitabı kaydet","Kategorien verwalten":"Kategorileri yönet","✕ Schließen":"✕ Kapat","Persönliche Kategorien gelten nur für dein Konto. Gemeinsame Kategorien darf nur der Admin bearbeiten. Beim Löschen bleiben Bücher erhalten.":"Kişisel kategoriler yalnızca hesabında görünür. Ortak kategorileri yalnızca yönetici düzenleyebilir. Kategori silindiğinde kitaplar korunur.","Meine Kategorien":"Kategorilerim","Gemeinsame Kategorien (Admin)":"Ortak kategoriler (yönetici)","Kategorie hinzufügen":"Kategori ekle","Kategorie bearbeiten":"Kategoriyi düzenle","Name":"Ad","z. B. Tecvid":"Örn. Tecvid","Zuordnung vorhandener Bücher":"Mevcut kitapları eşleştir","Eigener Kategoriename":"Özel kategori adı","Bild (JPG, PNG, WebP; max. 5 MB)":"Görsel (JPG, PNG, WebP, en fazla 5 MB)","Kategorie anzeigen":"Kategoriyi göster","Speichern":"Kaydet","✕ Übersicht schließen":"✕ Görünümü kapat","Bearbeiten":"Düzenle","Ein/Aus":"Göster/Gizle","Löschen":"Sil","Noch keine Kategorien vorhanden.":"Henüz kategori yok.","Noch keine Bücher vorhanden.":"Henüz kitap yok.","Deine Bücher werden geladen …":"Kitapların yükleniyor …","Bücher werden geladen …":"Kitaplar yükleniyor …","Der Papierkorb ist leer.":"Çöp kutusu boş.","Noch keine Bücher in deiner persönlichen Online-Bibliothek.":"Bu kitaplıkta henüz kitap yok.","← Zur Bibliothek":"← Kütüphaneye dön","🗑 Papierkorb (7 Tage)":"🗑 Çöp kutusu (7 gün)","PDF öffnen":"PDF'yi aç","✎ Bearbeiten":"✎ Düzenle","🗑 Löschen":"🗑 Sil","↩ Wiederherstellen":"↩ Geri yükle","Buchcover":"Kitap kapağı","Abmelden":"Çıkış yap","Admin · Abmelden":"Yönetici · Çıkış yap","Wähle eine Kategorie direkt hier oben aus.":"Yukarıdan bir kategori seç.","Deine Bücher direkt oben anzeigen":"Kitapların yukarıda gösteriliyor","Bücher aus dieser Kategorie":"Bu kategorideki kitaplar","Dein Wissensassistent":"Bilgi asistanın","Kein Cover vorhanden? Wähle eine automatisch gestaltete Buchcover-Vorlage.":"Kapağın yok mu? Hazır bir kapak şablonu seç.","Die Vorschläge sind dekorative Platzhalter – keine behaupteten Originalcover. Ein hochgeladenes echtes Cover hat Vorrang.":"Şablonlar dekoratif kapaklardır. Yüklediğin gerçek kapak önceliklidir.","Ausgewähltes Cover automatisch speichern, wenn kein eigenes hochgeladen wurde":"Kapak yüklenmezse seçilen şablonu kaydet","Hier entsteht unser KI-Assistent. In einer späteren Entwicklungsphase beantwortet er Fragen ausschließlich anhand der Bücher, für die du eine Berechtigung hast, und nennt Buch, Ausgabe und Seitenzahl als Quelle.":"Yapay zekâ asistanımız geliştiriliyor. Daha sonra yalnızca erişim iznin olan kitaplara dayanarak yanıt verecek ve kaynak olarak kitap, baskı ve sayfa numarasını belirtecek.","In Entwicklung · Noch keine KI-Anfragen möglich":"Geliştirme aşamasında · Henüz soru sorulamıyor"};
+const turkish={"Nicht angegeben":"Belirtilmedi","Mitgliedszugang":"Üye girişi","Anmeldestatus wird überprüft …":"Oturum durumu kontrol ediliyor …","E-Mail-Adresse":"E-posta adresi","Passwort":"Şifre","Passwort eingeben":"Şifreyi girin","Mit Passwort anmelden":"Şifreyle giriş yap","Einmaligen E-Mail-Link anfordern":"Tek kullanımlık e-posta bağlantısı iste","Passwort vergessen?":"Şifrenizi mi unuttunuz?","Passwort festlegen / ändern":"Şifre belirle / değiştir","Nur für dein aktuell angemeldetes Konto.":"Yalnızca oturum açtığın hesap için.","Neues Passwort (mindestens 12 Zeichen)":"Yeni şifre (en az 12 karakter)","Passwort wiederholen":"Şifreyi tekrarla","Passwort speichern":"Şifreyi kaydet","Passwort ändern":"Şifreyi değiştir","Passwortverwaltung":"Şifre yönetimi","Genehmigung ausstehend":"Onay bekleniyor","Kein Zugang":"Erişim yok","Zugriff konnte nicht geprüft werden":"Erişim doğrulanamadı","Zugang wird geprüft":"Erişim kontrol ediliyor","Einen Moment bitte …":"Lütfen bekleyin …","Dein Konto ist vorhanden. Bitte warte auf die Freigabe durch den Administrator.":"Hesabın mevcut. Lütfen yönetici onayını bekle.","Deine Mitgliedschaft ist nicht freigegeben. Wende dich an den Administrator.":"Üyeliğin onaylanmadı. Yöneticiyle iletişime geç.","Die Mitgliederdaten konnten nicht sicher überprüft werden. Bitte versuche es später erneut.":"Üyelik bilgileri doğrulanamadı. Lütfen daha sonra tekrar dene.","Mit E-Mail und Passwort anmelden. Wenn du noch kein Passwort hast, kannst du den bisherigen E-Mail-Link verwenden (sofern das Versandlimit es erlaubt). Neue Registrierungen werden später freigeschaltet.":"E-posta adresin ve şifrenle giriş yap. Şifren yoksa gönderim sınırı izin verdiğinde e-posta bağlantısını kullanabilirsin. Yeni kayıtlar daha sonra açılacak.","Für dieses Konto liegt noch keine freigegebene Mitgliedschaft vor.":"Bu hesabın üyeliği henüz onaylanmadı.","Neues Passwort festlegen":"Yeni şifre belirle","Der E-Mail-Link wurde geöffnet. Bitte wähle jetzt ein neues Passwort für dieses Konto.":"E-posta bağlantısı açıldı. Bu hesap için yeni bir şifre belirle.","Bitte beide Passwortfelder ausfüllen und speichern.":"Her iki şifre alanını doldur ve kaydet.","Bibliothek":"Kütüphane","Meine Bücher":"Kitaplarım","Gemeinsame Bibliothek":"Ortak kütüphane","Kategorien":"Kategoriler","Hauptbereiche":"Ana bölümler","Deine Bibliothek im Überblick":"Kütüphanene genel bakış","Deine persönlichen Bücher in Supabase":"Supabase'deki kişisel kitapların","Freigegebene Bücher und PDFs":"Paylaşıma onaylanan kitaplar ve PDF dosyaları","Bücher nach Themen entdecken":"Konulara göre kitapları keşfet","Bücher, Autoren und Themen durchsuchen …":"Kitap, yazar ve konu ara …","Bibliothek durchsuchen":"Kütüphanede ara","Bibliotheksübersicht":"Kütüphaneye genel bakış","＋ Buch hinzufügen":"＋ Kitap ekle","Bücher insgesamt":"Toplam kitap","Mitglieder":"Üyeler","Aktive Ausleihen":"Aktif ödünçler","Wunschliste":"İstek listesi","Kategorien entdecken":"Kategorileri keşfet","Meine Kategorien verwalten":"Kategorilerimi yönet","⚙ Kategorien verwalten":"⚙ Kategorileri yönet","Neue Hinzufügungen":"Son eklenenler","Alle Bücher ansehen ›":"Tüm kitapları gör ›","Dein Wissensassistent für die digitale Bibliothek.":"Dijital kütüphanenin bilgi asistanı.","MENBA AI öffnen ›":"MENBA AI'ı aç ›","Der KI-Assistent ist noch in Entwicklung.":"Yapay zekâ asistanı geliştirme aşamasında.","Noch keine verknüpften Ausleihdaten verfügbar.":"Henüz ödünç kayıtları yok.","Noch keine verknüpfte Wunschliste verfügbar.":"Henüz bir istek listesi yok.","Titel, Autor oder Thema suchen …":"Kitap, yazar veya konu ara …","Alle Themen":"Tüm konular","Koranwissenschaften":"Kur’an ilimleri","Hadith":"Hadis","Geschichte":"Tarih","Sprache":"Dil","Sonstiges":"Diğer","Islam":"İslam","Zuhause":"Evde","Im Kurs":"Kursta","Neues Buch eintragen":"Yeni kitap ekle","Buch bearbeiten":"Kitabı düzenle","Wähle eine neue PDF- oder Coverdatei aus, um die bisherige Datei zu ersetzen.":"Mevcut dosyayı değiştirmek için yeni bir PDF veya kapak seç.","Titel *":"Kitap adı *","Autor":"Yazar","Thema / Kategorie":"Konu / kategori","Standort":"Konum","Sammlung":"Koleksiyon","Persönlich":"Kişisel","Gemeinsam (Admin-Freigabe folgt)":"Ortak (yönetici onayı gerekli)","Buchcover (JPG, PNG oder WebP, max. 5 MB)":"Kitap kapağı (JPG, PNG veya WebP, en fazla 5 MB)","PDF-Datei (max. 25 MB)":"PDF dosyası (en fazla 25 MB)","Notizen":"Notlar","Abbrechen":"İptal","Buch speichern":"Kitabı kaydet","Kategorien verwalten":"Kategorileri yönet","✕ Schließen":"✕ Kapat","Persönliche Kategorien gelten nur für dein Konto. Gemeinsame Kategorien darf nur der Admin bearbeiten. Beim Löschen bleiben Bücher erhalten.":"Kişisel kategoriler yalnızca hesabında görünür. Ortak kategorileri yalnızca yönetici düzenleyebilir. Kategori silindiğinde kitaplar korunur.","Meine Kategorien":"Kategorilerim","Gemeinsame Kategorien (Admin)":"Ortak kategoriler (yönetici)","Kategorie hinzufügen":"Kategori ekle","Kategorie bearbeiten":"Kategoriyi düzenle","Name":"Ad","z. B. Tecvid":"Örn. Tecvid","Zuordnung vorhandener Bücher":"Mevcut kitapları eşleştir","Eigener Kategoriename":"Özel kategori adı","Bild (JPG, PNG, WebP; max. 5 MB)":"Görsel (JPG, PNG, WebP, en fazla 5 MB)","Kategorie anzeigen":"Kategoriyi göster","Speichern":"Kaydet","✕ Übersicht schließen":"✕ Görünümü kapat","Bearbeiten":"Düzenle","Ein/Aus":"Göster/Gizle","Löschen":"Sil","Noch keine Kategorien vorhanden.":"Henüz kategori yok.","Noch keine Bücher vorhanden.":"Henüz kitap yok.","Deine Bücher werden geladen …":"Kitapların yükleniyor …","Bücher werden geladen …":"Kitaplar yükleniyor …","Der Papierkorb ist leer.":"Çöp kutusu boş.","Noch keine Bücher in deiner persönlichen Online-Bibliothek.":"Bu kitaplıkta henüz kitap yok.","← Zur Bibliothek":"← Kütüphaneye dön","🗑 Papierkorb (7 Tage)":"🗑 Çöp kutusu (7 gün)","PDF öffnen":"PDF'yi aç","✎ Bearbeiten":"✎ Düzenle","🗑 Löschen":"🗑 Sil","↩ Wiederherstellen":"↩ Geri yükle","Buchcover":"Kitap kapağı","Abmelden":"Çıkış yap","Admin · Abmelden":"Yönetici · Çıkış yap","Wähle eine Kategorie direkt hier oben aus.":"Yukarıdan bir kategori seç.","Deine Bücher direkt oben anzeigen":"Kitapların yukarıda gösteriliyor","Bücher aus dieser Kategorie":"Bu kategorideki kitaplar","Dein Wissensassistent":"Bilgi asistanın","Kein Cover vorhanden? Wähle eine automatisch gestaltete Buchcover-Vorlage.":"Kapağın yok mu? Hazır bir kapak şablonu seç.","Die Vorschläge sind dekorative Platzhalter – keine behaupteten Originalcover. Ein hochgeladenes echtes Cover hat Vorrang.":"Şablonlar dekoratif kapaklardır. Yüklediğin gerçek kapak önceliklidir.","Ausgewähltes Cover automatisch speichern, wenn kein eigenes hochgeladen wurde":"Kapak yüklenmezse seçilen şablonu kaydet","Hier entsteht unser KI-Assistent. In einer späteren Entwicklungsphase beantwortet er Fragen ausschließlich anhand der Bücher, für die du eine Berechtigung hast, und nennt Buch, Ausgabe und Seitenzahl als Quelle.":"Yapay zekâ asistanımız geliştiriliyor. Daha sonra yalnızca erişim iznin olan kitaplara dayanarak yanıt verecek ve kaynak olarak kitap, baskı ve sayfa numarasını belirtecek.","In Entwicklung · Noch keine KI-Anfragen möglich":"Geliştirme aşamasında · Henüz soru sorulamıyor"};
 function localize(text){return lang==='tr' && Object.hasOwn(turkish,text)?turkish[text]:text}
 function categoryLabel(value){return localize(value||'Alle Themen')}
 const staticTranslations=[];
@@ -1838,7 +2028,10 @@ function showRecoveryScreen(){
 function showAccess(state, message = '') {
   accessState = state;
   accessMessage=message;
-  if(state!=='approved')memberAdmin=false;
+  if(state!=='approved'){
+    memberAdmin=false;passwordResetIsAdmin=false;
+    $('resetRequestList').replaceChildren();$('adminResetEmail').value='';$('resetApprovalFeedback').textContent='';
+  }
   $('libraryArea').classList.toggle('hidden', state !== 'approved');
   if(state!=='approved'){
     books=[];booksLoaded=false;booksError='';editingBookId=null;
@@ -1856,7 +2049,7 @@ function showAccess(state, message = '') {
   $('loginBtn').disabled = state === 'loading';
   updateAccessLanguage();
 }
-let accessMessage='', memberAdmin=false;
+let accessMessage='', memberAdmin=false, passwordResetIsAdmin=false;
 function updateAccessLanguage(){
   const state=accessState;
   const titles = {
@@ -1899,11 +2092,11 @@ async function refreshAccess() {
     if (request !== accessRequest) return;
     if (!data) { showAccess('pending', 'Für dieses Konto liegt noch keine freigegebene Mitgliedschaft vor.'); return; }
     if (data.status === 'approved') {
-      memberAdmin=Boolean(data.is_admin);
       showAccess('approved');
-      document.dispatchEvent(new CustomEvent('library-access',{detail:{approved:true,admin:Boolean(data.is_admin)}}));
+      await refreshPasswordApprovalControls(false);
+      if(request!==accessRequest)return;
+      document.dispatchEvent(new CustomEvent('library-access',{detail:{approved:true,admin:false}}));
       await loadBooks();
-      await refreshPasswordApprovalControls(Boolean(data.is_admin));
     } else if (data.status === 'pending') showAccess('pending');
     else showAccess('rejected');
   } catch (error) {
@@ -2020,6 +2213,7 @@ render();
  }
  function selectTopPortal(name){
   $('category').value='';$('search').value='';$('dashboardSearch').value='';
+  if(name==='shared'){top.hidden=true;switchPortal(name);return;}
   switchPortal(name);
   if(name==='menba'){
    openTop('MENBA AI',localize('Dein Wissensassistent'), $('featurePanel').innerHTML);
@@ -2037,7 +2231,7 @@ render();
  document.querySelector('.kzn-categories').addEventListener('click',e=>{
   const b=e.target.closest('[data-dash-category]');if(!b)return;
   e.preventDefault();e.stopImmediatePropagation();
-  if(portal!=='shared')switchPortal('library');
+  switchPortal('library');
   $('search').value='';$('dashboardSearch').value='';
   $('category').value=b.dataset.dashCategory;
   render();
@@ -2101,9 +2295,9 @@ $('adminSendReset').addEventListener('click',async()=>{
 });
 
 // Explicit consent is the member's own authenticated request. RLS enforces identity/admin approval.
-let passwordResetIsAdmin=false;
 async function refreshPasswordApprovalControls(isAdmin){
- passwordResetIsAdmin=isAdmin;
+ passwordResetIsAdmin=isAdmin && accessState==='approved';
+ if(!passwordResetIsAdmin){$('resetRequestList').replaceChildren();$('adminResetEmail').value='';}
  $('memberResetControls').classList.toggle('hidden',isAdmin);
  $('adminResetControls').classList.toggle('hidden',!isAdmin);
  if(isAdmin)await loadResetRequests();
@@ -2122,8 +2316,10 @@ $('memberRequestReset').addEventListener('click',async()=>{
 async function loadResetRequests(){
  const feedback=$('resetApprovalFeedback'),list=$('resetRequestList');
  if(!passwordResetIsAdmin||!currentUser)return;
+ const owner=currentUser.id, request=accessRequest;
  const {data,error}=await db.from('password_reset_requests')
    .select('id,email,created_at,status').eq('status','pending').order('created_at',{ascending:true}).limit(50);
+ if(currentUser?.id!==owner||request!==accessRequest||!passwordResetIsAdmin)return;
  if(error){feedback.textContent='Anfragen konnten nicht geladen werden: '+error.message;return}
  list.replaceChildren();
  if(!data.length){list.textContent='Keine offenen Anfragen.';return}
@@ -2133,6 +2329,7 @@ async function loadResetRequests(){
   info.textContent=r.email+' · '+new Date(r.created_at).toLocaleString('de-DE');
   const btn=document.createElement('button');btn.type='button';btn.textContent='Freigeben & Reset-Mail senden';
   btn.addEventListener('click',async()=>{
+   if(!passwordResetIsAdmin||currentUser?.id!==owner||request!==accessRequest)return;
    btn.disabled=true;
    try{
     // Approval is recorded first and checked by database RLS.
@@ -2140,6 +2337,7 @@ async function loadResetRequests(){
       .update({status:'approved',approved_at:new Date().toISOString()})
       .eq('id',r.id).eq('status','pending').select('id').single();
     if(approvalError||!updated)throw approvalError||Error('Freigabe fehlgeschlagen');
+    if(!passwordResetIsAdmin||currentUser?.id!==owner||request!==accessRequest)return;
     const redirectTo=new URL(window.location.pathname,window.location.origin).href;
     const {error:mailError}=await db.auth.resetPasswordForEmail(r.email,{redirectTo});
     if(mailError)throw mailError;
@@ -2172,10 +2370,11 @@ if(recoveryMode)showRecoveryScreen();
 (function(){
  const nav=document.getElementById('passwordAdminNav');
  const panel=document.getElementById('passwordApprovalPanel');
- const passwordBtn=document.getElementById('passwordBtn');
- if(!nav||!panel||!passwordBtn)return;
+ if(!nav||!panel)return;
  function sync(){
-   const signedIn=!passwordBtn.classList.contains('hidden');
+   const signedIn=accessState==='approved';
+   const caption=memberAdmin?tr('Passwortverwaltung','Şifre yönetimi'):tr('Passwort-Hilfe','Şifre yardımı');
+   nav.textContent=caption;$('passwordApprovalTitle').textContent=caption;
    nav.classList.toggle('hidden',!signedIn);
    if(!signedIn){panel.classList.add('hidden');nav.setAttribute('aria-expanded','false');}
  }
@@ -2185,7 +2384,14 @@ if(recoveryMode)showRecoveryScreen();
    nav.setAttribute('aria-expanded',String(open));
    if(open)panel.scrollIntoView({behavior:'smooth',block:'start'});
  });
- new MutationObserver(sync).observe(passwordBtn,{attributes:true,attributeFilter:['class']});
+ document.addEventListener('library-access',sync);
+ document.addEventListener('library-language',sync);
+ document.addEventListener('beta-role-access',event=>{
+  if(accessState!=='approved')return;
+  memberAdmin=event.detail.isOwner===true;
+  updateAccessLanguage();sync();
+  void refreshPasswordApprovalControls(memberAdmin);
+ });
  sync();
 })();
 </script><script>
@@ -2328,11 +2534,18 @@ el('catEditorForm').addEventListener('submit',async e=>{
  },tr('Gespeichert.','Kaydedildi.'));
 });
 document.addEventListener('library-access',event=>{
- isAdmin=event.detail.admin;
  if(!event.detail.approved){
-  editorRequest++;entries=[];el('catEditorOverlay').hidden=true;resetForm();
+  isAdmin=false;editorRequest++;entries=[];el('catEditorOverlay').hidden=true;resetForm();
  }
  refreshCards();
+});
+document.addEventListener('beta-role-access',event=>{
+ isAdmin=accessState==='approved'&&event.detail.canManageSharedCategories===true;
+ const selector=el('catEditorScope');
+ selector.querySelector('option[value=shared]').disabled=!isAdmin;
+ if(!isAdmin&&scope==='shared'&&!el('catEditorOverlay').hidden){
+  editorRequest++;entries=[];scope='personal';selector.value=scope;resetForm();void refreshEditor();
+ }
 });
 document.addEventListener('library-portal',refreshCards);
 document.addEventListener('library-language',()=>{drawEditor();refreshCards();});
@@ -2341,4 +2554,8 @@ document.addEventListener('library-language',()=>{drawEditor();refreshCards();})
 </script>
 <script>try{if(localStorage.getItem('library-language')==='tr')lang='tr'}catch{}applyLanguage();</script>
 <script src="hadis-reader.js"></script>
+<script src="member-tools.js"></script>
+<script src="admin-beta.js"></script>
+<script src="lending.js"></script>
+<script src="shared-library.js"></script>
 </body></html>

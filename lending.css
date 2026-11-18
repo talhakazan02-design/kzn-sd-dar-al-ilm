@@ -1,0 +1,55 @@
+.beta-lending {
+  --lend-line: #ad834d;
+  --lend-gold: #e9c68b;
+  --lend-text: #f5e8d5;
+  --lend-muted: #ead0a4;
+  margin: 18px 0;
+  padding: clamp(14px, 3vw, 25px);
+  color: var(--lend-text);
+  background: linear-gradient(145deg, #332218f5, #170f0df7);
+  border: 1px solid var(--lend-line);
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 3px #c69b5724;
+  scroll-margin-top: 165px;
+}
+
+.beta-lending[hidden], .beta-lending [hidden], #betaLoansNav[hidden], #betaLoansDash[hidden] { display: none !important; }
+.beta-lending-header, .beta-lending-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.beta-lending-header { justify-content: space-between; margin-bottom: 12px; }
+.beta-lending h2, .beta-lending h3 { margin: 0 0 6px; color: var(--lend-gold); overflow-wrap: anywhere; }
+.beta-lending h2 { font-size: clamp(1.2rem, 3vw, 1.55rem); }
+.beta-lending h3 { font-size: 1.04rem; }
+.beta-lending p { margin: 0; overflow-wrap: anywhere; }
+.beta-lending-content {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: clamp(12px, 2.5vw, 22px); margin-top: 12px;
+}
+.beta-lending-shared-content { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.beta-lending-form { display: grid; gap: 8px; min-width: 0; align-content: start; }
+.beta-lending-form label { display: grid; gap: 4px; min-width: 0; color: var(--lend-muted); }
+.beta-lending-form :is(input, textarea, select) {
+  box-sizing: border-box; width: 100%; min-width: 0; padding: 7px 9px; border: 1px solid var(--lend-line);
+  border-radius: 6px; background: #1b110e; color: var(--lend-text); font: inherit;
+}
+.beta-lending-form textarea { resize: vertical; }
+.beta-lending button {
+  padding: 6px 9px; border: 1px solid var(--lend-line); border-radius: 6px; background: #291a13;
+  color: var(--lend-text); cursor: pointer; font: inherit;
+}
+.beta-lending button[type="submit"], .beta-lending button[aria-pressed="true"] {
+  background-color: #d6a666; border-color: #ebc280; color: #22130b;
+}
+.beta-lending button:enabled:hover { border-color: #f1c581; }
+.beta-lending button:disabled { opacity: .65; cursor: default; }
+.beta-lending :is(button, input, textarea, select):focus-visible { outline: 2px solid #f1c581; outline-offset: 2px; }
+.beta-lending-list { display: grid; gap: 7px; list-style: none; padding: 0; margin: 0; }
+.beta-lending-list li { min-width: 0; border: 1px solid #ad834d85; border-radius: 6px; padding: 9px; background: #170f0d88; overflow-wrap: anywhere; }
+.beta-lending-list p { white-space: pre-wrap; margin-top: 5px; }
+.beta-lending-list .beta-lending-actions, .beta-lending-request-form { margin-top: 8px; }
+.beta-lending .beta-lending-feedback { color: var(--lend-muted); margin: 8px 0; }
+.beta-lending-feedback:empty { display: none; }
+#betaLendingReload { margin-top: 9px; }
+@media (max-width: 900px) {
+  .beta-lending { scroll-margin-top: 10px; }
+  .beta-lending-content { grid-template-columns: minmax(0, 1fr); }
+}
