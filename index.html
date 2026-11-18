@@ -1291,6 +1291,14 @@ body>header{z-index:21}
 .hadis-preview canvas{display:block;margin:0 auto;width:auto;height:auto;max-width:100%}
 .hadis-source{justify-content:space-between}
 .hadis-source:has(p:not(:empty)){margin-top:10px}
+
+.hadis-welcome{max-width:740px;margin:18px auto 20px;padding:clamp(12px,2.5vw,22px)}
+.hadis-welcome h2{margin:0;color:#e8c486;font:700 clamp(1.3rem,4vw,1.8rem) Georgia,serif}
+.hadis-public-figure{margin:0}
+.hadis-public-figure canvas{display:block;width:100%;height:auto;border:1px solid #b98e55;border-radius:6px;background:#fff}
+.hadis-public-figure figcaption{margin-top:8px;color:#e8cc9d;font-size:.84rem;overflow-wrap:anywhere}
+.hadis-public-figure figcaption:empty{display:none}
+@media(max-width:480px){.hadis-welcome{margin-top:9px}.hadis-welcome button{font-size:.82rem;padding:7px 8px}}
 </style></head>
 <body>
 <aside class="sidebar-main" aria-label="Hauptnavigation"><div class="sidebar-logo"><img class="heritage-logo" alt="Darül İlm Logo" src="darul-ilm-logo-transparent.png"><span class="arabic" lang="ar">دار العلم</span><small>Dijital Kütüphane</small></div><nav class="sidebar-nav"><button class="active" data-side-portal="library"><span class="symbol" aria-hidden="true">⌂</span><span class="sidebar-label" data-de="Startseite" data-tr="Ana Sayfa">Startseite</span></button><button data-side-portal="library"><span class="symbol" aria-hidden="true">▤</span><span class="sidebar-label" data-de="Bibliothek" data-tr="Kütüphane">Bibliothek</span></button><button data-side-portal="mine"><span class="symbol" aria-hidden="true">▣</span><span class="sidebar-label" data-de="Meine Bücher" data-tr="Kitaplarım">Meine Bücher</span></button><button data-side-portal="shared"><span class="symbol" aria-hidden="true">♧</span><span class="sidebar-label" data-de="Gemeinsame Bibliothek" data-tr="Ortak Kütüphane">Gemeinsame Bibliothek</span></button><button data-side-portal="categories"><span class="symbol" aria-hidden="true">▦</span><span class="sidebar-label" data-de="Kategorien" data-tr="Kategoriler">Kategorien</span></button><button data-side-portal="menba"><span class="symbol" aria-hidden="true">✦</span><span class="sidebar-label" data-de="MENBA AI" data-tr="MENBA AI">MENBA AI</span></button><div class="sidebar-divider"></div><button data-side-view="loans"><span class="symbol" aria-hidden="true">▤</span><span class="sidebar-label" data-de="Ausleihe" data-tr="Ödünç">Ausleihe</span></button><button data-side-view="wishlist"><span class="symbol" aria-hidden="true">♡</span><span class="sidebar-label" data-de="Wunschliste" data-tr="İstek Listesi">Wunschliste</span></button><button data-side-placeholder="Notizen"><span class="symbol" aria-hidden="true">✎</span><span class="sidebar-label" data-de="Meine Notizen" data-tr="Notlarım">Meine Notizen</span></button><button data-side-placeholder="Statistiken"><span class="symbol" aria-hidden="true">▥</span><span class="sidebar-label" data-de="Statistiken" data-tr="İstatistikler">Statistiken</span></button><div class="sidebar-divider"></div><button data-side-placeholder="Adminbereich"><span class="symbol" aria-hidden="true">⚙</span><span class="sidebar-label" data-de="Verwaltung (Admin)" data-tr="Yönetim (Admin)">Verwaltung (Admin)</span></button></nav><div class="sidebar-account">KZN · SD<br><small>Private Mitgliederbibliothek</small></div></aside>
@@ -1300,6 +1308,18 @@ body>header{z-index:21}
  <div><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button type="button" id="passwordAdminNav" class="hidden" aria-expanded="false" aria-controls="passwordApprovalPanel">Passwortverwaltung</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
 </header>
 <main>
+<section id="publicHadis" class="hadis-reader hadis-welcome" aria-labelledby="publicHadisTitle">
+  <div class="hadis-heading">
+    <h2 id="publicHadisTitle">Hadis-i Şerif</h2>
+    <button type="button" id="publicHadisNext" disabled>Neuer Zufallsauszug</button>
+  </div>
+  <figure class="hadis-public-figure">
+    <canvas id="publicHadisCanvas" width="720" height="200" role="img" hidden></canvas>
+    <figcaption id="publicHadisSource" aria-live="polite"></figcaption>
+  </figure>
+  <p class="hadis-status" id="publicHadisStatus" role="status">Hadis wird geladen …</p>
+</section>
+<script src="hadis-public.js"></script>
  <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="username" required placeholder="name@beispiel.de"></div><div class="field"><label for="loginPassword">Passwort</label><input type="password" id="loginPassword" autocomplete="current-password" minlength="8" required placeholder="Passwort eingeben"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Mit Passwort anmelden</button><button type="button" id="magicLinkBtn">Einmaligen E-Mail-Link anfordern</button><button type="button" id="forgotPasswordBtn">Passwort vergessen?</button></div></form><form id="passwordForm" class="hidden"><h3>Passwort festlegen / ändern</h3><p>Nur für dein aktuell angemeldetes Konto.</p><div class="field"><label for="newPassword">Neues Passwort (mindestens 12 Zeichen)</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="field"><label for="confirmPassword">Passwort wiederholen</label><input id="confirmPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="actions"><button class="primary" type="submit" id="savePassword">Passwort speichern</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
  <div id="libraryArea" class="hidden">
  <section class="hero"><img class="hero-emblem" alt="Darül İlm" src="darul-ilm-logo-transparent.png"><div class="hero-arabic" lang="ar" dir="rtl">دار العلم</div><div class="hero-line"></div><h2>KZN · SD</h2><p data-de="Die digitale Bibliothek des Wissens" data-tr="İlmin dijital kütüphanesi">Die digitale Bibliothek des Wissens</p></section>
@@ -1320,7 +1340,7 @@ body>header{z-index:21}
 <div class="kzn-dash-columns"><div class="kzn-dash-main">
 <section class="hadis-reader" id="hadisReader" aria-labelledby="hadisTitle">
   <div class="hadis-heading">
-    <h3 id="hadisTitle">Hadis-i Şerif</h3>
+    <h3 id="hadisTitle" data-de="Aus meinen PDFs" data-tr="PDF dosyalarımdan">Aus meinen PDFs</h3>
     <button type="button" id="hadisRandom" disabled>Zufällige Seite</button>
   </div>
   <div class="hadis-controls">
