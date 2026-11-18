@@ -51,13 +51,13 @@ for delete to authenticated using (
 
 -- The application already uses a private bucket. Check Storage configuration without
 -- writing directly to the Storage metadata tables.
-do $
+do $bucket_check$
 begin
   if not exists (select 1 from storage.buckets where id = 'library-files' and not public) then
     raise exception 'Expected an existing private storage bucket library-files';
   end if;
 end
-$;
+$bucket_check$;
 
 -- A separate rule for anonymous requests avoids referencing library_members
 -- for a role that cannot read it.
