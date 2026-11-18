@@ -1,0 +1,176 @@
+(() => {
+  'use strict';
+
+  const maxPassages = 3;
+  const maxPassageLength = 440;
+  const maxEvidenceSpan = 350;
+  const tokenPattern = /[\p{L}\p{N}][\p{L}\p{M}\p{N}\u0640]*/gu;
+
+  function normalize(word) {
+    return word.normalize('NFKD').toLowerCase()
+      .replace(/[\p{M}\u0640]/gu, '')
+      .replaceAll('ß', 'ss')
+      .replaceAll('ı', 'i')
+      .replaceAll('ى', 'ي');
+  }
+
+  const stopWords = new Set(`
+    aber alle als also am an auch auf aus bei bin bis bist da dadurch damit danach
+    dann das dass dazu dein dem den denn der deren des dessen dich die dies diese
+    dieser dieses dir doch dort du durch ein eine einem einen einer eines er es
+    etwas euch für ganz gegen gewesen gibt ging habe haben hat hatte hier hin ich
+    ihm ihn ihnen ihr im in indem ins ist ja jede jedem jeden jeder jedes kann
+    kannst kein keine kurz man mehr mein mich mir mit muss nach nein nicht noch
+    nun nur ob oder ohne schreib schreibe schon sehr sei sein selbst sich sie sind
+    so soll sollen sowas über um und uns unter vom von vor war waren was weil
+    weiter welche welchem welchen welcher welches wem wen wenn wer werde werden
+    weshalb wie wieder wir wird wo woher wohin wozu zu zum zur zwar zwischen
+    erklär erkläre erklären beschreib beschreibe beschreiben sag sage sagt sagen bitte
+    bedeuten bedeutet nenne zeigt zeigen zeige steht stehen quelle quellen buch
+    besteht worin woruber woraus auskunft antwort frage
+    kitap kitapta kaynak kaynakta kaynaklar nedir nedirki ne nasil nereye nerede
+    nereden neden neyi neye neyin niye hangi hangisi kim kime kac kactir bir birde
+    bu bunu buna bunlar su sunu ona o ve veya ile icin gibi hem ama ya da de
+    daha en mi mu musun ben sen biz siz onlar olarak olan olur oldu degil
+    ifade et anlat acikla soyle goster bul kisaca bilgi hakkinda anlamina geliyor
+    demek denir yaziyor diyor bahsediyor nelerdir miymis gore nasildir yapilir
+    soru cevap
+    ما ماذا من لمن بم عن عند بعد مع قبل على الى في هذا هذه ذلك تلك هو هي هما
+    هم هن كان كانت يكون تكون هل متى اين كيف لماذا كم يا او كل بين الذي التي
+    الذين نحن انت انتم انا ان انه وان فان بان فإن ولم لن لا لكي لكن ثم اذا
+    اشرح وضح اخبرني اذكر ورد يقول نص كتاب مصدر السؤال جواب الرجاء
+  `.trim().split(/\s+/u).map(normalize));
+
+  function significant(word) {
+    return !stopWords.has(word) &&
+      (word.length >= 3 || (word.length >= 2 && /\p{Script=Arabic}/u.test(word)));
+  }
+
+  function withoutArabicArticle(word) {
+    if (/^وال.{3,}$/u.test(word)) return word.slice(3);
+    if (/^ال.{3,}$/u.test(word)) return word.slice(2);
+    return word;
+  }
+
+  const inflections = new Set([
+    'e', 'en', 'er', 'ern', 'es', 'n', 's', 'i', 'in', 'a', 'da', 'de',
+    'ta', 'te', 'dan', 'den', 'tan', 'ten', 'daki', 'deki', 'lar', 'ler',
+    'lari', 'leri', 'larin', 'lerin', 'ini', 'ina', 'inin', 'nin', 'unun', 'nun',
+    'umuz', 'imiz', 'imizde', 'dir', 'tir'
+  ]);
+
+  function strength(a, b) {
+    if (withoutArabicArticle(a) === withoutArabicArticle(b)) return 2;
+    const shorter = a.length <= b.length ? a : b;
+    const longer = shorter === a ? b : a;
+    if (shorter.length < 4 || !longer.startsWith(shorter)) return 0;
+    const suffix = longer.slice(shorter.length);
+    if (inflections.has(suffix)) return 2;
+    return shorter.length >= 5 && suffix.length <= 4 ? 1 : 0;
+  }
+
+  function pageHits(text, terms, indexes) {
+    const hits = [];
+    for (const match of text.matchAll(tokenPattern)) {
+      const word = normalize(match[0]);
+      if (!significant(word)) continue;
+      let term = indexes.get(word) ?? -1;
+      let matchStrength = term >= 0 ? 3 : 0;
+      if (!matchStrength) {
+        for (const [index, query] of terms.entries()) {
+          const candidate = strength(query, word);
+          if (candidate > matchStrength) {
+            term = index;
+            matchStrength = candidate;
+          }
+          if (candidate === 2) break;
+        }
+      }
+      if (term >= 0) hits.push({term, exact: matchStrength >= 2, start: match.index, end: match.index + match[0].length});
+    }
+    return hits;
+  }
+
+  function bestWindow(hits, threshold) {
+    let start = 0;
+    const seen = new Map();
+    const exact = new Map();
+    let best = null;
+    const add = (counts, key) => counts.set(key, (counts.get(key) || 0) + 1);
+    const remove = (counts, key) => {
+      if (counts.get(key) === 1) counts.delete(key);
+      else counts.set(key, counts.get(key) - 1);
+    };
+    for (const hit of hits) {
+      add(seen, hit.term);
+      if (hit.exact) add(exact, hit.term);
+      while (hit.end - hits[start].start > maxEvidenceSpan) {
+        const prior = hits[start++];
+        remove(seen, prior.term);
+        if (prior.exact) remove(exact, prior.term);
+        if (start === hits.length) return best;
+        if (prior === hit) break;
+      }
+      // Prefix overlap alone does not establish a relevant passage.
+      if (seen.size < threshold || exact.size === 0) continue;
+      const span = hit.end - hits[start].start;
+      const score = seen.size * 12 + exact.size * 2 + (1 - span / maxEvidenceSpan);
+      if (!best || score > best.score) best = {start: hits[start].start, end: hit.end, score};
+    }
+    return best;
+  }
+
+  function getExcerpt(text, first, last) {
+    const slack = maxPassageLength - (last - first);
+    const left = Math.max(0, first - Math.min(100, Math.floor(slack / 2)));
+    const right = Math.min(text.length, left + maxPassageLength);
+    const leading = text.slice(left, first);
+    const trailing = text.slice(last, right);
+    const sentenceEnd = /[.!?؟…](?:\s+|$)/gu;
+    const precedingBreak = [...leading.matchAll(sentenceEnd)].pop();
+    const followingBreak = trailing.match(sentenceEnd)?.[0];
+    const naturalStart = precedingBreak ? left + precedingBreak.index + precedingBreak[0].length : left;
+    const naturalEnd = followingBreak ? last + trailing.indexOf(followingBreak) + followingBreak.length : right;
+    let start = naturalStart;
+    let end = naturalEnd;
+    if (start === left && left > 0 && !/\s/u.test(text[left - 1])) {
+      const space = leading.search(/\s/u);
+      start = space === -1 ? first : left + space + 1;
+    }
+    if (end === right && right < text.length && !/\s/u.test(text[right])) {
+      const space = trailing.search(/\s\S*$/u);
+      end = space === -1 ? last : last + space;
+    }
+    return text.slice(start, end).trim();
+  }
+
+  function find(question, pages) {
+    if (typeof question !== 'string' || !Array.isArray(pages)) return [];
+    const terms = [...new Set([...question.slice(0, 1000).matchAll(tokenPattern)]
+      .map(match => normalize(match[0])).filter(significant))].slice(0, 16);
+    if (!terms.length) return [];
+    const indexes = new Map(terms.map((term, index) => [term, index]));
+    const threshold = terms.length === 1 ? 1 : Math.max(2, Math.ceil(terms.length / 2));
+    const candidates = [];
+    for (const page of pages) {
+      if (!page || typeof page.text !== 'string' || !page.text.trim()) continue;
+      const match = bestWindow(pageHits(page.text, terms, indexes), threshold);
+      if (!match) continue;
+      const text = getExcerpt(page.text, match.start, match.end);
+      if (text) candidates.push({sourceId: page.sourceId, source: page.source, page: page.page, text, score: match.score});
+    }
+    candidates.sort((a, b) => b.score - a.score);
+    const unique = new Set();
+    const result = [];
+    for (const {score, ...passage} of candidates) {
+      const key = normalize(passage.text).replace(/\s+/gu, ' ');
+      if (unique.has(key)) continue;
+      unique.add(key);
+      result.push(passage);
+      if (result.length === maxPassages) break;
+    }
+    return result;
+  }
+
+  globalThis.MenbaSearch = Object.freeze({find});
+})();
