@@ -130,27 +130,16 @@
     const heading = document.createElement('h3');
     heading.textContent = 'MENBA';
     reply.append(heading);
-    if (turn.explanation) reply.append(paragraph(turn.explanation,'menba-explanation'));
     reply.append(paragraph(tr(...turn.notice)));
     turn.evidence.forEach((entry,index) => {
       const passage = document.createElement('div');
       passage.className = 'menba-passage';
       const quote = document.createElement('blockquote');
-      quote.dir = 'auto';
-      quote.textContent = entry.text;
+      quote.append(...entry.text.split(/\r?\n/u).map(line => paragraph(line)));
       const cite = paragraph(`[${index+1}] ${entry.source} · ${tr('Seite', 'Sayfa')} ${entry.page}${entry.ocr ? ' · OCR' : ''}`,'menba-citation');
       passage.append(quote, cite);
       reply.append(passage);
     });
-    if (!turn.explanation && turn.evidence.length) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'menba-explain';
-      button.textContent = tr('Lokal erklären', 'Yerel olarak açıkla');
-      button.disabled = request !== null;
-      button.addEventListener('click', () => void explain(turn));
-      reply.append(button, paragraph(tr('Beim ersten Mal lädt der Browser ein Sprachmodell herunter (ca. 540 MB). Fragen und Buchtexte bleiben im Browser.', 'İlk kullanımda tarayıcı bir dil modeli indirir (yaklaşık 540 MB). Sorular ve kitap metinleri tarayıcıda kalır.')));
-    }
     item.append(reply);
     return item;
   }
@@ -222,7 +211,7 @@
     const text = question.value.trim();
     if (!allowed() || request || !text || !selected.size) return;
     const sources = options.filter(source => selected.has(source.id));
-    const turn = {question:text, sources, evidence:[], notice:null, explanation:''};
+    const turn = {question:text, sources, evidence:[], notice:null};
     const work = {controller:new AbortController(), sources, task:null, turn};
     request = work;
     turns.push(turn);
@@ -331,34 +320,6 @@
       if (request === work) notice = ['Texterkennung derzeit nicht verfügbar. Prüfe Datei, Seiten und Verbindung.', 'Metin tanıma kullanılamıyor. Dosyayı, sayfaları ve bağlantını kontrol et.'];
     } finally {
       await releasePdf(work);
-      if (request === work) { request = null; render(); }
-    }
-  }
-
-  async function explain(turn) {
-    if (!allowed() || request || !turn.evidence.length) return;
-    const work = {controller:new AbortController(),sources:turn.sources,task:null};
-    request = work;
-    notice = ['Lokales Modell wird vorbereitet …', 'Yerel model hazırlanıyor …'];
-    render();
-    try {
-      const result = await window.MenbaExplain.explain({
-        question:turn.question,evidence:turn.evidence,language:lang,signal:work.controller.signal,
-        onProgress(event) {
-          if (request !== work) return;
-          const percent = Number.isFinite(event.progress) ? ` ${Math.round(event.progress)} %` : '';
-          notice = event.phase === 'generating'
-            ? ['Erklärung wird im Browser erstellt …', 'Açıklama tarayıcıda hazırlanıyor …']
-            : [`Sprachmodell wird geladen …${percent}`, `Dil modeli indiriliyor …${percent}`];
-          renderNotice();
-        }
-      });
-      if (request !== work || !allowed()) return;
-      turn.explanation = result;
-      notice = null;
-    } catch {
-      if (request === work) notice = ['Das Modell konnte keine zitierte Erklärung erstellen. Die Fundstellen stehen im Chat.', 'Model kaynak numaralı bir açıklama oluşturamadı. Alıntılar sohbette duruyor.'];
-    } finally {
       if (request === work) { request = null; render(); }
     }
   }
