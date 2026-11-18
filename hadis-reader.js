@@ -241,8 +241,8 @@
     const file = filePicker.files[0];
     if (!file || !currentUser || accessState !== 'approved') return;
     filePicker.value = '';
-    if (!/\.pdf$/i.test(file.name) || file.size > 25 * 1024 * 1024) {
-      message = ['Wähle eine PDF-Datei bis 25 MB.', 'En fazla 25 MB boyutunda bir PDF seç.'];
+    if (!/\.pdf$/i.test(file.name) || file.size > PDF_MAX_BYTES) {
+      message = ['Wähle eine PDF-Datei bis 50 MB.', 'En fazla 50 MB boyutunda bir PDF seç.'];
       updateLabels();
       return;
     }
