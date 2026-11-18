@@ -2,7 +2,6 @@
   'use strict';
 
   const card = document.getElementById('publicHadis');
-  const guestRow = document.getElementById('hadisWelcomeRow');
   const button = document.getElementById('publicHadisNext');
   const quote = document.getElementById('publicHadisQuote');
   const arabic = document.getElementById('publicHadisArabic');
@@ -68,11 +67,6 @@
   document.addEventListener('library-language', () => {
     language = document.documentElement.lang;
     updateLabels();
-  });
-  document.addEventListener('library-access', event => {
-    const memberHero = event.detail.approved && document.querySelector('#libraryArea > .hero');
-    (memberHero || guestRow).append(card);
-    guestRow.hidden = Boolean(memberHero);
   });
   loadEntries();
 })();
