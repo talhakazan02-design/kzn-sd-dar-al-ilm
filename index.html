@@ -1365,7 +1365,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
 <link rel="stylesheet" href="lending.css">
 <link rel="stylesheet" href="admin-beta.css">
 <link rel="stylesheet" href="shared-library.css">
-<link rel="stylesheet" href="menba.css">
+<link rel="stylesheet" href="menba.css?v=chat">
 </head>
 <body>
 <aside class="sidebar-main" aria-label="Hauptnavigation"><div class="sidebar-logo"><img class="heritage-logo" alt="Darül İlm Logo" src="darul-ilm-logo-transparent.png"><span class="arabic" lang="ar">دار العلم</span><small>Dijital Kütüphane</small></div><nav class="sidebar-nav" aria-label="Werkzeuge"><details id="libraryToolsMenu" hidden><summary data-de="Werkzeuge" data-tr="Araçlar">Werkzeuge</summary><div class="library-tool-links"><button type="button" id="betaLoansNav" hidden><span class="symbol" aria-hidden="true">▤</span><span class="sidebar-label" data-de="Ausleihe" data-tr="Ödünç">Ausleihe</span></button><button type="button" id="betaWishlistNav" hidden><span class="symbol" aria-hidden="true">♡</span><span class="sidebar-label" data-de="Wunschliste" data-tr="İstek Listesi">Wunschliste</span></button><button type="button" id="betaNotesNav" hidden><span class="symbol" aria-hidden="true">✎</span><span class="sidebar-label" data-de="Meine Notizen" data-tr="Notlarım">Meine Notizen</span></button><button type="button" id="betaAdminNav" hidden><span class="symbol" aria-hidden="true">⚙</span><span class="sidebar-label" data-de="Verwaltung (Admin)" data-tr="Yönetim (Admin)">Verwaltung (Admin)</span></button></div></details></nav></aside>
@@ -1618,21 +1618,42 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
    <div id="featurePanel" class="feature-panel hidden">
 <section class="menba-panel" aria-labelledby="menbaTitle">
   <h2 id="menbaTitle">MENBA AI</h2>
-  <p class="menba-intro" data-de="Wähle deine Quellen und stelle eine Frage. MENBA sucht in deinem Browser nach passenden Textstellen mit Buch und Seite." data-tr="Kaynaklarını seç ve bir soru sor. MENBA, tarayıcında ilgili metin bölümlerini bulur ve kitabın adını ve sayfa numarasını gösterir.">Wähle deine Quellen und stelle eine Frage. MENBA sucht in deinem Browser nach passenden Textstellen mit Buch und Seite.</p>
+  <p class="menba-intro" data-de="Fragen zu deinen ausgewählten Quellen. Die Fundstellen enthalten Buch und PDF-Seite." data-tr="Seçtiğin kaynaklar hakkında soru sor. Alıntılarda kitap ve PDF sayfası gösterilir.">Fragen zu deinen ausgewählten Quellen. Die Fundstellen enthalten Buch und PDF-Seite.</p>
+  <details class="menba-source-menu">
+    <summary id="menbaSourcesSummary">Quellen</summary>
+    <div id="menbaSources" class="menba-sources"></div>
+    <p id="menbaSourceStatus" class="menba-status" role="status"></p>
+    <details id="menbaOcrTools" class="menba-ocr" hidden>
+      <summary data-de="Gescannte PDF-Seiten lesbar machen" data-tr="Taranan PDF sayfalarını metne dönüştür">Gescannte PDF-Seiten lesbar machen</summary>
+      <form id="menbaOcrForm">
+        <label><span data-de="PDF" data-tr="PDF">PDF</span><select id="menbaOcrSource" required></select></label>
+        <label><span data-de="Schrift / Sprache" data-tr="Yazı / dil">Schrift / Sprache</span>
+          <select id="menbaOcrLanguage">
+            <option value="ottoman" data-de="Osmanische Schrift (Näherung)" data-tr="Osmanlı yazısı (yaklaşık)">Osmanische Schrift (Näherung)</option>
+            <option value="arabic" data-de="Arabisch" data-tr="Arapça">Arabisch</option>
+            <option value="mixed" data-de="Arabisch und Türkisch" data-tr="Arapça ve Türkçe">Arabisch und Türkisch</option>
+            <option value="turkish" data-de="Türkisch (lateinische Schrift)" data-tr="Türkçe (Latin alfabesi)">Türkisch (lateinische Schrift)</option>
+          </select>
+        </label>
+        <div class="menba-page-range">
+          <label><span data-de="Von PDF-Seite" data-tr="İlk PDF sayfası">Von PDF-Seite</span><input id="menbaOcrStart" type="number" min="1" step="1" value="1" required></label>
+          <label><span data-de="Bis PDF-Seite" data-tr="Son PDF sayfası">Bis PDF-Seite</span><input id="menbaOcrEnd" type="number" min="1" step="1" value="1" required></label>
+        </div>
+        <p class="menba-status" data-de="Bis zu fünf Seiten pro Durchlauf. Erkannter Text kann vom Original abweichen." data-tr="Bir seferde en fazla beş sayfa. Tanınan metin özgün sayfadan farklı olabilir.">Bis zu fünf Seiten pro Durchlauf. Erkannter Text kann vom Original abweichen.</p>
+        <button id="menbaOcrStartButton" type="submit" data-de="Text erkennen" data-tr="Metni tanı">Text erkennen</button>
+      </form>
+    </details>
+  </details>
+  <div id="menbaResults" class="menba-results" aria-label="Menba Chat"></div>
+  <p id="menbaStatus" class="menba-status menba-answer-status" role="status"></p>
+  <button id="menbaCancel" type="button" hidden data-de="Abbrechen" data-tr="İptal">Abbrechen</button>
   <form id="menbaForm" class="menba-form">
-    <fieldset class="menba-source-field">
-      <legend data-de="Meine Quellen" data-tr="Kaynaklarım">Meine Quellen</legend>
-      <div id="menbaSources" class="menba-sources"></div>
-      <p id="menbaSourceStatus" class="menba-status" role="status"></p>
-    </fieldset>
     <div class="menba-question-field">
       <label for="menbaQuestion" data-de="Deine Frage" data-tr="Soru">Deine Frage</label>
       <textarea id="menbaQuestion" name="question" rows="3" maxlength="500" dir="auto" required></textarea>
     </div>
     <button type="submit" id="menbaAsk" disabled data-de="Frage stellen" data-tr="Soru sor">Frage stellen</button>
   </form>
-  <p id="menbaStatus" class="menba-status menba-answer-status" role="status"></p>
-  <div id="menbaResults" class="menba-results"></div>
 </section>
 </div>
    <div id="catalogPanel">
@@ -2538,6 +2559,8 @@ document.addEventListener('library-language',()=>{drawEditor();refreshCards();})
 <script src="lending.js"></script>
 <script src="shared-library.js"></script>
 <script src="library-workspace.js"></script>
-<script src="menba-search.js"></script>
-<script src="menba.js"></script>
+<script src="menba-search.js?v=chat"></script>
+<script src="menba-ocr.js"></script>
+<script src="menba-explain.js"></script>
+<script src="menba.js?v=chat"></script>
 </body></html>

@@ -4,14 +4,19 @@
   const maxPassages = 3;
   const maxPassageLength = 440;
   const maxEvidenceSpan = 350;
-  const tokenPattern = /[\p{L}\p{N}][\p{L}\p{M}\p{N}\u0640]*/gu;
+  const tokenPattern = /[\p{L}\p{N}][\p{L}\p{M}\p{N}\u0640\u200c\u200d]*/gu;
+  const phraseSeparator = /^[\s'’\u2010\u2011-]*$/u;
 
   function normalize(word) {
     return word.normalize('NFKD').toLowerCase()
-      .replace(/[\p{M}\u0640]/gu, '')
+      .replace(/[\p{M}\u0640\u200c\u200d]/gu, '')
       .replaceAll('ß', 'ss')
       .replaceAll('ı', 'i')
-      .replaceAll('ى', 'ي');
+      .replace(/[ىیۍېے]/gu, 'ي')
+      .replace(/[کڪ]/gu, 'ك')
+      .replace(/[ٱٲٳٵ]/gu, 'ا')
+      .replace(/[ةۀە]/gu, 'ه')
+      .replace(/[٠-٩۰-۹]/gu, digit => String(digit.charCodeAt(0) & 15));
   }
 
   const stopWords = new Set(`
@@ -25,20 +30,22 @@
     so soll sollen sowas über um und uns unter vom von vor war waren was weil
     weiter welche welchem welchen welcher welches wem wen wenn wer werde werden
     weshalb wie wieder wir wird wo woher wohin wozu zu zum zur zwar zwischen
-    erklär erkläre erklären beschreib beschreibe beschreiben sag sage sagt sagen bitte
+    erklär erkläre erklären erklaert beschreib beschreibe beschreiben sag sage sagt sagen bitte
     bedeuten bedeutet nenne zeigt zeigen zeige steht stehen quelle quellen buch
-    besteht worin woruber woraus auskunft antwort frage
+    arabisch arabischen osmanisch osmanischen turkisch turkischen yazili
+    osmanlica osmanli arapca arapcasinda turkce
+    besteht worin woruber woraus auskunft antwort frage bedeutung erklarung definition
     kitap kitapta kaynak kaynakta kaynaklar nedir nedirki ne nasil nereye nerede
     nereden neden neyi neye neyin niye hangi hangisi kim kime kac kactir bir birde
     bu bunu buna bunlar su sunu ona o ve veya ile icin gibi hem ama ya da de
     daha en mi mu musun ben sen biz siz onlar olarak olan olur oldu degil
     ifade et anlat acikla soyle goster bul kisaca bilgi hakkinda anlamina geliyor
     demek denir yaziyor diyor bahsediyor nelerdir miymis gore nasildir yapilir
-    soru cevap
+    soru cevap anlami tanimi nasilca
     ما ماذا من لمن بم عن عند بعد مع قبل على الى في هذا هذه ذلك تلك هو هي هما
     هم هن كان كانت يكون تكون هل متى اين كيف لماذا كم يا او كل بين الذي التي
     الذين نحن انت انتم انا ان انه وان فان بان فإن ولم لن لا لكي لكن ثم اذا
-    اشرح وضح اخبرني اذكر ورد يقول نص كتاب مصدر السؤال جواب الرجاء
+    اشرح وضح اخبرني اذكر ورد يقول نص كتاب السؤال جواب الرجاء معنى تعريف حكم
   `.trim().split(/\s+/u).map(normalize));
 
   function significant(word) {
@@ -47,9 +54,7 @@
   }
 
   function withoutArabicArticle(word) {
-    if (/^وال.{3,}$/u.test(word)) return word.slice(3);
-    if (/^ال.{3,}$/u.test(word)) return word.slice(2);
-    return word;
+    return word.replace(/^(?:[وفبك]?ال|[وف]?لل)(?=\p{Script=Arabic}{3,}$)/u, '');
   }
 
   const inflections = new Set([
@@ -58,6 +63,71 @@
     'lari', 'leri', 'larin', 'lerin', 'ini', 'ina', 'inin', 'nin', 'unun', 'nun',
     'umuz', 'imiz', 'imizde', 'dir', 'tir'
   ]);
+
+  // These equivalents help find a citation. They never contribute text to one.
+  const equivalents = [
+    ['tecvid', 'tecwid', 'tajwid', 'tajweed', 'tadschwid', 'tadjwid', 'تجويد'],
+    ['emsile', 'emsila', 'amthila', 'amsila', 'أمثلة', 'امثله'],
+    ['maksud', 'maksoud', 'maqsud', 'maqsoud', 'maqsood', 'مقصود'],
+    ['ilmihal', 'ilmihaal', 'ilm-i hâl', 'ilm i hal', 'علم حال', 'علم الحال'],
+    ['elif', 'alif', 'ألف'],
+    ['idgam', 'idghaam', 'idgham', 'إدغام'],
+    ['ihfa', 'ikhfa', 'إخفاء'],
+    ['izhar', 'ithhar', 'izhaar', 'إظهار'],
+    ['iklab', 'iqlab', 'إقلاب'],
+    ['mahrec', 'machradsch', 'makhraj', 'makharij', 'مخرج', 'مخارج'],
+    ['gunne', 'ghunna', 'ghunnah', 'غنة'],
+    ['med', 'madd', 'مد'],
+    ['sarf', 'tasrif', 'صرف', 'تصريف'],
+    ['nahiv', 'nahw', 'نحو'],
+    ['masdar', 'mastar', 'مصدر'],
+    ['abdest', 'wudu', 'wudhu', 'wuzu', 'وضوء'],
+    ['gusul', 'ghusl', 'غسل'],
+    ['namaz', 'ritualgebet', 'salah', 'salat', 'صلاة'],
+    ['oruc', 'sawm', 'صوم', 'صيام'],
+    ['zekat', 'zakat', 'زكاة']
+  ];
+  const aliases = new Map();
+  const phrases = [];
+  for (const [key, ...members] of equivalents) {
+    for (const alias of [key, ...members]) {
+      const parts = [...alias.matchAll(tokenPattern)].map(match => normalize(match[0]));
+      if (parts.length === 1) aliases.set(parts[0], key);
+      else phrases.push({key, parts});
+    }
+  }
+  const titleTerms = new Set(['tecvid', 'emsile', 'maksud', 'ilmihal']);
+  const suffixes = [...inflections, 'nda', 'nde', 'daki', 'deki'].sort((a, b) => b.length - a.length);
+
+  function canonical(word) {
+    const alias = aliases.get(word) || aliases.get(withoutArabicArticle(word));
+    if (alias) return alias;
+    if (!/^[a-z]+$/u.test(word)) return word;
+    for (const ending of suffixes) {
+      if (word.length - ending.length < 4 || !word.endsWith(ending)) continue;
+      const root = aliases.get(word.slice(0, -ending.length));
+      if (root) return root;
+    }
+    return word;
+  }
+
+  function* tokens(text) {
+    const pieces = [...text.matchAll(tokenPattern)].map(match => ({
+      word: normalize(match[0]), start:match.index, end:match.index + match[0].length
+    }));
+    for (let index = 0; index < pieces.length; index++) {
+      const first = pieces[index];
+      const phrase = phrases.find(({parts}) => parts.every((part, offset) => {
+        const piece = pieces[index + offset];
+        if (piece?.word !== part) return false;
+        return !offset || phraseSeparator.test(text.slice(pieces[index + offset - 1].end, piece.start));
+      }));
+      if (phrase) {
+        index += phrase.parts.length - 1;
+        yield {word:phrase.key, start:first.start, end:pieces[index].end};
+      } else yield {...first, word:canonical(first.word)};
+    }
+  }
 
   function strength(a, b) {
     if (withoutArabicArticle(a) === withoutArabicArticle(b)) return 2;
@@ -71,8 +141,7 @@
 
   function pageHits(text, terms, indexes) {
     const hits = [];
-    for (const match of text.matchAll(tokenPattern)) {
-      const word = normalize(match[0]);
+    for (const {word, start, end} of tokens(text)) {
       if (!significant(word)) continue;
       let term = indexes.get(word) ?? -1;
       let matchStrength = term >= 0 ? 3 : 0;
@@ -86,7 +155,7 @@
           if (candidate === 2) break;
         }
       }
-      if (term >= 0) hits.push({term, exact: matchStrength >= 2, start: match.index, end: match.index + match[0].length});
+      if (term >= 0) hits.push({term, exact: matchStrength >= 2, start, end});
     }
     return hits;
   }
@@ -146,18 +215,32 @@
 
   function find(question, pages) {
     if (typeof question !== 'string' || !Array.isArray(pages)) return [];
-    const terms = [...new Set([...question.slice(0, 1000).matchAll(tokenPattern)]
-      .map(match => normalize(match[0])).filter(significant))].slice(0, 16);
+    const terms = [...new Set([...tokens(question.slice(0, 1000))]
+      .map(({word}) => word).filter(significant))].slice(0, 16);
     if (!terms.length) return [];
-    const indexes = new Map(terms.map((term, index) => [term, index]));
-    const threshold = terms.length === 1 ? 1 : Math.max(2, Math.ceil(terms.length / 2));
-    const candidates = [];
+    const available = [];
+    const titleCache = new Map();
     for (const page of pages) {
       if (!page || typeof page.text !== 'string' || !page.text.trim()) continue;
-      const match = bestWindow(pageHits(page.text, terms, indexes), threshold);
+      const sourceTitle = typeof page.source === 'string' ? page.source : '';
+      if (!titleCache.has(sourceTitle)) titleCache.set(sourceTitle, new Set([...tokens(sourceTitle)].map(({word}) => word)));
+      const title = titleCache.get(sourceTitle);
+      const named = terms.some(term => titleTerms.has(term) && title.has(term));
+      available.push({page, title, named});
+    }
+    const namedSource = available.some(({named}) => named);
+    const candidates = [];
+    for (const {page, title, named} of available) {
+      if (namedSource && !named) continue;
+      // A named source narrows the search but is never evidence for a passage.
+      const remaining = terms.filter(term => !titleTerms.has(term) || !title.has(term));
+      const bodyTerms = remaining.length ? remaining : terms;
+      const indexes = new Map(bodyTerms.map((term, index) => [term, index]));
+      const threshold = bodyTerms.length === 1 ? 1 : Math.max(2, Math.ceil(bodyTerms.length / 2));
+      const match = bestWindow(pageHits(page.text, bodyTerms, indexes), threshold);
       if (!match) continue;
       const text = getExcerpt(page.text, match.start, match.end);
-      if (text) candidates.push({sourceId: page.sourceId, source: page.source, page: page.page, text, score: match.score});
+      if (text) candidates.push({sourceId: page.sourceId, source: page.source, page: page.page, text, score: match.score + (terms.length - remaining.length) * 0.5});
     }
     candidates.sort((a, b) => b.score - a.score);
     const unique = new Set();
