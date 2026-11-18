@@ -1598,13 +1598,13 @@ $('bookForm').onsubmit=async e=>{
       const cover=validateUpload(f.get('cover'),'cover');
       const prefix=ownerId+'/'+book.id+'/'+crypto.randomUUID();
       if(pdf){
-        const path=await uploadPrivateFile(pdf,prefix+'-document.pdf');
+        const path=await uploadPrivateFile(pdf,prefix+'/document.pdf');
         uploaded.push(path);
         Object.assign(changes,{file_path:path,file_name:pdf.name,mime_type:pdf.type,file_size:pdf.size});
       }
       if(cover){
         const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[cover.type];
-        changes.cover_path=await uploadPrivateFile(cover,prefix+'-cover.'+ext);
+        changes.cover_path=await uploadPrivateFile(cover,prefix+'/cover.'+ext);
         uploaded.push(changes.cover_path);
       }
       let update=db.from('books').update(changes).eq('id',book.id).eq('owner_id',ownerId).eq('visibility','private').is('deleted_at',null);

@@ -5,9 +5,13 @@ alter table public.books enable row level security;
 alter table public.books add column if not exists location text;
 
 -- Restrictive policies also constrain any existing permissive policies.
+drop policy if exists "library books no anonymous access" on public.books;
+create policy "library books no anonymous access" on public.books as restrictive
+for all to anon using (false) with check (false);
+
 drop policy if exists "library books read boundary" on public.books;
 create policy "library books read boundary" on public.books as restrictive
-for select to public using (
+for select to authenticated using (
   (owner_id = (select auth.uid()) or (visibility = 'shared' and deleted_at is null))
   and exists (
     select 1 from public.library_members m
@@ -15,13 +19,9 @@ for select to public using (
   )
 );
 
-drop policy if exists "library private books owner read" on public.books;
-create policy "library private books owner read" on public.books
-for select to authenticated using (owner_id = (select auth.uid()));
-
 drop policy if exists "library books insert boundary" on public.books;
 create policy "library books insert boundary" on public.books as restrictive
-for insert to public with check (
+for insert to authenticated with check (
   owner_id = (select auth.uid()) and visibility = 'private'
   and exists (
     select 1 from public.library_members m
@@ -31,7 +31,7 @@ for insert to public with check (
 
 drop policy if exists "library books update boundary" on public.books;
 create policy "library books update boundary" on public.books as restrictive
-for update to public using (
+for update to authenticated using (
   owner_id = (select auth.uid()) and visibility = 'private'
   and exists (
     select 1 from public.library_members m
@@ -41,7 +41,7 @@ for update to public using (
 
 drop policy if exists "library books delete boundary" on public.books;
 create policy "library books delete boundary" on public.books as restrictive
-for delete to public using (
+for delete to authenticated using (
   owner_id = (select auth.uid()) and visibility = 'private'
   and exists (
     select 1 from public.library_members m
@@ -49,45 +49,41 @@ for delete to public using (
   )
 );
 
-drop policy if exists "library private books owner write" on public.books;
--- Combined policy supplies the permissive half for normal owner operations.
-create policy "library private books owner write" on public.books
-for all to authenticated using (owner_id = (select auth.uid()))
-with check (owner_id = (select auth.uid()));
-
-do $$
+-- The application already uses a private bucket. Check Storage configuration without
+-- writing directly to the Storage metadata tables.
+do $
 begin
-  update storage.buckets set public = false where id = 'library-files';
-  if not found then raise exception 'Expected storage bucket library-files'; end if;
+  if not exists (select 1 from storage.buckets where id = 'library-files' and not public) then
+    raise exception 'Expected an existing private storage bucket library-files';
+  end if;
 end
-$$;
+$;
+
+-- A separate rule for anonymous requests avoids referencing library_members
+-- for a role that cannot read it.
+drop policy if exists "library files no anonymous access" on storage.objects;
+create policy "library files no anonymous access" on storage.objects as restrictive
+for all to anon using (bucket_id <> 'library-files')
+with check (bucket_id <> 'library-files');
 
 drop policy if exists "library file owner boundary" on storage.objects;
 create policy "library file owner boundary" on storage.objects as restrictive
-for all to public using (
-  bucket_id <> 'library-files' or (
-    (storage.foldername(name))[1] = (select auth.uid())::text
-    and exists (
-      select 1 from public.library_members m
-      where m.user_id = (select auth.uid()) and m.status = 'approved'
-    )
-  )
-) with check (
-  bucket_id <> 'library-files' or (
-    (storage.foldername(name))[1] = (select auth.uid())::text
-    and exists (
-      select 1 from public.library_members m
-      where m.user_id = (select auth.uid()) and m.status = 'approved'
-    )
-  )
-);
-
-drop policy if exists "library file owner access" on storage.objects;
-create policy "library file owner access" on storage.objects
 for all to authenticated using (
-  bucket_id = 'library-files' and (storage.foldername(name))[1] = (select auth.uid())::text
+  bucket_id <> 'library-files' or (
+    (storage.foldername(name))[1] = (select auth.uid())::text
+    and exists (
+      select 1 from public.library_members m
+      where m.user_id = (select auth.uid()) and m.status = 'approved'
+    )
+  )
 ) with check (
-  bucket_id = 'library-files' and (storage.foldername(name))[1] = (select auth.uid())::text
+  bucket_id <> 'library-files' or (
+    (storage.foldername(name))[1] = (select auth.uid())::text
+    and exists (
+      select 1 from public.library_members m
+      where m.user_id = (select auth.uid()) and m.status = 'approved'
+    )
+  )
 );
 
 create or replace function public.reorder_library_categories(category_scope text, category_ids uuid[])
