@@ -1293,25 +1293,33 @@ body>header{z-index:21}
 .hadis-source:has(p:not(:empty)){margin-top:10px}
 
 
-.hadis-welcome-row{display:grid;grid-template-columns:minmax(125px,180px) minmax(0,490px);justify-content:center;align-items:center;gap:clamp(16px,4vw,44px);margin:24px auto 14px}
-.hadis-welcome-row[hidden]{display:none!important}
-.hadis-welcome-logo{display:block;max-width:100%;height:auto;justify-self:center;filter:drop-shadow(0 3px 12px #000b)}
-.hadis-welcome{width:100%;min-width:0;max-width:490px;margin:0;padding:clamp(12px,2.4vw,20px);text-align:start}
-.hadis-welcome h2{margin:0;color:#e8c486;font:700 clamp(1.2rem,3vw,1.55rem) Georgia,serif}
-.hadis-welcome .hadis-heading{margin-bottom:10px}
-.hadis-quote,.hadis-quote blockquote{margin:0}
-.hadis-quote blockquote{border-top:1px solid #b98e556b;border-bottom:1px solid #b98e556b;padding:10px 0;text-align:center}
-.hadis-quote .hadis-arabic{color:#f2c879;font:400 clamp(1.42rem,3.3vw,1.88rem)/1.55 'Amiri','Noto Naskh Arabic','Traditional Arabic',serif;text-align:center;margin:0 0 7px;overflow-wrap:break-word}
-.hadis-quote .hadis-turkish{color:#f5e7c9;font:400 clamp(.91rem,1.6vw,1.02rem)/1.55 Georgia,serif;text-align:center;margin:0;overflow-wrap:break-word}
-.hadis-quote figcaption{margin-top:9px;color:#dcbc87;font:400 .78rem/1.4 Georgia,serif;overflow-wrap:anywhere}
-#libraryArea>.hero:has(>#publicHadis){display:grid!important;grid-template-columns:minmax(125px,200px) minmax(0,490px);align-items:center;justify-content:center;gap:clamp(16px,4vw,44px);height:auto!important;min-height:245px!important;padding:12px 8px 18px!important}
-#libraryArea>.hero>#publicHadis{position:relative;z-index:2;min-width:0}
-@media(max-width:650px){
- .hadis-welcome-row,#libraryArea>.hero:has(>#publicHadis){grid-template-columns:minmax(0,490px);gap:10px}
- .hadis-welcome-row{margin:10px auto 16px}
- .hadis-welcome-logo{width:108px}
- #libraryArea>.hero:has(>#publicHadis)>.hero-emblem{width:116px!important;height:116px!important;margin:0 auto!important}
- .hadis-welcome button{font-size:.84rem;padding:7px 8px}
+
+body>header{position:sticky!important;top:0;left:auto!important;right:auto!important;width:auto!important;display:grid!important;grid-template-columns:max-content minmax(0,1fr) minmax(120px,max-content);grid-template-areas:"brand hadis actions";height:auto!important;min-height:76px!important;align-items:center;gap:clamp(10px,1.5vw,22px);padding:7px 16px!important}
+body>header>.brand{grid-area:brand}
+body>header>.header-actions{grid-area:actions;display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:5px;max-width:245px;min-width:0}
+body>main{margin-top:0!important}
+.header-hadis{grid-area:hadis;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;border-inline:1px solid #b98e5559;padding-inline:clamp(8px,1.4vw,18px)}
+.header-hadis [hidden]{display:none!important}
+.header-hadis-meta{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px}
+.header-hadis h2{margin:0;color:#dfba77;font:700 .88rem/1.3 Georgia,serif}
+header #publicHadisNext{font:400 .76rem/1.2 Georgia,serif!important;min-height:26px!important;padding:3px 7px!important}
+.header-hadis #publicHadisStatus{margin:0;color:#eccf9a;font-size:.8rem}
+.header-hadis #publicHadisStatus:empty{display:none}
+.header-hadis .hadis-quote,.header-hadis blockquote{margin:0;min-width:0}
+.header-hadis .hadis-arabic{margin:0;color:#f2c879;font:400 clamp(1.2rem,2vw,1.52rem)/1.5 'Amiri','Noto Naskh Arabic','Traditional Arabic',serif;overflow-wrap:break-word}
+.header-hadis .hadis-turkish{margin:1px 0 2px;color:#f5e7c9;font:400 clamp(.79rem,1.2vw,.93rem)/1.4 Georgia,serif;overflow-wrap:break-word}
+.header-hadis figcaption{color:#d1b480;font:400 .69rem/1.3 Georgia,serif;overflow-wrap:anywhere}
+.centered-guest-logo{display:grid;place-items:center;margin:12px auto 0}
+.centered-guest-logo img{display:block;width:clamp(105px,17vw,180px);height:auto;filter:drop-shadow(0 3px 12px #000b)}
+main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
+@media(min-width:761px){body>header{margin-left:238px}}
+@media(max-width:1090px){
+ body>header{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"brand actions" "hadis hadis";gap:5px 10px}
+ .header-hadis{border-inline:0;border-top:1px solid #b98e5559;padding:4px 0 0}
+}
+@media(max-width:760px){
+ body>header{position:relative!important;margin-left:0;padding:7px 11px!important}
+ #libraryArea>.hero{margin-top:8px!important}
 }
 </style><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri&display=swap">
 </head>
@@ -1320,27 +1328,25 @@ body>header{z-index:21}
 
 <header>
  <div class="brand"><div class="mark">ك</div><div><h1>KZN · SD</h1><small>دَارُ الْعِلْمِ · HAUS DES WISSENS</small></div></div>
- <div><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button type="button" id="passwordAdminNav" class="hidden" aria-expanded="false" aria-controls="passwordApprovalPanel">Passwortverwaltung</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
+<section id="publicHadis" class="header-hadis" aria-labelledby="publicHadisTitle">
+  <figure class="hadis-quote" id="publicHadisQuote" hidden>
+    <blockquote>
+      <p id="publicHadisArabic" class="hadis-arabic" lang="ar" dir="rtl"></p>
+      <p id="publicHadisTurkish" class="hadis-turkish" lang="tr"></p>
+    </blockquote>
+    <figcaption id="publicHadisSource"></figcaption>
+  </figure>
+  <div class="header-hadis-meta">
+    <h2 id="publicHadisTitle">Hadis-i Şerif</h2>
+    <button type="button" id="publicHadisNext" disabled>Weiterer Hadis</button>
+  </div>
+  <p id="publicHadisStatus" role="status">Hadis wird geladen …</p>
+</section>
+ <div class="header-actions"><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button type="button" id="passwordAdminNav" class="hidden" aria-expanded="false" aria-controls="passwordApprovalPanel">Passwortverwaltung</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
 </header>
+<script src="hadis-header.js"></script>
 <main>
-<div id="hadisWelcomeRow" class="hadis-welcome-row">
-  <img class="hadis-welcome-logo" src="darul-ilm-logo-transparent.png" alt="Darül İlm" width="180" height="180">
-  <section id="publicHadis" class="hadis-reader hadis-welcome" aria-labelledby="publicHadisTitle">
-    <div class="hadis-heading">
-      <h2 id="publicHadisTitle">Hadis-i Şerif</h2>
-      <button type="button" id="publicHadisNext" disabled>Weiterer Hadis</button>
-    </div>
-    <figure class="hadis-quote" id="publicHadisQuote" hidden>
-      <blockquote>
-        <p id="publicHadisArabic" class="hadis-arabic" lang="ar" dir="rtl"></p>
-        <p id="publicHadisTurkish" class="hadis-turkish" lang="tr"></p>
-      </blockquote>
-      <figcaption id="publicHadisSource" aria-live="polite"></figcaption>
-    </figure>
-    <p class="hadis-status" id="publicHadisStatus" role="status">Hadis wird geladen …</p>
-  </section>
-</div>
-<script src="hadis-text-public.js"></script>
+<div class="centered-guest-logo"><img src="darul-ilm-logo-transparent.png" alt="Darül İlm" width="180" height="180"></div>
  <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="username" required placeholder="name@beispiel.de"></div><div class="field"><label for="loginPassword">Passwort</label><input type="password" id="loginPassword" autocomplete="current-password" minlength="8" required placeholder="Passwort eingeben"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Mit Passwort anmelden</button><button type="button" id="magicLinkBtn">Einmaligen E-Mail-Link anfordern</button><button type="button" id="forgotPasswordBtn">Passwort vergessen?</button></div></form><form id="passwordForm" class="hidden"><h3>Passwort festlegen / ändern</h3><p>Nur für dein aktuell angemeldetes Konto.</p><div class="field"><label for="newPassword">Neues Passwort (mindestens 12 Zeichen)</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="field"><label for="confirmPassword">Passwort wiederholen</label><input id="confirmPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="actions"><button class="primary" type="submit" id="savePassword">Passwort speichern</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
  <div id="libraryArea" class="hidden">
  <section class="hero"><img class="hero-emblem" alt="Darül İlm" src="darul-ilm-logo-transparent.png"><div class="hero-arabic" lang="ar" dir="rtl">دار العلم</div><div class="hero-line"></div><h2>KZN · SD</h2><p data-de="Die digitale Bibliothek des Wissens" data-tr="İlmin dijital kütüphanesi">Die digitale Bibliothek des Wissens</p></section>
