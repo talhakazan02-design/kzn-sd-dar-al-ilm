@@ -6,13 +6,13 @@
   const quranName = /(?:^|[^\p{L}\p{N}])(?:koran(?:s|ausgabe|text|ubersetzung)?|(?:kur|qur)['’\s-]?an(?:i|in|a|da|dan|de|den|daki)?|mushafi?|(?:بال|لل|ال)?قران|(?:ال)?مصحف)(?![\p{L}\p{N}])/u;
   const otherSource = /(?:^|[^\p{L}])(?:tafsir\w*|tefsir\w*|hadis\w*|hadith\w*|tecvid\w*|tajwid\w*|grammatik\w*|kommentar\w*|تفسير)(?!\p{L})/u;
   const otherVerse = /(?:^|[^\p{L}])(?:gedicht|strophe|lied|songtext|bibel|injil|incil)(?!\p{L})/u;
-  const verseName = /^(?:ayy?et|ayet(?:i|in|ler|leri|lerden|le)?|ayetikerime(?:yi|ye|de|den|nin|ler|leri|lerden)?|aya[th]?|ayahs|vers(?:e|en|es)?|ايه|ايات|الايه|الايات)$/u;
+  const verseName = /^(?:ayy?et|ayet(?:i|in|ler|leri|lerden|le)?|ayetikerime(?:yi|ye|de|den|nin|ler|leri|lerden)?|aya[th]?|ayahs|(?:koran|quran)?vers(?:e|en|es)?|ايه|ايات|الايه|الايات)$/u;
   const verseHonorific = /^(?:kerime(?:yi|ye|de|den|nin|si|ler|leri|lerden)?|(?:ال)?كريمه)$/u;
   const wordEnd = /^(?:e|en|er|es|n|s|a|i|u|da|de|ta|te|ya|ye|yi|yu|dan|den|tan|ten|la|le|in|un|lar|ler|lari|leri|larda|lerde|lardan|lerden|nda|nde|ina|ine|ini|nin|nun|imiz|umuz|niz|nuz|dir|tir)$/u;
   const stop = new Set(`
     a an am auf aus bei bitte da das dass deine dem den der des die dies diese du ein eine einen einer eines er es euch fur gib gibt habe hat her hier ich ihr im in ist kann kannst liste los mal mein meiner mir mit nach nenn nenne noch nur sag sage sagst sein sich sind sie soll sowie stell suche such suchst text uber und uns vom von vor was welche welcher welchen welches wem wen wenn wer wie wird wir wo zum zur zu thema themen bezug bezuglich find finde findet finden finr frage fragen suchwort zeig zeige zeigt rund steht geschrieben laut nennung passende passenden passendes relevant heraus daruber dazu drin denn man handelt handeln sagt erwahnt
     ara arar arama bana ben benim bir bize bu bul bulabilir bulabilirsin misin misiniz bulan bulmak bulun bulur bunun dair de da diye gecer geciyor gecen gectigi getir goster gosterir gosterir misiniz hakkinda hakkindaki hangisi hangi icin ile ilgili iliskin kadar kac kerim kelime konu konulu konusu konusuna konusuyla kuran kurani kuraninda meal meali mushaf nasilda nasil nedir ne nerede neyle olur olan ornek sor sorar soru sayfa kaynaktan sure suresi suresinde tane var ver verir ve yaz yazan yaziyor yer yuzunden gecmistir lutfen kur i n in dan den tan ten
-    nennen zeigen alakali bulabilirsen getirir getirebilir getirebilirsin gosterebilir gosterebilirsin musun musunuz miyim muyum miyiz muyuz soyle soyler soyleyebilir soyleyebilirsin verebilir verebilirsin yazar yazabilir yazabilirsin ornegi ornegini
+    nennen zeigen heisst alakali bulabilirsen bulunmaktadir diyor getirir getirebilir getirebilirsin gonderir gonderebilir gonderebilirsin gosterebilir gosterebilirsin konusunda konusundaki listeler listeleyebilir listeleyebilirsin mi mu midir mudur musun musunuz miyim muyum miyiz muyuz onerir onerebilir onerebilirsin paylasir paylasabilir paylasabilirsin soyle soyler soyleyebilir soyleyebilirsin verebilir verebilirsin yazar yazabilir yazabilirsin ornegi ornegini
     عن ما ماذا من في القران القرآن بالمصحف حول اريد ايتني اريد اعثر ابحث ابحثلي اعطني هات هل لي على اي التي الذي ورد ذكرت اذكر اذكرلي كريم الشريف سوره كلمات موضوع بخصوص الايه الايات مع بعد قبل او كيف اين هي هو لنا او اعطيني ارني شاهد
     koran quran qur an qurani mushafi ubersetzung koranubersetzung korantext koranausgabe sure surah kerim pdf
   `.trim().split(/\s+/u).map(normalize));
@@ -49,6 +49,7 @@
   const longestTerms = [...aliases.keys()].filter(term => /^[a-z]{4,}$/u.test(term)).sort((a,b) => b.length - a.length);
   const queryTypos = new Map([
     ['nama', 'namaz'], ['nmaz', 'namaz'], ['namza', 'namaz'], ['gunh', 'gunah'],
+    ['hakinda', 'hakkinda'], ['hakindaki', 'hakkindaki'],
   ]);
 
   function stem(word) {
@@ -67,13 +68,13 @@
   function isSource(title) {
     if (typeof title !== 'string') return false;
     const name = normalize(title);
-    return quranName.test(name) && !otherSource.test(name);
+    return (quranName.test(name) || /(?:^|[^\p{L}])kelime[\s_-]+meali?(?!\p{L})/u.test(name)) && !otherSource.test(name);
   }
 
   function inspect(question, {inQuran = false} = {}) {
     if (typeof question !== 'string') return null;
     const value = normalize(question.slice(0, 500));
-    const tokens = [...value.matchAll(words)].map(match => match[0]);
+    const tokens = [...value.matchAll(words)].map(([word]) => queryTypos.get(word) ?? word);
     const hasVerseName = tokens.some(word => verseName.test(word));
     const requested = quranName.test(value) || (hasVerseName && !otherVerse.test(value));
     if (!inQuran && !requested) return null;
@@ -83,7 +84,7 @@
     const reference = surah >= 1 && surah <= 114 && ayah >= 1 && ayah <= 286 ? {surah, ayah} : null;
     const terms = tokens.filter(word => !stop.has(word) && !verseName.test(word)
       && !(hasVerseName && verseHonorific.test(word)) && /\p{L}{2,}/u.test(word));
-    return {topic:[...new Set(terms.map(word => key(queryTypos.get(word) ?? word)))].slice(0, 12).join(' '), reference};
+    return {topic:[...new Set(terms.map(key))].slice(0, 12).join(' '), reference};
   }
 
   function findVerses(question, verses) {
