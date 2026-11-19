@@ -153,8 +153,11 @@
       opener.hidden = !authorised;
       opener.setAttribute('aria-expanded', String(visible));
     }
-    const counter = $('dashLoans');
-    if (counter) counter.textContent = authorised && openCount !== null ? String(openCount) : '—';
+    const countText = authorised && openCount !== null ? String(openCount) : '—';
+    for (const id of ['dashLoans', 'sidebarActiveLoans']) {
+      const counter = $(id);
+      if (counter) counter.textContent = countText;
+    }
     panel.querySelectorAll('[data-lend-de]').forEach(element => {
       element.textContent = tr(element.dataset.lendDe, element.dataset.lendTr);
     });
