@@ -180,6 +180,7 @@
 .menba-turn .menba-user { margin: 0 0 .5rem auto; background: #3c291a; }
 .menba-turn .menba-reply { width: 100%; background: #1b120d; }
 .menba-turn .menba-reply h3 { margin-bottom: .5rem; font-size: 1.15em; }
+.menba-reply .menba-answer { color: #fff0d9; font-size: 1.06em; }
 .menba-turn .menba-passage { border-inline-start: 2px solid #b287503f; padding-inline-start: .65rem; margin: .6rem 0; }
 .menba-turn .menba-citation { margin-top: .35rem; color: var(--menba-gold); font-size: .95em; }
 .menba-panel :is(#menbaCancel,#menbaOcrStartButton,.menba-original-button,.menba-original-zoom,.menba-source-actions button) {

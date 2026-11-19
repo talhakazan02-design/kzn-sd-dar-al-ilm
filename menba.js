@@ -246,18 +246,21 @@
     const heading = document.createElement('h3');
     heading.textContent = 'MENBA';
     reply.append(heading);
-    reply.append(paragraph(tr(...turn.notice)));
+    if (turn.answer) {
+      const references = turn.answer.citations.map(number => `[${number}]`).join(' ');
+      reply.append(paragraph(`${turn.answer.text} ${references}`, 'menba-answer'));
+    } else reply.append(paragraph(tr(...turn.notice)));
     turn.evidence.forEach((entry,index) => {
       const passage = document.createElement('div');
       passage.className = 'menba-passage';
       const quote = document.createElement('blockquote');
       quote.append(...entry.text.split(/\r?\n/u).map(line => paragraph(line)));
       const verse = entry.verse ? `${tr('Koran', 'Kur’an')} ${entry.verse} · ` : '';
-      const pageLabel = turn.quran ? tr('PDF-Seite', 'PDF sayfası') : tr('Seite', 'Sayfa');
+      const pageLabel = entry.quran ? tr('PDF-Seite', 'PDF sayfası') : tr('Seite', 'Sayfa');
       const cite = paragraph(`[${index+1}] ${verse}${entry.source} · ${pageLabel} ${entry.page}${entry.ocr ? ' · OCR' : ''}`,'menba-citation');
       if (entry.meal) passage.append(paragraph(tr('Türkische Bedeutung aus der PDF', 'PDF’den Türkçe meal'), 'menba-meal-label'));
       passage.append(quote, cite);
-      if (turn.quran) {
+      if (entry.quran) {
         if (entry.preview) {
           const frame = document.createElement('div');
           frame.className = 'menba-original-frame';
@@ -318,6 +321,7 @@
     sharedVersions.delete(source.id);
     turns = turns.filter(turn => turn === work.turn || !turn.sources.some(item => item.id === source.id));
     if (work.turn?.evidence.some(entry => entry.sourceId === source.id)) {
+      work.turn.answer = null;
       work.turn.evidence = work.turn.evidence.filter(entry => entry.sourceId !== source.id);
       if (!work.turn.evidence.length) {
         work.turn.notice = ['Die PDF-Freigabe hat sich geändert. Stelle die Frage erneut.', 'PDF erişimi değişti. Soruyu yeniden sor.'];
@@ -484,32 +488,58 @@
     return ['Wähle unter Quellen eine Koran-PDF aus oder öffne sie von deinem Gerät.', 'Kaynaklar bölümünde bir Kur’an PDF’si seç veya cihazından aç.'];
   }
 
+  function contextFor(question, intent, last) {
+    if (!last?.evidence.length) return null;
+    if (intent?.kind === 'exception' || intent?.kind === 'source') return last;
+    const normalized = question.normalize('NFKD').toLowerCase().replace(/\p{M}/gu,'').replaceAll('ı','i').trim();
+    const referring = /^(?:(?:und|aber|peki)\s+)?(?:warum|wieso|gibt es ausnahmen|was bedeutet (?:das|dies)|wie ist das gemeint|kannst du das (?:einfacher|genauer) erklaren|wo steht (?:das|es)|welche quelle|neden|niye|istisnasi var mi|bu ne demek|bunu acikla|bunu (?:daha )?basit anlat|hangi ayet|nerede yaziyor|kaynagi ne)\s*[?.!]*$/u;
+    return referring.test(normalized) ? last : null;
+  }
+
+  function requestsSource(question) {
+    return /^(?:(?:und|peki)\s+)?(?:wo steht (?:das|es)|welche quelle|hangi ayet|nerede yazıyor|kaynağı ne)\s*[?.!]*$/iu.test(question.trim());
+  }
+
+  function answerLanguage(question) {
+    if (/\b(?:ist|sind|warum|wo steht|welche|schwein(?:efleisch)?|kannst|darf|darfst)\b/iu.test(question)) return 'de';
+    if (/[çğıöşüİ]/u.test(question) || /\b(?:domuz|haram mi|nedir|neden|nedeni|nasil|peki|hangi|ne demek)\b/iu.test(question)) return 'tr';
+    return lang;
+  }
+
   async function run() {
     const text = question.value.trim();
     if (!allowed() || request || loadingPreferences || !text) return;
+    const last = turns.at(-1);
+    const intent = MenbaAnswers.inspect(text,last?.answer ? last.intent : null);
+    const previous = contextFor(text,intent,last);
+    const retrievalQuestion = previous?.retrievalQuestion ?? text;
     const picked = pickableSources();
     const isQuran = source => source.quran || cachedPages.get(sourceKey(source))?.quran === true;
     const anyQuran = picked.some(isQuran);
-    const hadith = MenbaSearch.inspectHadith(text);
-    const quran = !hadith && MenbaQuran.inspect(text,{inQuran:anyQuran && picked.every(source => isQuran(source) || source.id === hadisId)});
+    const hadith = MenbaSearch.inspectHadith(retrievalQuestion);
+    const onlyQuran = anyQuran && picked.every(source => isQuran(source) || source.id === hadisId);
+    const inspected = !hadith && MenbaQuran.inspect(retrievalQuestion,{inQuran:onlyQuran || (anyQuran && Boolean(intent))});
+    const quran = inspected && intent && !inspected.reference && !inspected.quranRequested && !inspected.dietaryRuling
+      ? {...inspected,topic:intent.query} : inspected;
+    const quranOnly = Boolean(quran && (quran.quranRequested || (onlyQuran && !quran.dietaryRuling)));
     let sources = picked;
-    if (quran) sources = anyQuran ? picked.filter(isQuran) : picked.filter(source => source.id !== hadisId);
+    if (quranOnly) sources = anyQuran ? picked.filter(isQuran) : picked.filter(source => source.id !== hadisId);
     else if (hadith?.sample) sources = picked.filter(source => source.id === hadisId);
     else if (hadith) sources = picked.filter(source => source.hadith && !source.quran);
     if (!sources.length) {
       sourceSummary.parentElement.open = true;
-      if (quran) notice = quranSourceHelp();
+      if (quranOnly) notice = quranSourceHelp();
       else if (hadith) notice = ['Wähle unter Quellen eine Hadis-Sammlung aus.', 'Kaynaklar bölümünde bir Hadis derlemesi seç.'];
       else notice = ['Wähle unter Quellen mindestens ein Buch für deine Frage aus.', 'Sorun için Kaynaklar bölümünden en az bir kitap seç.'];
       renderNotice();
       return;
     }
-    if (quran && !quran.topic && !quran.reference) {
+    if (quranOnly && !quran.topic && !quran.reference) {
       notice = ['Nenne ein Thema wie Namaz oder eine Versnummer wie 2:43.', 'Namaz gibi bir konu veya 2:43 gibi bir ayet numarası yaz.'];
       renderNotice();
       return;
     }
-    const turn = {question:text, sources, evidence:[], notice:null, quran:Boolean(quran)};
+    const turn = {question:text, retrievalQuestion, sources, evidence:[], notice:null, answer:null, intent};
     const work = {controller:new AbortController(), sources, task:null, turn};
     request = work;
     turns.push(turn);
@@ -517,6 +547,7 @@
     render();
     try {
       const pages = [];
+      const quranSources = new Set();
       const unavailable = [];
       const scans = [];
       let foundQuran = sources.some(isQuran);
@@ -530,12 +561,12 @@
           let extracted = cachedPages.get(key);
           if (!extracted) {
             extracted = source.id === hadisId ? {pages:await fetchHadis(work), quran:false}
-              : await extractPdf(source, work, grant, Boolean(quran));
+              : await extractPdf(source, work, grant, quranOnly);
             if (request !== work || !allowed()) return;
             if (extracted) cachedPages.set(key, extracted);
           }
-          if (!extracted || (quran && !extracted.quran)) continue;
-          if (extracted.quran) foundQuran = true;
+          if (!extracted || (quranOnly && !extracted.quran)) continue;
+          if (extracted.quran) { foundQuran = true; quranSources.add(source.id); }
           const ocr = recognizedPages.get(key);
           if (!extracted.pages.length && !ocr?.size) scans.push(source.title);
           const textPages = new Set(extracted.pages.filter(page => page.verses?.length).map(page => page.page));
@@ -544,8 +575,9 @@
         } catch {
           if (request !== work) return;
           const ocr = !source.shareId || grant ? recognizedPages.get(key) : null;
-          if (ocr?.size && (!quran || isQuran(source))) {
+          if (ocr?.size && (!quranOnly || isQuran(source))) {
             foundQuran ||= isQuran(source);
+            if (isQuran(source)) quranSources.add(source.id);
             pages.push(...ocr.values());
           }
           else unavailable.push(source.title);
@@ -553,15 +585,27 @@
       }
       if (request !== work || !allowed()) return;
       const ocrKeys = new Set(pages.filter(page => page.ocr).map(page => `${page.sourceId}:${page.page}`));
-      const rows = quran ? findQuran(quran,pages) : window.MenbaSearch.find(text, pages);
+      const quranRows = quran ? findQuran(quran,pages.filter(page => quranSources.has(page.sourceId))) : [];
+      const rows = quranOnly || quranRows.length ? quranRows
+        : quran?.dietaryRuling ? MenbaQuran.findVerses(quran,pages.filter(page => !quranSources.has(page.sourceId)))
+          : window.MenbaSearch.find(retrievalQuestion, pages);
       const hadithRows = hadith?.sample ? pages.filter(page => page.sourceId === hadisId) : [];
       turn.evidence = (hadithRows.length ? [hadithRows[Math.floor(Math.random()*hadithRows.length)]] : rows).map(entry => ({
-        ...entry, sharedVersion:sharedVersions.get(entry.sourceId), ocr:ocrKeys.has(`${entry.sourceId}:${entry.page}`)
+        ...entry, quran:quranSources.has(entry.sourceId), sharedVersion:sharedVersions.get(entry.sourceId),
+        ocr:ocrKeys.has(`${entry.sourceId}:${entry.page}`)
       }));
+      turn.answer = MenbaAnswers.compose(intent,turn.evidence,answerLanguage(text));
+      if (!turn.answer && previous && requestsSource(text) && turn.evidence.length) {
+        turn.answer = {
+          text: answerLanguage(text) === 'tr' ? 'Bu konunun kaynakları aşağıda, sayfa numaralarıyla birlikte yer alıyor.'
+            : 'Die Fundstellen dazu stehen unten mit Buch und Seitenzahl.',
+          citations: turn.evidence.map((_,index) => index+1)
+        };
+      }
       turn.notice = turn.evidence.length
-        ? quran ? ['Passende Fundstellen aus den ausgewählten Koran-PDFs', 'Seçili Kur’an PDF’lerindeki ilgili bölümler']
+        ? quranRows.length ? ['Passende Fundstellen aus den ausgewählten Koran-PDFs', 'Seçili Kur’an PDF’lerindeki ilgili bölümler']
           : ['Passende Stellen aus deinen Quellen', 'Kaynaklarındaki ilgili bölümler']
-        : quran && !foundQuran ? quranSourceHelp()
+        : quranOnly && !foundQuran ? quranSourceHelp()
           : ['In den durchsuchbaren Quellen habe ich keine passende Stelle gefunden.', 'Aranabilen kaynaklarda uygun bir bölüm bulamadım.'];
       if (!turn.evidence.length && sources.length === 1 && sources[0].id === hadisId && !unavailable.length) {
         turn.notice = [turn.notice[0]+' Durchsucht wurde nur die ausgewählte Hadis-Textfassung. Weitere PDFs kannst du unter Quellen auswählen.',
@@ -576,7 +620,7 @@
         turn.notice = [turn.notice[0]+` Ohne lesbare Textebene: ${labels}. Nutze die Texterkennung unter Quellen.`, turn.notice[1]+` Okunabilir metin katmanı yok: ${labels}. Kaynaklar menüsündeki metin tanımayı kullan.`];
       }
       const [first] = turn.evidence;
-      if (quran && first?.ranges) {
+      if (!turn.answer && first?.quran && first.ranges) {
         const source = sources.find(option => option.id === first.sourceId);
         if (source) {
           notice = ['Arabischer Vers wird aus der PDF geladen …', 'Arapça ayet PDF’den yükleniyor …'];
