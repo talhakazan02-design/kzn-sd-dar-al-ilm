@@ -6,15 +6,18 @@
   const quranName = /(?:^|[^\p{L}\p{N}])(?:koran(?:s|ausgabe|text|ubersetzung)?|(?:kur|qur)['’\s-]?an(?:i|in|a|da|dan|de|den|daki)?|mushafi?|(?:بال|لل|ال)?قران|(?:ال)?مصحف)(?![\p{L}\p{N}])/u;
   const otherSource = /(?:^|[^\p{L}])(?:tafsir\w*|tefsir\w*|hadis\w*|hadith\w*|tecvid\w*|tajwid\w*|grammatik\w*|kommentar\w*|تفسير)(?!\p{L})/u;
   const otherVerse = /(?:^|[^\p{L}])(?:gedicht|strophe|lied|songtext|bibel|injil|incil)(?!\p{L})/u;
+  const otherRulingSource = /(?:^|[^\p{L}])(?:ilmihal\w*|ilmihalbuch|hadis\w*|hadith\w*|tafsir\w*|tefsir\w*|حديث|تفسير)(?!\p{L})/u;
   const verseName = /^(?:ayy?et|ayet(?:i|in|ler|leri|lerden|le)?|ayetikerime(?:yi|ye|de|den|nin|ler|leri|lerden)?|aya[th]?|ayahs|(?:koran|quran)?vers(?:e|en|es)?|ايه|ايات|الايه|الايات)$/u;
   const verseHonorific = /^(?:kerime(?:yi|ye|de|den|nin|si|ler|leri|lerden)?|(?:ال)?كريمه)$/u;
   const wordEnd = /^(?:e|en|er|es|n|s|a|i|u|da|de|ta|te|ya|ye|yi|yu|dan|den|tan|ten|la|le|in|un|lar|ler|lari|leri|larda|lerde|lardan|lerden|nda|nde|ina|ine|ini|nin|nun|imiz|umuz|niz|nuz|dir|tir)$/u;
+  const porkFood = /^(?:schweine?fleisch(?:es)?|fleisch(?:es)?|verzehr(?:en|t)?|essen|isst|gegessen|et(?:i|ini|inden|inin)?|ye(?:mek|meyi|meye|mesi|menin|nir|nilir|miyorum)|yiye(?:cek|bilir)|pork|meat|eat(?:ing|en)?|[وفب]?(?:ال)?(?:لحم|لحوم|اكل|تاكل|ياكل|ناكل|يوكل))$/u;
+  const foodRuling = /^(?:(?:haram|helal|caiz)(?:dir|tir)?|yasak(?:tir|landi|lanmis(?:tir)?)?|verboten(?:e|en|er|es)?|verbot|untersagt|erlaubt(?:e|en|er|es)?|prohibited|forbidden|unlawful|[وف]?(?:ال)?(?:حرام|حرم|حرمت|حرمه|حرمو|يحرم|حرمهما|محرم|محرمات|حلال))$/u;
   const stop = new Set(`
     a an am auf aus bei bitte da das dass deine dem den der des die dies diese du ein eine einen einer eines er es euch fur gib gibt habe hat her hier ich ihr im in ist kann kannst liste los mal mein meiner mir mit nach nenn nenne noch nur sag sage sagst sein sich sind sie soll sowie stell suche such suchst text uber und uns vom von vor was welche welcher welchen welches wem wen wenn wer wie wird wir wo zum zur zu thema themen bezug bezuglich find finde findet finden finr frage fragen suchwort zeig zeige zeigt rund steht geschrieben laut nennung passende passenden passendes relevant heraus daruber dazu drin denn man handelt handeln sagt erwahnt
     ara arar arama bana ben benim bir bize bu bul bulabilir bulabilirsin misin misiniz bulan bulmak bulun bulur bunun dair de da diye gecer geciyor gecen gectigi getir goster gosterir gosterir misiniz hakkinda hakkindaki hangisi hangi icin ile ilgili iliskin kadar kac kerim kelime konu konulu konusu konusuna konusuyla kuran kurani kuraninda meal meali mushaf nasilda nasil nedir ne nerede neyle olur olan ornek sor sorar soru sayfa kaynaktan sure suresi suresinde tane var ver verir ve yaz yazan yaziyor yer yuzunden gecmistir lutfen kur i n in dan den tan ten
-    nennen zeigen heisst alakali bulabilirsen bulunmaktadir diyor getirir getirebilir getirebilirsin gonderir gonderebilir gonderebilirsin gosterebilir gosterebilirsin konusunda konusundaki listeler listeleyebilir listeleyebilirsin mi mu midir mudur musun musunuz miyim muyum miyiz muyuz onerir onerebilir onerebilirsin paylasir paylasabilir paylasabilirsin soyle soyler soyleyebilir soyleyebilirsin verebilir verebilirsin yazar yazabilir yazabilirsin ornegi ornegini
+    nennen zeigen heisst warum wieso weshalb darf durfen sollte sollten muss mussen alakali bulabilirsen bulunmaktadir diyor getirir getirebilir getirebilirsin gonderir gonderebilir gonderebilirsin gosterebilir gosterebilirsin konusunda konusundaki listeler listeleyebilir listeleyebilirsin mi mu midir mudur musun musunuz miyim muyum miyiz muyuz onerir onerebilir onerebilirsin paylasir paylasabilir paylasabilirsin soyle soyler soyleyebilir soyleyebilirsin verebilir verebilirsin yazar yazabilir yazabilirsin ornegi ornegini neden niye acaba
     عن ما ماذا من في القران القرآن بالمصحف حول اريد ايتني اريد اعثر ابحث ابحثلي اعطني هات هل لي على اي التي الذي ورد ذكرت اذكر اذكرلي كريم الشريف سوره كلمات موضوع بخصوص الايه الايات مع بعد قبل او كيف اين هي هو لنا او اعطيني ارني شاهد
-    koran quran qur an qurani mushafi ubersetzung koranubersetzung korantext koranausgabe sure surah kerim pdf
+    koran quran qur an qurani mushafi ubersetzung koranubersetzung korantext koranausgabe sure surah kerim pdf لماذا
   `.trim().split(/\s+/u).map(normalize));
 
   function normalize(value) {
@@ -39,7 +42,8 @@
     'sadaka spende spenden sadaka صدقه صدقات',
     'hac hadsch pilgerfahrt hajj حج',
     'cennet paradies جنه جنات',
-    'ebeveyn eltern والدين'
+    'ebeveyn eltern والدين',
+    'domuz schwein schweine schweinefleisch schweinfleisch pork خنزير خنازير'
   ];
   const aliases = new Map();
   for (const group of equivalents) {
@@ -76,22 +80,30 @@
     const value = normalize(question.slice(0, 500));
     const tokens = [...value.matchAll(words)].map(([word]) => queryTypos.get(word) ?? word);
     const hasVerseName = tokens.some(word => verseName.test(word));
-    const requested = quranName.test(value) || (hasVerseName && !otherVerse.test(value));
-    if (!inQuran && !requested) return null;
+    const quranRequested = quranName.test(value) || (hasVerseName && !otherVerse.test(value));
+    const dietaryRuling = tokens.some(word => key(word) === 'domuz') && tokens.some(word => porkFood.test(word)) ? 'domuz' : null;
+    if (!inQuran && !quranRequested && (!dietaryRuling || otherVerse.test(value) || otherRulingSource.test(value))) return null;
     const ref = value.match(/(?:^|[^\p{L}\d])(\d{1,3})\s*[:/：]\s*(\d{1,3})(?!\d)/u);
     const surah = Number(ref?.[1]);
     const ayah = Number(ref?.[2]);
     const reference = surah >= 1 && surah <= 114 && ayah >= 1 && ayah <= 286 ? {surah, ayah} : null;
+    if (dietaryRuling) return {topic:dietaryRuling, reference, quranRequested, dietaryRuling};
     const terms = tokens.filter(word => !stop.has(word) && !verseName.test(word)
       && !(hasVerseName && verseHonorific.test(word)) && /\p{L}{2,}/u.test(word));
-    return {topic:[...new Set(terms.map(key))].slice(0, 12).join(' '), reference};
+    return {topic:[...new Set(terms.map(key))].slice(0, 12).join(' '), reference, quranRequested};
+  }
+
+  function hasDietaryContext(text, position) {
+    const nearby = normalize(text.slice(Math.max(0, position - 180), position + 220));
+    const tokens = [...nearby.matchAll(words)].map(match => match[0]);
+    return tokens.some(word => porkFood.test(word)) && tokens.some(word => foodRuling.test(word));
   }
 
   function findVerses(question, verses) {
     if (!Array.isArray(verses)) return [];
     const query = typeof question === 'string' ? inspect(question, {inQuran:true}) : question;
     if (!query) return [];
-    const {topic, reference} = query;
+    const {topic, reference, dietaryRuling} = query;
     const ref = reference ? `${reference.surah}:${reference.ayah}` : null;
     const terms = topic.split(' ').filter(Boolean);
     if (!ref && !terms.length) return [];
@@ -108,6 +120,7 @@
         const word = key(normalize(token[0]));
         const term = terms.find(term => term === word || (term.length >= 4 && word.startsWith(term) && wordEnd.test(word.slice(term.length))));
         if (!term) continue;
+        if (dietaryRuling && !hasDietaryContext(entry.text, token.index)) continue;
         hits.add(term);
         first ??= token.index;
       }
