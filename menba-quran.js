@@ -6,11 +6,13 @@
   const quranName = /(?:^|[^\p{L}\p{N}])(?:koran(?:s|ausgabe|text|ubersetzung)?|(?:kur|qur)['’\s-]?an(?:i|in|a|da|dan|de|den|daki)?|mushafi?|(?:بال|لل|ال)?قران|(?:ال)?مصحف)(?![\p{L}\p{N}])/u;
   const otherSource = /(?:^|[^\p{L}])(?:tafsir\w*|tefsir\w*|hadis\w*|hadith\w*|tecvid\w*|tajwid\w*|grammatik\w*|kommentar\w*|تفسير)(?!\p{L})/u;
   const otherVerse = /(?:^|[^\p{L}])(?:gedicht|strophe|lied|songtext|bibel|injil|incil)(?!\p{L})/u;
-  const verseName = /^(?:ayy?et|ayet(?:i|in|ler|leri|lerden|le)?|aya[th]?|ayahs|vers(?:e|en|es)?|ايه|ايات|الايه|الايات)$/u;
+  const verseName = /^(?:ayy?et|ayet(?:i|in|ler|leri|lerden|le)?|ayetikerime(?:yi|ye|de|den|nin|ler|leri|lerden)?|aya[th]?|ayahs|vers(?:e|en|es)?|ايه|ايات|الايه|الايات)$/u;
+  const verseHonorific = /^(?:kerime(?:yi|ye|de|den|nin|si|ler|leri|lerden)?|(?:ال)?كريمه)$/u;
   const wordEnd = /^(?:e|en|er|es|n|s|a|i|u|da|de|ta|te|ya|ye|yi|yu|dan|den|tan|ten|la|le|in|un|lar|ler|lari|leri|larda|lerde|lardan|lerden|nda|nde|ina|ine|ini|nin|nun|imiz|umuz|niz|nuz|dir|tir)$/u;
   const stop = new Set(`
-    a an am auf aus bei bitte da das dass deine dem den der des die dies diese du ein eine einen einer eines er es euch fur gib gibt habe hat her hier ich ihr im in ist kann kannst liste los mal mein meiner mir mit nach nenn nenne noch nur sag sage sagst sein sich sind sie soll sowie stell suche such suchst text und uns vom von vor was welche welcher welchen welches wem wen wenn wer wie wird wir wo zum zur zu thema themen bezug bezuglich find finde findet finden finr frage fragen suchwort zeig zeige zeigt rund steht geschrieben laut nennung passende passenden passendes relevant heraus daruber dazu drin denn man handelt handeln sagt erwahnt
+    a an am auf aus bei bitte da das dass deine dem den der des die dies diese du ein eine einen einer eines er es euch fur gib gibt habe hat her hier ich ihr im in ist kann kannst liste los mal mein meiner mir mit nach nenn nenne noch nur sag sage sagst sein sich sind sie soll sowie stell suche such suchst text uber und uns vom von vor was welche welcher welchen welches wem wen wenn wer wie wird wir wo zum zur zu thema themen bezug bezuglich find finde findet finden finr frage fragen suchwort zeig zeige zeigt rund steht geschrieben laut nennung passende passenden passendes relevant heraus daruber dazu drin denn man handelt handeln sagt erwahnt
     ara arar arama bana ben benim bir bize bu bul bulabilir bulabilirsin misin misiniz bulan bulmak bulun bulur bunun dair de da diye gecer geciyor gecen gectigi getir goster gosterir gosterir misiniz hakkinda hakkindaki hangisi hangi icin ile ilgili iliskin kadar kac kerim kelime konu konulu konusu konusuna konusuyla kuran kurani kuraninda meal meali mushaf nasilda nasil nedir ne nerede neyle olur olan ornek sor sorar soru sayfa kaynaktan sure suresi suresinde tane var ver verir ve yaz yazan yaziyor yer yuzunden gecmistir lutfen kur i n in dan den tan ten
+    nennen zeigen alakali bulabilirsen getirir getirebilir getirebilirsin gosterebilir gosterebilirsin musun musunuz miyim muyum miyiz muyuz soyle soyler soyleyebilir soyleyebilirsin verebilir verebilirsin yazar yazabilir yazabilirsin ornegi ornegini
     عن ما ماذا من في القران القرآن بالمصحف حول اريد ايتني اريد اعثر ابحث ابحثلي اعطني هات هل لي على اي التي الذي ورد ذكرت اذكر اذكرلي كريم الشريف سوره كلمات موضوع بخصوص الايه الايات مع بعد قبل او كيف اين هي هو لنا او اعطيني ارني شاهد
     koran quran qur an qurani mushafi ubersetzung koranubersetzung korantext koranausgabe sure surah kerim pdf
   `.trim().split(/\s+/u).map(normalize));
@@ -33,6 +35,7 @@
     'rahmet merhamet barmherzigkeit barmherzig erbarmen رحمه رحيم',
     'sukur dankbarkeit dankbar dankt sukret شكر تشكرون',
     'bagislanma vergebung vergib vergibt magfiret istigfar مغفره استغفر',
+    'gunah sunde sunden sundigen sundigt ذنب ذنوب اثم اثام',
     'sadaka spende spenden sadaka صدقه صدقات',
     'hac hadsch pilgerfahrt hajj حج',
     'cennet paradies جنه جنات',
@@ -44,6 +47,9 @@
     for (const word of [canonical, ...terms]) aliases.set(word, canonical);
   }
   const longestTerms = [...aliases.keys()].filter(term => /^[a-z]{4,}$/u.test(term)).sort((a,b) => b.length - a.length);
+  const queryTypos = new Map([
+    ['nama', 'namaz'], ['nmaz', 'namaz'], ['namza', 'namaz'], ['gunh', 'gunah'],
+  ]);
 
   function stem(word) {
     return word.replace(/^(?:[وفبك]?ال|[وف]?لل)(?=\p{Script=Arabic}{3,}$)/u, '');
@@ -68,14 +74,16 @@
     if (typeof question !== 'string') return null;
     const value = normalize(question.slice(0, 500));
     const tokens = [...value.matchAll(words)].map(match => match[0]);
-    const requested = quranName.test(value) || (tokens.some(word => verseName.test(word)) && !otherVerse.test(value));
+    const hasVerseName = tokens.some(word => verseName.test(word));
+    const requested = quranName.test(value) || (hasVerseName && !otherVerse.test(value));
     if (!inQuran && !requested) return null;
     const ref = value.match(/(?:^|[^\p{L}\d])(\d{1,3})\s*[:/：]\s*(\d{1,3})(?!\d)/u);
     const surah = Number(ref?.[1]);
     const ayah = Number(ref?.[2]);
     const reference = surah >= 1 && surah <= 114 && ayah >= 1 && ayah <= 286 ? {surah, ayah} : null;
-    const terms = tokens.filter(word => !stop.has(word) && !verseName.test(word) && /\p{L}{2,}/u.test(word));
-    return {topic:[...new Set(terms.map(key))].slice(0, 12).join(' '), reference};
+    const terms = tokens.filter(word => !stop.has(word) && !verseName.test(word)
+      && !(hasVerseName && verseHonorific.test(word)) && /\p{L}{2,}/u.test(word));
+    return {topic:[...new Set(terms.map(word => key(queryTypos.get(word) ?? word)))].slice(0, 12).join(' '), reference};
   }
 
   function findVerses(question, verses) {
