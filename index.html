@@ -1374,7 +1374,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
 </style><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri&display=swap">
 <link rel="stylesheet" href="member-tools.css">
 <link rel="stylesheet" href="lending.css">
-<link rel="stylesheet" href="admin-beta.css">
+<link rel="stylesheet" href="admin-beta.css?v=learning-admin">
 <link rel="stylesheet" href="shared-library.css">
 <link rel="stylesheet" href="menba.css?v=learning-admin">
 <link rel="stylesheet" href="sidebar-modern.css?v=20261119">
@@ -1614,9 +1614,45 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
 </section>
 <section id="betaAdminPanel" class="beta-admin" aria-labelledby="betaAdminTitle" hidden>
   <div class="beta-admin-heading">
-    <h2 id="betaAdminTitle" tabindex="-1" data-beta-admin-de="Co-Admins verwalten" data-beta-admin-tr="Yardımcı yöneticileri yönet">Co-Admins verwalten</h2>
+    <h2 id="betaAdminTitle" tabindex="-1" data-beta-admin-de="Verwaltung" data-beta-admin-tr="Yönetim">Verwaltung</h2>
     <button id="betaAdminClose" type="button" data-beta-admin-de="Schließen" data-beta-admin-tr="Kapat">Schließen</button>
   </div>
+  <details id="betaAdminInbox" class="beta-admin-section" open>
+    <summary data-beta-admin-de="Anfragen" data-beta-admin-tr="Talepler">Anfragen</summary>
+    <button id="betaAdminInboxReload" type="button" data-beta-admin-de="Anfragen aktualisieren" data-beta-admin-tr="Talepleri yenile">Anfragen aktualisieren</button>
+    <p id="betaAdminInboxStatus" role="status"></p>
+    <section><h3 data-beta-admin-de="Mitgliedschaft" data-beta-admin-tr="Üyelik">Mitgliedschaft</h3><div id="betaAdminMemberRequests"></div></section>
+    <section><h3 data-beta-admin-de="Buchfreigaben" data-beta-admin-tr="Kitap paylaşımları">Buchfreigaben</h3><div id="betaAdminShareRequests"></div></section>
+    <section><h3 data-beta-admin-de="Ausleihanfragen" data-beta-admin-tr="Ödünç talepleri">Ausleihanfragen</h3><div id="betaAdminLoanRequests"></div></section>
+    <section id="adminResetControls" class="hidden">
+      <h3 data-beta-admin-de="Passwort-Hilfe" data-beta-admin-tr="Şifre yardımı">Passwort-Hilfe</h3>
+      <div id="resetRequestList"></div>
+      <form id="adminDirectReset">
+        <label><span data-beta-admin-de="E-Mail-Adresse des Mitglieds" data-beta-admin-tr="Üyenin e-posta adresi">E-Mail-Adresse des Mitglieds</span><input id="adminResetEmail" type="email" autocomplete="off" required></label>
+        <button type="submit" id="adminSendReset" data-beta-admin-de="Reset-Mail senden" data-beta-admin-tr="Şifre yenileme e-postası gönder">Reset-Mail senden</button>
+      </form>
+      <p id="adminResetFeedback" role="status"></p>
+    </section>
+  </details>
+  <details class="beta-admin-section" id="menbaAdminSettings">
+    <summary data-beta-admin-de="MENBA und Hoca-Rollen" data-beta-admin-tr="MENBA ve hoca yetkileri">MENBA und Hoca-Rollen</summary>
+    <p id="menbaBudget" role="status"></p>
+    <label class="beta-admin-member"><span data-beta-admin-de="Mitglied" data-beta-admin-tr="Üye">Mitglied</span><select id="menbaAdminMember"></select></label>
+    <div id="menbaMemberSettings" hidden>
+      <form id="menbaHocaForm" class="beta-admin-setting">
+        <label><input type="checkbox" id="menbaHocaEnabled"><span data-beta-admin-de="Hoca Modu erlauben" data-beta-admin-tr="Hoca moduna izin ver">Hoca Modu erlauben</span></label>
+        <button type="submit" data-beta-admin-de="Rolle speichern" data-beta-admin-tr="Yetkiyi kaydet">Rolle speichern</button>
+      </form>
+      <form id="menbaLimitForm" class="beta-admin-setting">
+        <p id="menbaMemberUsage"></p>
+        <label><span data-beta-admin-de="Tageslimit (Neurons)" data-beta-admin-tr="Günlük sınır (Neurons)">Tageslimit (Neurons)</span><input id="menbaLimit" type="number" min="0" max="10000" step="1" required></label>
+        <button type="submit" data-beta-admin-de="Limit speichern" data-beta-admin-tr="Sınırı kaydet">Limit speichern</button>
+      </form>
+    </div>
+    <p id="menbaSettingsStatus" role="status"></p>
+  </details>
+  <details class="beta-admin-section">
+  <summary data-beta-admin-de="Co-Admins verwalten" data-beta-admin-tr="Yardımcı yöneticileri yönet">Co-Admins verwalten</summary>
   <form id="betaAdminForm">
     <label class="beta-admin-member">
       <span data-beta-admin-de="Freigegebenes Mitglied" data-beta-admin-tr="Onaylı üye">Freigegebenes Mitglied</span>
@@ -1640,6 +1676,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
     </div>
   </form>
   <p id="betaAdminStatus" class="beta-admin-status" role="status"></p>
+  </details>
 </section>
 <section id="libraryCategories" class="kzn-dashboard" aria-labelledby="libraryCategoriesTitle"><div class="kzn-section-label"><h2 id="libraryCategoriesTitle" data-de="Kategorien" data-tr="Kategoriler">Kategorien</h2><button type="button" id="manageCategories" class="cat-manage-btn" title="Meine Kategorien verwalten">⚙ Kategorien verwalten</button></div><div class="kzn-categories"><button data-dash-category="Koranwissenschaften"><span class="kzn-category-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6h14v12H5zM8 10h8M8 14h5M3 3v18M21 3v18"/></svg></span><img class="kzn-cat-image" src="kategorie-quran.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Kur’an & Tafsir</span></button><button data-dash-category="Hadith"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-hadith.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Hadith & Sunna</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">✒</span><img class="kzn-cat-image" src="kategorie-aqidah.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Akâid & İtikad</span></button><button data-dash-category="Islam"><span class="kzn-category-emblem" aria-hidden="true">⚖</span><img class="kzn-cat-image" src="kategorie-fiqh.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Fıkıh & İbadet</span></button><button data-dash-category="Geschichte"><span class="kzn-category-emblem" aria-hidden="true">☪</span><img class="kzn-cat-image" src="kategorie-siyer.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Siyer & Tarih</span></button><button data-dash-category="Sprache"><span class="kzn-category-emblem" aria-hidden="true">ع</span><img class="kzn-cat-image" src="kategorie-arabic.jpg?v=realbooks2" alt="" loading="lazy"><span class="kzn-cat-name">Arapça & Dil</span></button><button data-dash-category="Tecvid"><span class="kzn-category-emblem" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M4 8c3-3 5-3 8 0 3-3 5-3 8 0v11c-3-3-5-3-8 0-3-3-5-3-8 0z"/><path d="M7 11h3M14 11h3M7 14h3M14 14h3"/></svg></span><img class="kzn-cat-image" src="https://img.kitapyurdu.com/v1/getImage/fn%3A6571460/wi%3A800/wh%3Aa2cc12818" alt="Buchcover Karabaş Tecvidi" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='kategorie-quran.jpg'"><span class="kzn-cat-name">Tecvid</span></button></div></section>
 <section class="kzn-dashboard" id="kznDashboard" aria-labelledby="libraryHomeTitle"><h2 id="libraryHomeTitle" data-de="Bibliotheksübersicht" data-tr="Kütüphaneye genel bakış">Bibliotheksübersicht</h2>
@@ -1721,7 +1758,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
       <span data-de="Frage und bis zu drei passende Quellenauszüge für eine formulierte Antwort an Cloudflare senden" data-tr="Yazılı yanıt için soruyu ve en fazla üç kaynak alıntısını Cloudflare’a gönder">Frage und bis zu drei passende Quellenauszüge für eine formulierte Antwort an Cloudflare senden</span>
     </label>
     <div class="menba-learning-options">
-      <label><span data-de="Arbeitsmodus" data-tr="Çalışma modu">Arbeitsmodus</span><select id="menbaMode"><option value="chat">Chat</option><option value="talebe">Talebe Modu</option></select></label>
+      <label><span data-de="Arbeitsmodus" data-tr="Çalışma modu">Arbeitsmodus</span><select id="menbaMode" data-hoca-roles="true"><option value="chat">Chat</option><option value="talebe">Talebe Modu</option></select></label>
       <label id="menbaTaskField" hidden><span data-de="Aufgabe" data-tr="Görev">Aufgabe</span><select id="menbaTask"></select></label>
       <button type="button" id="menbaUseTopic" hidden data-de="Letztes Thema übernehmen" data-tr="Son konuyu kullan">Letztes Thema übernehmen</button>
     </div>
@@ -1783,7 +1820,6 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
 <h2 id="passwordApprovalTitle">Passwort-Hilfe</h2>
 <p>Mitglieder können ihr Passwort selbst per E-Mail zurücksetzen. Optional können sie zusätzlich beim Admin Hilfe beantragen. Der Administrator sieht niemals das Passwort.</p>
 <div id="memberResetControls" class="hidden"><button type="button" id="memberRequestReset" class="primary">Passwort-Hilfe beim Admin beantragen</button></div>
-<div id="adminResetControls" class="hidden"><h3>Passwort-Hilfe für Mitglieder</h3><p>Eine Reset-Mail kannst du an die bestätigte E-Mail-Adresse eines Mitglieds senden. Bitte nur auf dessen Wunsch.</p><div class="field"><label for="adminResetEmail">E-Mail-Adresse des Mitglieds</label><input id="adminResetEmail" type="email" autocomplete="off" placeholder="mitglied@beispiel.de"></div><button type="button" id="adminSendReset">Reset-Mail senden</button><h3>Offene Passwort-Anfragen</h3><button type="button" id="refreshResetRequests">Anfragen aktualisieren</button><div id="resetRequestList"></div></div>
 <p id="resetApprovalFeedback" role="status" aria-live="polite"></p>
 </section>
  
@@ -2358,16 +2394,17 @@ $('forgotPasswordBtn').addEventListener('click',async()=>{
  finally{btn.disabled=false}
 });
 // Admin-assisted reset: email is entered by admin; no access to or disclosure of password.
-$('adminSendReset').addEventListener('click',async()=>{
+$('adminDirectReset').addEventListener('submit',async(event)=>{
+ event.preventDefault();
  if(!passwordResetIsAdmin)return;
  const input=$('adminResetEmail');if(!input.reportValidity())return;
  const btn=$('adminSendReset');btn.disabled=true;
  try{
   const {error}=await db.auth.resetPasswordForEmail(input.value.trim(),{redirectTo:window.location.origin+window.location.pathname});
   if(error)throw error;
-  $('resetApprovalFeedback').textContent='Wenn die Adresse registriert ist, wurde die Reset-Mail angefordert.';
+  if(passwordResetIsAdmin)$('adminResetFeedback').textContent=tr('Die Reset-Mail wurde angefordert.','Şifre yenileme e-postası istendi.');
   input.value='';
- }catch(e){$('resetApprovalFeedback').textContent='Reset-Mail konnte nicht angefordert werden: '+e.message}
+ }catch{if(passwordResetIsAdmin)$('adminResetFeedback').textContent=tr('Reset-Mail konnte nicht angefordert werden.','Şifre yenileme e-postası istenemedi.');}
  finally{btn.disabled=false}
 });
 
@@ -2391,7 +2428,7 @@ $('memberRequestReset').addEventListener('click',async()=>{
  finally{button.disabled=false}
 });
 async function loadResetRequests(){
- const feedback=$('resetApprovalFeedback'),list=$('resetRequestList');
+ const feedback=$('adminResetFeedback'),list=$('resetRequestList');
  if(!passwordResetIsAdmin||!currentUser)return;
  const owner=currentUser.id, request=accessRequest;
  const {data,error}=await db.from('password_reset_requests')
@@ -2399,12 +2436,12 @@ async function loadResetRequests(){
  if(currentUser?.id!==owner||request!==accessRequest||!passwordResetIsAdmin)return;
  if(error){feedback.textContent='Anfragen konnten nicht geladen werden: '+error.message;return}
  list.replaceChildren();
- if(!data.length){list.textContent='Keine offenen Anfragen.';return}
+ if(!data.length){list.textContent=tr('Keine offenen Anfragen.','Açık talep yok.');return}
  data.forEach(r=>{
   const row=document.createElement('div');row.className='password-reset-row';
   const info=document.createElement('span');
-  info.textContent=r.email+' · '+new Date(r.created_at).toLocaleString('de-DE');
-  const btn=document.createElement('button');btn.type='button';btn.textContent='Freigeben & Reset-Mail senden';
+  info.textContent=r.email+' · '+new Date(r.created_at).toLocaleString(lang === 'tr' ? 'tr-TR' : 'de-DE');
+  const btn=document.createElement('button');btn.type='button';btn.textContent=tr('Freigeben & Reset-Mail senden','Onayla ve şifre yenileme e-postası gönder');
   btn.addEventListener('click',async()=>{
    if(!passwordResetIsAdmin||currentUser?.id!==owner||request!==accessRequest)return;
    btn.disabled=true;
@@ -2426,7 +2463,6 @@ async function loadResetRequests(){
   row.append(info,btn);list.append(row);
  });
 }
-$('refreshResetRequests').addEventListener('click',loadResetRequests);
 // Supabase emits PASSWORD_RECOVERY after the link is exchanged for a session.
 // Unlike the old implementation, refreshAccess() cannot hide this form.
 db.auth.onAuthStateChange((event)=>{
@@ -2452,8 +2488,8 @@ if(recoveryMode)showRecoveryScreen();
    const signedIn=accessState==='approved';
    const caption=memberAdmin?tr('Passwortverwaltung','Şifre yönetimi'):tr('Passwort-Hilfe','Şifre yardımı');
    nav.textContent=caption;$('passwordApprovalTitle').textContent=caption;
-   nav.classList.toggle('hidden',!signedIn);
-   if(!signedIn){panel.classList.add('hidden');nav.setAttribute('aria-expanded','false');}
+   nav.classList.toggle('hidden',!signedIn||memberAdmin);
+   if(!signedIn||memberAdmin){panel.classList.add('hidden');nav.setAttribute('aria-expanded','false');}
  }
  nav.addEventListener('click',function(){
    sync();if(nav.classList.contains('hidden'))return;
@@ -2647,4 +2683,5 @@ document.addEventListener('library-language',()=>{drawEditor();refreshCards();})
 <script src="menba-learning.js?v=learning-admin"></script>
 <script src="menba-cloud-chat.js?v=learning-admin"></script>
 <script src="menba.js?v=learning-admin"></script>
+<script src="menba-admin.js?v=learning-admin"></script>
 </body></html>
