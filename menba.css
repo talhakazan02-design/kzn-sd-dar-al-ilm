@@ -174,9 +174,15 @@
 .menba-turn .menba-reply h3 { margin-bottom: .5rem; }
 .menba-turn .menba-passage { border-inline-start: 2px solid #b287503f; padding-inline-start: .65rem; margin: .6rem 0; }
 .menba-turn .menba-citation { margin-top: .25rem; color: var(--menba-gold); font-size: .84rem; }
-.menba-panel :is(#menbaCancel,#menbaOcrStartButton) {
+.menba-panel :is(#menbaCancel,#menbaOcrStartButton,.menba-original-button) {
   width: fit-content; padding: .4rem .65rem; border: 1px solid var(--menba-line); border-radius: 6px;
   background: #322116; color: var(--menba-ink); font: inherit; cursor: pointer;
 }
-.menba-panel :is(#menbaCancel,#menbaOcrStartButton):disabled { opacity: .55; }
+.menba-panel :is(#menbaCancel,#menbaOcrStartButton,.menba-original-button):disabled { opacity: .55; }
+.menba-quran-file { display: grid; gap: .35rem; margin-top: .6rem; }
+.menba-quran-file input { min-width: 0; max-width: 100%; font: inherit; }
+.menba-quran-file input::file-selector-button { background: #322116; color: var(--menba-ink); border: 1px solid var(--menba-line); border-radius: 5px; padding: .4rem .55rem; margin-inline-end: .45rem; font: inherit; }
+.menba-original { display: block; max-width: 100%; height: auto; margin-bottom: .5rem; border-radius: 4px; }
+.menba-results .menba-meal-label { color: var(--menba-gold); font-size: .88rem; }
+.menba-original-button { margin-top: .45rem; }
 .menba-form { margin-top: .7rem; }
