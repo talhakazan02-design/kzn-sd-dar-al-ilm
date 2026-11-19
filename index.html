@@ -1376,7 +1376,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
 <link rel="stylesheet" href="lending.css">
 <link rel="stylesheet" href="admin-beta.css">
 <link rel="stylesheet" href="shared-library.css">
-<link rel="stylesheet" href="menba.css?v=readability20261119">
+<link rel="stylesheet" href="menba.css?v=sources-save20261119">
 <link rel="stylesheet" href="sidebar-modern.css?v=20261119">
 </head>
 <body>
@@ -1673,7 +1673,13 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
   <p class="menba-intro" data-de="Fragen zu deinen ausgewählten Quellen. Die Fundstellen enthalten Buch und PDF-Seite." data-tr="Seçtiğin kaynaklar hakkında soru sor. Alıntılarda kitap ve PDF sayfası gösterilir.">Fragen zu deinen ausgewählten Quellen. Die Fundstellen enthalten Buch und PDF-Seite.</p>
   <details class="menba-source-menu">
     <summary id="menbaSourcesSummary">Quellen</summary>
+    <div class="menba-source-actions">
+      <button type="button" id="menbaSelectAll" disabled>Alle auswählen</button>
+      <button type="button" id="menbaSaveSources" data-de="Auswahl speichern" data-tr="Seçimi kaydet" disabled>Auswahl speichern</button>
+    </div>
     <div id="menbaSources" class="menba-sources"></div>
+    <p id="menbaSelectionStatus" class="menba-status" role="status"></p>
+    <p id="menbaLocalSaveHint" class="menba-status" data-de="Beim Speichern bleibt die gewählte Geräte-PDF auf diesem Gerät." data-tr="Kaydedilen yerel Kur’an PDF’si bu cihazda kalır." hidden>Beim Speichern bleibt die gewählte Geräte-PDF auf diesem Gerät.</p>
     <label class="menba-quran-file"><span data-de="Koran-PDF vom Gerät öffnen" data-tr="Cihazdan Kur’an PDF’si aç">Koran-PDF vom Gerät öffnen</span><input id="menbaQuranFile" type="file" accept="application/pdf,.pdf"></label>
     <p id="menbaSourceStatus" class="menba-status" role="status"></p>
     <details id="menbaOcrTools" class="menba-ocr" hidden>
@@ -2615,7 +2621,9 @@ document.addEventListener('library-language',()=>{drawEditor();refreshCards();})
 <script src="sidebar-stats.js?v=20261119"></script>
 <script src="menba-search.js?v=sources20261119"></script>
 <script src="menba-ocr.js"></script>
-<script src="menba-quran.js?v=readability20261119"></script>
+<script src="menba-quran.js?v=sources-save20261119"></script>
 <script src="menba-quran-edition.js?v=quran20261119"></script>
-<script src="menba.js?v=readability20261119"></script>
+<script src="menba-shared-sources.js?v=20261119"></script>
+<script src="menba-source-preferences.js?v=20261119"></script>
+<script src="menba.js?v=sources-save20261119"></script>
 </body></html>

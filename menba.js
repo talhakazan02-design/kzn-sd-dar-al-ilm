@@ -5,6 +5,10 @@
   const picker = $('menbaSources');
   const sourceSummary = $('menbaSourcesSummary');
   const sourceStatus = $('menbaSourceStatus');
+  const selectAll = $('menbaSelectAll');
+  const saveSources = $('menbaSaveSources');
+  const selectionStatus = $('menbaSelectionStatus');
+  const localSaveHint = $('menbaLocalSaveHint');
   const question = $('menbaQuestion');
   const ask = $('menbaAsk');
   const status = $('menbaStatus');
@@ -21,8 +25,16 @@
   const selected = new Set();
   const cachedPages = new Map();
   const recognizedPages = new Map();
+  const sharedVersions = new Map();
   let owner = null;
+  let accountEpoch = 0;
   let options = [];
+  let sharedSources = [];
+  let sharedState = 'idle';
+  let sharedLoad = null;
+  let loadingPreferences = false;
+  let savingPreferences = false;
+  let selectionNotice = null;
   let request = null;
   let pdfModule = null;
   let notice = null;
@@ -33,6 +45,14 @@
     return Boolean(owner && owner === currentUser?.id && accessState === 'approved');
   }
 
+  const pickableSources = () => options.filter(source => selected.has(source.id));
+
+  function sourceLabels(source) {
+    return {...source,
+      quran: MenbaQuran.isSource(source.title) || MenbaQuran.isSource(source.fileName),
+      hadith: MenbaSearch.isHadithSource(source.title) || MenbaSearch.isHadithSource(source.fileName)};
+  }
+
   function syncSources() {
     if (!allowed()) return;
     const prior = new Map(options.map(source => [source.id, sourceKey(source)]));
@@ -41,17 +61,17 @@
     );
     options = [
       {id:hadisId, title:'Haftanın Hadis-i Şerifleri', path:null, hadith:true},
-      ...privatePdfs.map(book => ({id:book.id, title:book.title || book.file_name || 'PDF', path:book.file_path,
-        quran:MenbaQuran.isSource(book.title) || MenbaQuran.isSource(book.file_name),
-        hadith:MenbaSearch.isHadithSource(book.title) || MenbaSearch.isHadithSource(book.file_name)}))
+      ...privatePdfs.map(book => sourceLabels({id:book.id, title:book.title || book.file_name || 'PDF',
+        path:book.file_path, fileName:book.file_name})),
+      ...sharedSources.map(sourceLabels)
     ];
     if (localQuran) options.push(localQuran);
     const active = new Set(options.map(source => source.id));
     const changed = new Set(options.filter(source => prior.has(source.id) && prior.get(source.id) !== sourceKey(source)).map(source => source.id));
-    for (const id of selected) if (!active.has(id)) selected.delete(id);
     const paths = new Set(options.map(sourceKey));
     for (const key of cachedPages.keys()) if (!paths.has(key)) cachedPages.delete(key);
     for (const key of recognizedPages.keys()) if (!paths.has(key)) recognizedPages.delete(key);
+    for (const key of sharedVersions.keys()) if (!active.has(key)) sharedVersions.delete(key);
     if (request && request.sources.some(source => !paths.has(sourceKey(source)))) {
       cancel();
       notice = ['Die Quellen wurden geändert. Stelle die Frage erneut.', 'Kaynaklar değişti. Soruyu yeniden sor.'];
@@ -62,6 +82,80 @@
       notice = ['Die Quellen wurden geändert. Stelle die Frage erneut.', 'Kaynaklar değişti. Soruyu yeniden sor.'];
     }
     render();
+  }
+
+  async function refreshSharedSources() {
+    if (!allowed() || sharedLoad) return;
+    const controller = new AbortController();
+    sharedLoad = controller;
+    sharedState = 'loading';
+    renderSourceControls();
+    try {
+      const catalog = await MenbaSharedSources.list({accountId:owner, signal:controller.signal});
+      if (sharedLoad !== controller || !allowed()) return;
+      sharedSources = catalog;
+      sharedState = 'ready';
+    } catch {
+      if (sharedLoad !== controller || !allowed()) return;
+      sharedSources = [];
+      sharedState = 'unavailable';
+    } finally {
+      if (sharedLoad === controller) {
+        sharedLoad = null;
+        syncSources();
+      }
+    }
+  }
+
+  async function restoreSelection(accountId, epoch) {
+    try {
+      const preferences = await MenbaSourcePreferences.load(accountId);
+      if (epoch !== accountEpoch || !allowed() || !preferences) return;
+      selected.clear();
+      for (const id of preferences.ids) selected.add(id);
+      if (preferences.file && selected.has(localQuranId)) {
+        localQuran = {id:localQuranId, title:preferences.file.name, file:preferences.file, quran:true};
+      }
+    } catch {
+      if (epoch === accountEpoch && allowed()) {
+        selectionNotice = ['Die gespeicherte Auswahl ließ sich nicht laden.', 'Kaydedilen seçim yüklenemedi.'];
+      }
+    } finally {
+      if (epoch === accountEpoch && allowed()) {
+        loadingPreferences = false;
+        syncSources();
+      }
+    }
+  }
+
+  function preferencesChanged() {
+    selectionNotice = null;
+    renderSourceControls();
+  }
+
+  async function saveSelection() {
+    if (!allowed() || loadingPreferences || savingPreferences || request) return;
+    const epoch = accountEpoch;
+    const ids = [...selected];
+    const file = selected.has(localQuranId) ? localQuran?.file ?? null : null;
+    savingPreferences = true;
+    selectionNotice = null;
+    render();
+    try {
+      await MenbaSourcePreferences.save(owner, {ids, file});
+      if (epoch === accountEpoch && allowed()) {
+        selectionNotice = ['Auswahl für dein Konto auf diesem Gerät gespeichert.', 'Seçim, hesabın için bu cihaza kaydedildi.'];
+      }
+    } catch {
+      if (epoch === accountEpoch && allowed()) {
+        selectionNotice = ['Die Auswahl konnte auf diesem Gerät nicht gespeichert werden.', 'Seçim bu cihaza kaydedilemedi.'];
+      }
+    } finally {
+      if (epoch === accountEpoch && allowed()) {
+        savingPreferences = false;
+        render();
+      }
+    }
   }
 
   function cancel() {
@@ -79,12 +173,26 @@
     }
   }
 
+  function renderSourceControls() {
+    const canAsk = allowed();
+    const busy = request !== null || loadingPreferences || savingPreferences;
+    const pickedCount = pickableSources().length;
+    sourceSummary.textContent = tr(`Quellen (${pickedCount})`, `Kaynaklar (${pickedCount})`);
+    const loading = !booksLoaded || loadingPreferences || sharedState === 'loading';
+    sourceStatus.textContent = !canAsk ? '' : loading ? tr('Quellen werden geladen …', 'Kaynaklar yükleniyor …')
+      : sharedState === 'unavailable' ? tr('Gemeinsame Quellen konnten nicht geladen werden.', 'Ortak kaynaklar yüklenemedi.') : '';
+    selectAll.disabled = !canAsk || busy || loading || !options.length;
+    selectAll.textContent = options.length && pickedCount === options.length
+      ? tr('Alle abwählen', 'Tüm seçimi kaldır') : tr('Alle auswählen', 'Tümünü seç');
+    saveSources.disabled = !canAsk || busy;
+    selectionStatus.textContent = selectionNotice ? tr(...selectionNotice) : '';
+    localSaveHint.hidden = !(canAsk && localQuran && selected.has(localQuranId));
+  }
+
   function render() {
     const canAsk = allowed();
-    const busy = request !== null;
-    sourceStatus.textContent = canAsk && !booksLoaded
-      ? tr('Deine Bibliotheks-PDFs werden geladen …', 'Kütüphane PDF dosyaların yükleniyor …')
-      : '';
+    const busy = request !== null || loadingPreferences;
+    renderSourceControls();
     const choices = canAsk ? options.map(source => {
       const label = document.createElement('label');
       label.className = 'menba-source-option';
@@ -92,25 +200,25 @@
       input.type = 'checkbox';
       input.value = source.id;
       input.checked = selected.has(source.id);
-      input.disabled = busy;
+      input.disabled = busy || savingPreferences;
       const name = document.createElement('span');
-      name.textContent = source.id === hadisId ? tr('Haftanın Hadis-i Şerifleri · Textfassung', 'Haftanın Hadis-i Şerifleri · Metin') : source.title;
+      name.textContent = source.id === hadisId ? tr('Haftanın Hadis-i Şerifleri · Textfassung', 'Haftanın Hadis-i Şerifleri · Metin')
+        : source.shareId ? `${source.title} · ${tr('Gemeinsame Bibliothek', 'Ortak Kütüphane')}` : source.title;
       label.append(input, name);
       return label;
     }) : [];
     picker.replaceChildren(...choices);
-    sourceSummary.textContent = tr(`Quellen (${selected.size})`, `Kaynaklar (${selected.size})`);
-    quranFile.disabled = !canAsk || busy;
-    const scans = options.filter(source => source.path || source.file);
+    quranFile.disabled = !canAsk || busy || savingPreferences;
+    const scans = options.filter(source => source.id !== hadisId);
     const previous = ocrSource.value;
     ocrTools.hidden = !canAsk || !scans.length;
     ocrSource.replaceChildren(...scans.map(source => new Option(source.title,source.id)));
     if (scans.some(source => source.id === previous)) ocrSource.value = previous;
     for (const input of ocrForm.elements) input.disabled = !canAsk || busy;
-    stop.hidden = !busy;
+    stop.hidden = !request;
     ask.disabled = !canAsk || busy;
     question.disabled = !canAsk || busy;
-    ask.textContent = busy ? tr('Suche läuft …', 'Aranıyor …') : tr('Frage stellen', 'Sor');
+    ask.textContent = request ? tr('Suche läuft …', 'Aranıyor …') : tr('Frage stellen', 'Sor');
     renderNotice();
     form.setAttribute('aria-busy', String(busy));
     results.replaceChildren(...turns.map(renderTurn));
@@ -204,12 +312,40 @@
     }));
   }
 
-  async function openPdf(source, work) {
+  function clearSharedText(source, work) {
+    cachedPages.delete(source.id);
+    recognizedPages.delete(source.id);
+    sharedVersions.delete(source.id);
+    turns = turns.filter(turn => turn === work.turn || !turn.sources.some(item => item.id === source.id));
+    if (work.turn?.evidence.some(entry => entry.sourceId === source.id)) {
+      work.turn.evidence = work.turn.evidence.filter(entry => entry.sourceId !== source.id);
+      if (!work.turn.evidence.length) {
+        work.turn.notice = ['Die PDF-Freigabe hat sich geändert. Stelle die Frage erneut.', 'PDF erişimi değişti. Soruyu yeniden sor.'];
+      }
+    }
+  }
+
+  async function authorizeShared(source, work) {
+    const {signal} = work.controller;
+    try {
+      const grant = await MenbaSharedSources.signedUrl(source, {accountId:owner, signal});
+      if (sharedVersions.has(source.id) && sharedVersions.get(source.id) !== grant.path) clearSharedText(source, work);
+      sharedVersions.set(source.id, grant.path);
+      return grant;
+    } catch (error) {
+      if (request === work && allowed() && !signal.aborted) clearSharedText(source, work);
+      throw error;
+    }
+  }
+
+  async function openPdf(source, work, grant) {
     const {signal} = work.controller;
     let bytes;
     if (source.file) bytes = await source.file.arrayBuffer();
     else {
-      const {data, error} = await db.storage.from(STORAGE_BUCKET).createSignedUrl(source.path, 60);
+      const {data, error} = source.shareId
+        ? {data:{signedUrl:(grant ?? await authorizeShared(source, work)).url}}
+        : await db.storage.from(STORAGE_BUCKET).createSignedUrl(source.path, 60);
       signal.throwIfAborted();
       if (error || !data?.signedUrl) throw Error('Source is not available');
       const response = await fetch(data.signedUrl, {signal, referrerPolicy:'no-referrer'});
@@ -228,11 +364,14 @@
     return task.promise;
   }
 
-  async function extractPdf(source, work) {
+  async function extractPdf(source, work, grant, requireQuran) {
     const {signal} = work.controller;
     try {
-      const pdf = await openPdf(source, work);
-      const parsedEdition = source.quran && MenbaQuranEdition.isEdition(await pdf.getMetadata());
+      const pdf = await openPdf(source, work, grant);
+      const metadata = await pdf.getMetadata().catch(() => null);
+      const parsedEdition = MenbaQuranEdition.isEdition(metadata);
+      const quran = source.quran || parsedEdition || MenbaQuran.isSource(metadata?.info?.Title);
+      if (requireQuran && !quran) return null;
       const pages = [];
       for (let number = 1; number <= pdf.numPages; number++) {
         signal.throwIfAborted();
@@ -244,7 +383,7 @@
         page.cleanup();
         if (text) pages.push({sourceId:source.id, source:source.title, page:number, text, verses});
       }
-      return pages;
+      return {pages,quran};
     } finally {
       await releasePdf(work);
     }
@@ -271,7 +410,9 @@
   async function originalImage(entry,source,work) {
     const {signal} = work.controller;
     try {
-      const pdf = await openPdf(source,work);
+      const grant = source.shareId ? await authorizeShared(source,work) : null;
+      if (grant && grant.path !== entry.sharedVersion) throw Error('Shared PDF version changed');
+      const pdf = await openPdf(source,work,grant);
       const page = await pdf.getPage(entry.page);
       signal.throwIfAborted();
       const base = page.getViewport({scale:1});
@@ -339,20 +480,25 @@
     renderNotice();
   }
 
+  function quranSourceHelp() {
+    return ['Wähle unter Quellen eine Koran-PDF aus oder öffne sie von deinem Gerät.', 'Kaynaklar bölümünde bir Kur’an PDF’si seç veya cihazından aç.'];
+  }
+
   async function run() {
     const text = question.value.trim();
-    if (!allowed() || request || !text) return;
-    const picked = options.filter(source => selected.has(source.id));
-    const anyQuran = picked.some(source => source.quran);
+    if (!allowed() || request || loadingPreferences || !text) return;
+    const picked = pickableSources();
+    const isQuran = source => source.quran || cachedPages.get(sourceKey(source))?.quran === true;
+    const anyQuran = picked.some(isQuran);
     const hadith = MenbaSearch.inspectHadith(text);
-    const quran = !hadith && MenbaQuran.inspect(text,{inQuran:anyQuran && picked.every(source => source.quran || source.id === hadisId)});
+    const quran = !hadith && MenbaQuran.inspect(text,{inQuran:anyQuran && picked.every(source => isQuran(source) || source.id === hadisId)});
     let sources = picked;
-    if (quran) sources = picked.filter(source => source.quran);
+    if (quran) sources = anyQuran ? picked.filter(isQuran) : picked.filter(source => source.id !== hadisId);
     else if (hadith?.sample) sources = picked.filter(source => source.id === hadisId);
     else if (hadith) sources = picked.filter(source => source.hadith && !source.quran);
     if (!sources.length) {
       sourceSummary.parentElement.open = true;
-      if (quran) notice = ['Wähle unter Quellen eine Koran-PDF aus oder öffne sie von deinem Gerät.', 'Kaynaklar bölümünde bir Kur’an PDF’si seç veya cihazından aç.'];
+      if (quran) notice = quranSourceHelp();
       else if (hadith) notice = ['Wähle unter Quellen eine Hadis-Sammlung aus.', 'Kaynaklar bölümünde bir Hadis derlemesi seç.'];
       else notice = ['Wähle unter Quellen mindestens ein Buch für deine Frage aus.', 'Sorun için Kaynaklar bölümünden en az bir kitap seç.'];
       renderNotice();
@@ -373,26 +519,35 @@
       const pages = [];
       const unavailable = [];
       const scans = [];
+      let foundQuran = sources.some(isQuran);
       for (const source of work.sources) {
         if (request !== work) return;
         progress(source);
         const key = sourceKey(source);
+        let grant;
         try {
+          if (source.shareId) grant = await authorizeShared(source,work);
           let extracted = cachedPages.get(key);
           if (!extracted) {
-            extracted = source.id === hadisId ? await fetchHadis(work) : await extractPdf(source, work);
+            extracted = source.id === hadisId ? {pages:await fetchHadis(work), quran:false}
+              : await extractPdf(source, work, grant, Boolean(quran));
             if (request !== work || !allowed()) return;
-            cachedPages.set(key, extracted);
+            if (extracted) cachedPages.set(key, extracted);
           }
+          if (!extracted || (quran && !extracted.quran)) continue;
+          if (extracted.quran) foundQuran = true;
           const ocr = recognizedPages.get(key);
-          if (!extracted.length && !ocr?.size) scans.push(source.title);
-          const textPages = new Set(extracted.filter(page => page.verses?.length).map(page => page.page));
-          for (const page of extracted) if (textPages.has(page.page) || !ocr?.has(page.page)) pages.push(page);
+          if (!extracted.pages.length && !ocr?.size) scans.push(source.title);
+          const textPages = new Set(extracted.pages.filter(page => page.verses?.length).map(page => page.page));
+          for (const page of extracted.pages) if (textPages.has(page.page) || !ocr?.has(page.page)) pages.push(page);
           if (ocr) pages.push(...[...ocr.values()].filter(page => !textPages.has(page.page)));
         } catch {
           if (request !== work) return;
-          const ocr = recognizedPages.get(key);
-          if (ocr?.size) pages.push(...ocr.values());
+          const ocr = !source.shareId || grant ? recognizedPages.get(key) : null;
+          if (ocr?.size && (!quran || isQuran(source))) {
+            foundQuran ||= isQuran(source);
+            pages.push(...ocr.values());
+          }
           else unavailable.push(source.title);
         }
       }
@@ -401,12 +556,13 @@
       const rows = quran ? findQuran(quran,pages) : window.MenbaSearch.find(text, pages);
       const hadithRows = hadith?.sample ? pages.filter(page => page.sourceId === hadisId) : [];
       turn.evidence = (hadithRows.length ? [hadithRows[Math.floor(Math.random()*hadithRows.length)]] : rows).map(entry => ({
-        ...entry, ocr:ocrKeys.has(`${entry.sourceId}:${entry.page}`)
+        ...entry, sharedVersion:sharedVersions.get(entry.sourceId), ocr:ocrKeys.has(`${entry.sourceId}:${entry.page}`)
       }));
       turn.notice = turn.evidence.length
-        ? quran ? ['Passende Fundstellen aus deiner Koran-PDF', 'Kur’an PDF’indeki ilgili bölümler']
+        ? quran ? ['Passende Fundstellen aus den ausgewählten Koran-PDFs', 'Seçili Kur’an PDF’lerindeki ilgili bölümler']
           : ['Passende Stellen aus deinen Quellen', 'Kaynaklarındaki ilgili bölümler']
-        : ['In den durchsuchbaren Quellen habe ich keine passende Stelle gefunden.', 'Aranabilen kaynaklarda uygun bir bölüm bulamadım.'];
+        : quran && !foundQuran ? quranSourceHelp()
+          : ['In den durchsuchbaren Quellen habe ich keine passende Stelle gefunden.', 'Aranabilen kaynaklarda uygun bir bölüm bulamadım.'];
       if (!turn.evidence.length && sources.length === 1 && sources[0].id === hadisId && !unavailable.length) {
         turn.notice = [turn.notice[0]+' Durchsucht wurde nur die ausgewählte Hadis-Textfassung. Weitere PDFs kannst du unter Quellen auswählen.',
           turn.notice[1]+' Yalnızca seçili Hadis metni arandı. Kaynaklar bölümünden başka PDF’ler seçebilirsin.'];
@@ -499,21 +655,32 @@
 
   picker.addEventListener('change', event => {
     const input = event.target;
-    if (!allowed() || request || !(input instanceof HTMLInputElement)) return;
+    if (!allowed() || request || loadingPreferences || savingPreferences || !(input instanceof HTMLInputElement)) return;
     if (input.checked) selected.add(input.value);
     else selected.delete(input.value);
     notice = null;
-    sourceSummary.textContent = tr(`Quellen (${selected.size})`, `Kaynaklar (${selected.size})`);
+    preferencesChanged();
     renderNotice();
   });
+  selectAll.addEventListener('click', () => {
+    if (!allowed() || selectAll.disabled) return;
+    const clear = pickableSources().length === options.length;
+    selected.clear();
+    if (!clear) for (const source of options) selected.add(source.id);
+    notice = null;
+    selectionNotice = null;
+    render();
+  });
+  saveSources.addEventListener('click', () => void saveSelection());
   quranFile.addEventListener('change', () => {
     const [file] = quranFile.files;
     quranFile.value = '';
-    if (!allowed() || request || !file) return;
+    if (!allowed() || request || loadingPreferences || savingPreferences || !file) return;
     try {
       validateUpload(file,'pdf');
       localQuran = {id:localQuranId, title:file.name, file, quran:true};
       selected.add(localQuranId);
+      selectionNotice = null;
       syncSources();
       notice = ['Koran-PDF geöffnet. Du kannst jetzt nach einem Thema suchen.', 'Kur’an PDF’si açıldı. Artık konuya göre arayabilirsin.'];
     } catch (error) {
@@ -534,13 +701,22 @@
     notice = ['Vorgang abgebrochen.', 'İşlem iptal edildi.'];
     render();
   });
-  document.addEventListener('library-access', () => {
+  function syncAccount() {
     const next = accessState === 'approved' ? currentUser?.id ?? null : null;
     if (next !== owner) {
       cancel();
+      sharedLoad?.abort();
+      sharedLoad = null;
+      sharedState = 'idle';
+      sharedSources = [];
       owner = next;
+      ++accountEpoch;
+      loadingPreferences = Boolean(owner);
+      savingPreferences = false;
+      selectionNotice = null;
       cachedPages.clear();
       recognizedPages.clear();
+      sharedVersions.clear();
       options = [];
       localQuran = null;
       quranFile.value = '';
@@ -549,22 +725,30 @@
       notice = null;
       turns = [];
       question.value = '';
+      if (owner) {
+        void restoreSelection(owner, accountEpoch);
+        if (portal === 'menba') void refreshSharedSources();
+      }
     }
     if (owner) syncSources();
     else render();
-  });
+  }
+  document.addEventListener('library-access', syncAccount);
   document.addEventListener('library-books', syncSources);
+  document.addEventListener('library-shared-books', () => {
+    if (portal === 'menba') void refreshSharedSources();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && portal === 'menba') void refreshSharedSources();
+  });
   document.addEventListener('library-language', render);
   document.addEventListener('library-portal', () => {
+    if (portal === 'menba') void refreshSharedSources();
     if (portal !== 'menba' && request) {
       cancel();
       notice = null;
       render();
     }
   });
-  owner = accessState === 'approved' ? currentUser?.id ?? null : null;
-  if (owner) {
-    selected.add(hadisId);
-    syncSources();
-  } else render();
+  syncAccount();
 })();
