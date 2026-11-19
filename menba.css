@@ -31,6 +31,31 @@
 .menba-learning-card { margin:.7rem 0; border-block-start:1px solid var(--menba-line); padding-top:.6rem; }
 .menba-learning-card h4 { margin:0; color:var(--menba-gold); }
 .menba-reply details summary { cursor:pointer; color:var(--menba-gold); }
+.menba-mode-info { border-inline-start:3px solid var(--menba-line); padding:.35rem .75rem; margin:.6rem 0; }
+.menba-mode-info :is(h3,p) { margin:.25rem 0; }
+.menba-mode-info h3 { color:var(--menba-gold); }
+.menba-templates h3 { margin:.72rem 0 .35rem; color:var(--menba-gold); font-size:1rem; }
+.menba-templates label,.menba-test-center label { display:grid; gap:.35rem; margin:.65rem 0; }
+.menba-test-center label:has(input[type="checkbox"]) { display:flex; flex-wrap:wrap; align-items:center; }
+.menba-templates :is(select,input,button),.menba-test-center select {
+  box-sizing:border-box; max-width:100%; border:1px solid #a98049; border-radius:5px;
+  background:#24170f; color:#f5ead8; font:inherit; padding:.5rem; min-height:2.55rem;
+}
+.menba-templates button,.menba-test-center summary { cursor:pointer; }
+.menba-template-fields { margin:.5rem 0 .9rem; }
+.menba-suggestions,.menba-test-results { list-style:none; padding:0; margin:.55rem 0; }
+.menba-suggestions li,.menba-test-results li { display:grid; gap:.3rem; padding:.48rem 0; border-bottom:1px solid #a9804955; overflow-wrap:anywhere; }
+.menba-suggestions button { text-align:start; }
+.menba-suggestions small,.menba-test-results small { color:#ead0a4; }
+.menba-test-center { padding:.75rem; border:1px solid #a98049; border-radius:7px; margin-top:1rem; }
+.menba-test-center summary,.menba-test-results [data-status] { color:#e8c48a; }
+#menbaHocaNav[hidden],#menbaTestCenter[hidden] { display:none !important; }
+.menba-test-results [data-status="fail"] { color:#ffb9a5; }
+.menba-test-results [data-status="pass"] { color:#b5e6b6; }
+.menba-chat-actions .menba-help-button,.menba-reply .menba-help-button {
+  color:var(--menba-gold); border:1px solid var(--menba-line); background:#291a13;
+  border-radius:5px; padding:.45rem .6rem; margin:.35rem .35rem 0 0; font:inherit;
+}
 .menba-cloud-consent { display:flex; align-items:flex-start; gap:.5rem; color:var(--menba-muted); }
 .menba-cloud-consent input { flex:none; width:1rem; height:1rem; margin:.25rem 0 0; accent-color:var(--menba-gold); }
 .menba-category { display: grid; gap: .3rem; margin: .65rem 0; }
