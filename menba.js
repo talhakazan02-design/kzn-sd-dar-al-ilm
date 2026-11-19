@@ -18,14 +18,22 @@
   const ocrForm = $('menbaOcrForm');
   const ocrSource = $('menbaOcrSource');
   const quranFile = $('menbaQuranFile');
+  const photoFile = $('menbaPhotoFile');
+  const category = $('menbaCategory');
+  const clearChat = $('menbaClearChat');
+  const retry = $('menbaRetry');
   const pdfBase = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/';
   const hadisId = 'hadis-collection';
   const localQuranId = 'quran-on-device';
+  const photoId = 'photo-on-device';
   const sourceKey = source => source.file || source.path || source.id;
   const selected = new Set();
   const cachedPages = new Map();
   const recognizedPages = new Map();
   const sharedVersions = new Map();
+  const sourceStates = new Map();
+  const loadedIndexes = new Set();
+  const fileVersions = new WeakMap();
   let owner = null;
   let accountEpoch = 0;
   let options = [];
@@ -40,6 +48,8 @@
   let notice = null;
   let turns = [];
   let localQuran = null;
+  let localPhoto = null;
+  let retryQuestion = null;
 
   function allowed() {
     return Boolean(owner && owner === currentUser?.id && accessState === 'approved');
@@ -62,15 +72,18 @@
     options = [
       {id:hadisId, title:'Haftanın Hadis-i Şerifleri', path:null, hadith:true},
       ...privatePdfs.map(book => sourceLabels({id:book.id, title:book.title || book.file_name || 'PDF',
-        path:book.file_path, fileName:book.file_name})),
+        path:book.file_path, fileName:book.file_name, category:book.category})),
       ...sharedSources.map(sourceLabels)
     ];
     if (localQuran) options.push(localQuran);
+    if (localPhoto) options.push(localPhoto);
     const active = new Set(options.map(source => source.id));
     const changed = new Set(options.filter(source => prior.has(source.id) && prior.get(source.id) !== sourceKey(source)).map(source => source.id));
     const paths = new Set(options.map(sourceKey));
     for (const key of cachedPages.keys()) if (!paths.has(key)) cachedPages.delete(key);
     for (const key of recognizedPages.keys()) if (!paths.has(key)) recognizedPages.delete(key);
+    for (const key of sourceStates.keys()) if (!paths.has(key)) sourceStates.delete(key);
+    for (const key of loadedIndexes) if (!paths.has(key)) loadedIndexes.delete(key);
     for (const key of sharedVersions.keys()) if (!active.has(key)) sharedVersions.delete(key);
     if (request && request.sources.some(source => !paths.has(sourceKey(source)))) {
       cancel();
@@ -82,6 +95,70 @@
       notice = ['Die Quellen wurden geändert. Stelle die Frage erneut.', 'Kaynaklar değişti. Soruyu yeniden sor.'];
     }
     render();
+    if (portal === 'menba') for (const source of pickableSources()) void useIndex(source);
+  }
+
+  async function indexVersion(source) {
+    if (source.shareId || source.id === hadisId) return null;
+    if (source.path) return `pdf-v1:${source.path}`;
+    if (!source.file || !globalThis.crypto?.subtle) return null;
+    if (!fileVersions.has(source.file)) fileVersions.set(source.file,(async file => {
+      const digest = await crypto.subtle.digest('SHA-256',await file.arrayBuffer());
+      return 'file-v1:'+Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,'0')).join('');
+    })(source.file));
+    return fileVersions.get(source.file);
+  }
+
+  async function useIndex(source, update) {
+    const key = sourceKey(source);
+    const account = owner;
+    const epoch = accountEpoch;
+    if (source.shareId || source.id === hadisId || (!update && loadedIndexes.has(key))) return;
+    const current = () => allowed() && epoch === accountEpoch && options.some(option => sourceKey(option) === key);
+    try {
+      const version = await indexVersion(source);
+      if (!version || !current()) return;
+      if (update) {
+        await MenbaSourcePreferences.saveIndex(account,source.id,version,update);
+        return;
+      }
+      const index = await MenbaSourcePreferences.loadIndex(account,source.id,version);
+      if (!current()) return;
+      loadedIndexes.add(key);
+      if (!index) return;
+      const label = row => ({...row,sourceId:source.id,source:source.title});
+      if (!cachedPages.has(key) && index.parsed) cachedPages.set(key,{...index.parsed,pages:index.parsed.pages.map(label)});
+      if (!recognizedPages.has(key) && index.ocr?.length) recognizedPages.set(key,new Map(index.ocr.map(row=>[row.page,label(row)])));
+      updateSourceBadge(source);
+    } catch { /* The current tab can still search when browser storage is unavailable. */ }
+  }
+
+  function statusFor(source) {
+    const key = sourceKey(source);
+    const state = sourceStates.get(key);
+    if (state === 'working') return tr('Wird verarbeitet', 'İşleniyor');
+    if (state === 'error') return tr('Verarbeitungsfehler', 'Hata');
+    const pdf = cachedPages.get(key);
+    const ocr = recognizedPages.get(key);
+    const ready = new Set([...(pdf?.pages.map(row=>row.page) ?? []),...(ocr?.keys() ?? [])]).size;
+    const total = source.image ? 1 : pdf?.totalPages;
+    if (ready && total && ready < total) return tr(`Teilweise bereit (${ready}/${total})`, `Kısmen hazır (${ready}/${total})`);
+    if (ready) return tr('Bereit', 'Hazır');
+    if (state === 'unreadable' || pdf?.totalPages) return tr('Kein lesbarer Text', 'Metin tanınamadı');
+    return tr('Noch nicht geladen', 'Henüz yüklenmedi');
+  }
+
+  function setSourceState(source,state) {
+    const key = sourceKey(source);
+    if (state) sourceStates.set(key,state);
+    else sourceStates.delete(key);
+    updateSourceBadge(source);
+  }
+
+  function updateSourceBadge(source) {
+    for (const label of picker.querySelectorAll('label')) {
+      if (label.querySelector('input').value === source.id) label.querySelector('small').textContent = statusFor(source);
+    }
   }
 
   async function refreshSharedSources() {
@@ -193,7 +270,12 @@
     const canAsk = allowed();
     const busy = request !== null || loadingPreferences;
     renderSourceControls();
-    const choices = canAsk ? options.map(source => {
+    const priorCategory = category.value;
+    const categories = [...new Set(options.map(source => source.category).filter(Boolean))].sort();
+    category.replaceChildren(new Option(tr('Alle Kategorien','Tüm kategoriler'),''),...categories.map(name=>new Option(categoryLabel(name),name)));
+    if (categories.includes(priorCategory)) category.value = priorCategory;
+    const visibleSources = options.filter(source => !category.value || source.category === category.value);
+    const choices = canAsk ? visibleSources.map(source => {
       const label = document.createElement('label');
       label.className = 'menba-source-option';
       const input = document.createElement('input');
@@ -204,17 +286,27 @@
       const name = document.createElement('span');
       name.textContent = source.id === hadisId ? tr('Haftanın Hadis-i Şerifleri · Textfassung', 'Haftanın Hadis-i Şerifleri · Metin')
         : source.shareId ? `${source.title} · ${tr('Gemeinsame Bibliothek', 'Ortak Kütüphane')}` : source.title;
+      const state = document.createElement('small');
+      state.textContent = statusFor(source);
+      name.append(state);
       label.append(input, name);
       return label;
     }) : [];
     picker.replaceChildren(...choices);
     quranFile.disabled = !canAsk || busy || savingPreferences;
+    photoFile.disabled = quranFile.disabled;
+    category.disabled = !canAsk || busy || !categories.length;
+    clearChat.hidden = !canAsk || !turns.length;
+    clearChat.disabled = !canAsk || busy || !turns.length;
+    retry.hidden = !canAsk || !retryQuestion;
+    retry.disabled = busy;
     const scans = options.filter(source => source.id !== hadisId);
     const previous = ocrSource.value;
     ocrTools.hidden = !canAsk || !scans.length;
     ocrSource.replaceChildren(...scans.map(source => new Option(source.title,source.id)));
     if (scans.some(source => source.id === previous)) ocrSource.value = previous;
     for (const input of ocrForm.elements) input.disabled = !canAsk || busy;
+    updateOcrControls();
     stop.hidden = !request;
     ask.disabled = !canAsk || busy;
     question.disabled = !canAsk || busy;
@@ -222,6 +314,13 @@
     renderNotice();
     form.setAttribute('aria-busy', String(busy));
     results.replaceChildren(...turns.map(renderTurn));
+  }
+
+  function updateOcrControls() {
+    const photo = ocrSource.value === photoId;
+    ocrForm.querySelector('.menba-page-range').hidden = photo;
+    for (const id of ['menbaOcrStart','menbaOcrEnd']) $(id).required = !photo;
+    $('menbaOcrNext').hidden = photo;
   }
 
   function renderNotice() {
@@ -250,6 +349,7 @@
       const references = turn.answer.citations.map(number => `[${number}]`).join(' ');
       reply.append(paragraph(`${turn.answer.text} ${references}`, 'menba-answer'));
     } else reply.append(paragraph(tr(...turn.notice)));
+    if (turn.warning.length) reply.append(paragraph(turn.warning.map(message => tr(...message)).join(' '),'menba-status'));
     turn.evidence.forEach((entry,index) => {
       const passage = document.createElement('div');
       passage.className = 'menba-passage';
@@ -257,7 +357,8 @@
       quote.append(...entry.text.split(/\r?\n/u).map(line => paragraph(line)));
       const verse = entry.verse ? `${tr('Koran', 'Kur’an')} ${entry.verse} · ` : '';
       const pageLabel = entry.quran ? tr('PDF-Seite', 'PDF sayfası') : tr('Seite', 'Sayfa');
-      const cite = paragraph(`[${index+1}] ${verse}${entry.source} · ${pageLabel} ${entry.page}${entry.ocr ? ' · OCR' : ''}`,'menba-citation');
+      const locator = entry.sourceId === photoId ? tr('Seitenfoto','Sayfa fotoğrafı') : `${pageLabel} ${entry.page}`;
+      const cite = paragraph(`[${index+1}] ${verse}${entry.source} · ${locator}${entry.ocr ? ' · OCR' : ''}`,'menba-citation');
       if (entry.meal) passage.append(paragraph(tr('Türkische Bedeutung aus der PDF', 'PDF’den Türkçe meal'), 'menba-meal-label'));
       passage.append(quote, cite);
       if (entry.quran) {
@@ -377,17 +478,23 @@
       const quran = source.quran || parsedEdition || MenbaQuran.isSource(metadata?.info?.Title);
       if (requireQuran && !quran) return null;
       const pages = [];
+      const failedPages = [];
       for (let number = 1; number <= pdf.numPages; number++) {
         signal.throwIfAborted();
-        const page = await pdf.getPage(number);
-        const {items} = await page.getTextContent();
-        const verses = parsedEdition ? MenbaQuranEdition.parse(items,number) : [];
-        const text = parsedEdition ? verses.map(row => row.text).join('\n')
-          : items.map(item => ('str' in item ? item.str + (item.hasEOL ? '\n' : ' ') : '')).join('').trim();
-        page.cleanup();
-        if (text) pages.push({sourceId:source.id, source:source.title, page:number, text, verses});
+        let page;
+        try {
+          page = await pdf.getPage(number);
+          const {items} = await page.getTextContent();
+          const verses = parsedEdition ? MenbaQuranEdition.parse(items,number) : [];
+          const text = parsedEdition ? verses.map(row => row.text).join('\n')
+            : items.map(item => ('str' in item ? item.str + (item.hasEOL ? '\n' : ' ') : '')).join('').trim();
+          if (/\p{L}/u.test(text)) pages.push({sourceId:source.id, source:source.title, page:number, text, verses});
+        } catch {
+          signal.throwIfAborted();
+          failedPages.push(number);
+        } finally { page?.cleanup(); }
       }
-      return {pages,quran};
+      return {pages,quran,totalPages:pdf.numPages,failedPages};
     } finally {
       await releasePdf(work);
     }
@@ -484,6 +591,12 @@
     renderNotice();
   }
 
+  function addDocumentPages(pages, parsed, ocr) {
+    const verses = new Set(parsed.pages.filter(page=>page.verses?.length).map(page=>page.page));
+    for (const page of parsed.pages) if (verses.has(page.page) || !ocr?.has(page.page)) pages.push(page);
+    if (ocr) pages.push(...[...ocr.values()].filter(page=>!verses.has(page.page)));
+  }
+
   function quranSourceHelp() {
     return ['Wähle unter Quellen eine Koran-PDF aus oder öffne sie von deinem Gerät.', 'Kaynaklar bölümünde bir Kur’an PDF’si seç veya cihazından aç.'];
   }
@@ -492,7 +605,7 @@
     if (!last?.evidence.length) return null;
     if (intent?.kind === 'exception' || intent?.kind === 'source') return last;
     const normalized = question.normalize('NFKD').toLowerCase().replace(/\p{M}/gu,'').replaceAll('ı','i').trim();
-    const referring = /^(?:(?:und|aber|peki)\s+)?(?:warum|wieso|gibt es ausnahmen|was bedeutet (?:das|dies)|wie ist das gemeint|kannst du das (?:einfacher|genauer) erklaren|wo steht (?:das|es)|welche quelle|neden|niye|istisnasi var mi|bu ne demek|bunu acikla|bunu (?:daha )?basit anlat|hangi ayet|nerede yaziyor|kaynagi ne)\s*[?.!]*$/u;
+    const referring = /^(?:(?:und|aber|peki)\s+)?(?:warum|wieso|gibt es ausnahmen|was bedeutet (?:das|dies)|wie ist das gemeint|kannst du das (?:einfacher|genauer) erklaren|wo steht (?:das|es)|welche quelle|neden|niye|istisnasi var mi|bu ne demek|bunu acikla|(?:bunu )?(?:daha )?basit anlat|hocam[,]? anlamadim|hangi ayet|nerede yaziyor|kaynagi ne)\s*[?.!]*$/u;
     return referring.test(normalized) ? last : null;
   }
 
@@ -509,6 +622,7 @@
   async function run() {
     const text = question.value.trim();
     if (!allowed() || request || loadingPreferences || !text) return;
+    retryQuestion = null;
     const last = turns.at(-1);
     const intent = MenbaAnswers.inspect(text,last?.answer ? last.intent : null);
     const previous = contextFor(text,intent,last);
@@ -539,7 +653,7 @@
       renderNotice();
       return;
     }
-    const turn = {question:text, retrievalQuestion, sources, evidence:[], notice:null, answer:null, intent};
+    const turn = {question:text, retrievalQuestion, sources, evidence:[], notice:null, warning:[], answer:null, intent};
     const work = {controller:new AbortController(), sources, task:null, turn};
     request = work;
     turns.push(turn);
@@ -558,20 +672,31 @@
         let grant;
         try {
           if (source.shareId) grant = await authorizeShared(source,work);
+          await useIndex(source);
+          if (request !== work || !allowed()) return;
           let extracted = cachedPages.get(key);
-          if (!extracted) {
+          if (!extracted || extracted.failedPages?.length) {
+            setSourceState(source,'working');
             extracted = source.id === hadisId ? {pages:await fetchHadis(work), quran:false}
-              : await extractPdf(source, work, grant, quranOnly);
+              : source.image ? {pages:[],quran:false,totalPages:1} : await extractPdf(source, work, grant, quranOnly);
             if (request !== work || !allowed()) return;
-            if (extracted) cachedPages.set(key, extracted);
+            if (extracted) {
+              cachedPages.set(key, extracted);
+              if (!extracted.failedPages?.length) await useIndex(source,{parsed:extracted});
+            }
+            if (request !== work || !allowed()) return;
           }
           if (!extracted || (quranOnly && !extracted.quran)) continue;
           if (extracted.quran) { foundQuran = true; quranSources.add(source.id); }
           const ocr = recognizedPages.get(key);
-          if (!extracted.pages.length && !ocr?.size) scans.push(source.title);
-          const textPages = new Set(extracted.pages.filter(page => page.verses?.length).map(page => page.page));
-          for (const page of extracted.pages) if (textPages.has(page.page) || !ocr?.has(page.page)) pages.push(page);
-          if (ocr) pages.push(...[...ocr.values()].filter(page => !textPages.has(page.page)));
+          const indexed = new Set([...extracted.pages.map(page=>page.page),...(ocr?.keys() ?? [])]);
+          const failed = (extracted.failedPages ?? []).some(page=>!indexed.has(page));
+          if (failed) unavailable.push(source.title);
+          if (extracted.totalPages && indexed.size < extracted.totalPages && !failed) {
+            scans.push(indexed.size ? `${source.title} (${indexed.size}/${extracted.totalPages})` : source.title);
+          }
+          addDocumentPages(pages,extracted,ocr);
+          setSourceState(source,failed && !indexed.size ? 'error' : null);
         } catch {
           if (request !== work) return;
           const ocr = !source.shareId || grant ? recognizedPages.get(key) : null;
@@ -580,15 +705,18 @@
             if (isQuran(source)) quranSources.add(source.id);
             pages.push(...ocr.values());
           }
-          else unavailable.push(source.title);
+          else { unavailable.push(source.title); setSourceState(source,'error'); }
+        } finally {
+          if (sourceStates.get(key) === 'working') setSourceState(source,null);
         }
       }
       if (request !== work || !allowed()) return;
       const ocrKeys = new Set(pages.filter(page => page.ocr).map(page => `${page.sourceId}:${page.page}`));
       const quranRows = quran ? findQuran(quran,pages.filter(page => quranSources.has(page.sourceId))) : [];
-      const rows = quranOnly || quranRows.length ? quranRows
-        : quran?.dietaryRuling ? MenbaQuran.findVerses(quran,pages.filter(page => !quranSources.has(page.sourceId)))
-          : window.MenbaSearch.find(retrievalQuestion, pages);
+      const dietaryRows = !quranOnly && !quranRows.length && quran?.dietaryRuling
+        ? MenbaQuran.findVerses(quran,pages.filter(page => !quranSources.has(page.sourceId))) : [];
+      const rows = quranOnly || quranRows.length ? quranRows : dietaryRows.length ? dietaryRows
+        : MenbaSearch.find(retrievalQuestion,pages);
       const hadithRows = hadith?.sample ? pages.filter(page => page.sourceId === hadisId) : [];
       turn.evidence = (hadithRows.length ? [hadithRows[Math.floor(Math.random()*hadithRows.length)]] : rows).map(entry => ({
         ...entry, quran:quranSources.has(entry.sourceId), sharedVersion:sharedVersions.get(entry.sourceId),
@@ -602,22 +730,25 @@
           citations: turn.evidence.map((_,index) => index+1)
         };
       }
-      turn.notice = turn.evidence.length
+      const needsAnswer = intent?.kind === 'ruling' || intent?.kind === 'exception';
+      const insufficient = ['In den ausgewählten Quellen fehlt ein ausreichender Beleg für diese Frage.', 'Seçtiğiniz kaynaklarda bu soruya cevap verebilecek yeterli bilgi bulunamadı.'];
+      turn.notice = turn.evidence.length && !(needsAnswer && !turn.answer)
         ? quranRows.length ? ['Passende Fundstellen aus den ausgewählten Koran-PDFs', 'Seçili Kur’an PDF’lerindeki ilgili bölümler']
           : ['Passende Stellen aus deinen Quellen', 'Kaynaklarındaki ilgili bölümler']
         : quranOnly && !foundQuran ? quranSourceHelp()
-          : ['In den durchsuchbaren Quellen habe ich keine passende Stelle gefunden.', 'Aranabilen kaynaklarda uygun bir bölüm bulamadım.'];
+          : insufficient;
       if (!turn.evidence.length && sources.length === 1 && sources[0].id === hadisId && !unavailable.length) {
         turn.notice = [turn.notice[0]+' Durchsucht wurde nur die ausgewählte Hadis-Textfassung. Weitere PDFs kannst du unter Quellen auswählen.',
           turn.notice[1]+' Yalnızca seçili Hadis metni arandı. Kaynaklar bölümünden başka PDF’ler seçebilirsin.'];
       }
       if (unavailable.length) {
         const labels = unavailable.join(', ');
-        turn.notice = [turn.notice[0]+` Nicht durchsuchbar: ${labels}.`, turn.notice[1]+` Aranamadı: ${labels}.`];
+        turn.warning.push([`Nicht durchsuchbar: ${labels}.`, `Aranamadı: ${labels}.`]);
+        retryQuestion = text;
       }
       if (scans.length) {
         const labels = scans.join(', ');
-        turn.notice = [turn.notice[0]+` Ohne lesbare Textebene: ${labels}. Nutze die Texterkennung unter Quellen.`, turn.notice[1]+` Okunabilir metin katmanı yok: ${labels}. Kaynaklar menüsündeki metin tanımayı kullan.`];
+        turn.warning.push([`Seiten ohne lesbaren Text: ${labels}. Nutze die Texterkennung unter Quellen.`, `Okunabilir metni olmayan sayfalar: ${labels}. Kaynaklar menüsündeki metin tanımayı kullan.`]);
       }
       const [first] = turn.evidence;
       if (!turn.answer && first?.quran && first.ranges) {
@@ -632,7 +763,10 @@
         }
       }
     } catch {
-      if (request === work) turn.notice = ['Die Suche konnte nicht abgeschlossen werden.', 'Arama tamamlanamadı.'];
+      if (request === work) {
+        turn.notice = ['Die Suche konnte wegen eines technischen Fehlers nicht abgeschlossen werden.', 'Teknik bir hata nedeniyle arama tamamlanamadı.'];
+        retryQuestion = text;
+      }
     } finally {
       if (request === work) {
         request = null;
@@ -643,56 +777,85 @@
     }
   }
 
-  async function readScan() {
+  async function readScan(next = false) {
     const source = options.find(entry => entry.id !== hadisId && entry.id === ocrSource.value);
-    const start = $('menbaOcrStart').valueAsNumber;
-    const end = $('menbaOcrEnd').valueAsNumber;
+    let start = source?.image ? 1 : $('menbaOcrStart').valueAsNumber;
+    let end = source?.image ? 1 : $('menbaOcrEnd').valueAsNumber;
     const language = $('menbaOcrLanguage').value;
     if (!allowed() || request || !source) return;
-    if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end < start || end-start >= 5) {
+    if (!next && (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end < start || end-start >= 5)) {
       notice = ['Wähle einen gültigen Bereich mit höchstens fünf Seiten.', 'En fazla beş sayfalık geçerli bir aralık seç.'];
       renderNotice();
       return;
     }
     const work = {controller:new AbortController(),sources:[source],task:null};
     request = work;
+    setSourceState(source,'working');
     notice = ['Texterkennung wird vorbereitet …', 'Metin tanıma hazırlanıyor …'];
     render();
     try {
-      const pdf = await openPdf(source, work);
+      await useIndex(source);
       if (request !== work) return;
-      if (end > pdf.numPages) {
+      const pdf = source.image ? null : await openPdf(source, work);
+      if (request !== work) return;
+      const key = sourceKey(source);
+      const data = recognizedPages.get(key) || new Map();
+      const totalPages = pdf?.numPages ?? 1;
+      if (next) {
+        const known = new Set([...(cachedPages.get(key)?.pages.map(page=>page.page) ?? []),...data.keys()]);
+        start = 1;
+        while (start <= totalPages && known.has(start)) start++;
+        if (start > totalPages) {
+          notice = ['Alle Seiten haben bereits lesbaren Text.', 'Tüm sayfalarda okunabilir metin var.'];
+          return;
+        }
+        end = start;
+        while (end < totalPages && end-start < 4 && !known.has(end+1)) end++;
+      }
+      if (end > totalPages) {
         notice = [`Die PDF hat ${pdf.numPages} Seiten. Passe den Bereich an.`, `PDF ${pdf.numPages} sayfa. Aralığı değiştir.`];
         return;
       }
-      const rows = await window.MenbaOCR.recognize(pdf,{
+      const settings = {
         start,end,language,signal:work.controller.signal,
         onProgress({page}) {
           if (request !== work) return;
           notice = [`Texterkennung auf Seite ${page} …`, `${page}. sayfada metin tanınıyor …`];
           renderNotice();
         }
-      });
+      };
+      const rows = source.image ? await MenbaOCR.recognizeImage(source.file,settings) : await MenbaOCR.recognize(pdf,settings);
       if (request !== work || !allowed()) return;
-      const key = sourceKey(source);
-      const data = recognizedPages.get(key) || new Map();
-      let count = 0;
+      const recognized = [];
       for (const row of rows) {
-        if (!row.text.trim()) continue;
-        data.set(row.page,{page:row.page,text:row.text,sourceId:source.id,source:source.title,ocr:true});
-        count++;
+        if (row.confidence < 25 || !/\p{L}/u.test(row.text)) continue;
+        const indexed = {page:row.page,text:row.text,sourceId:source.id,source:source.title,ocr:true};
+        data.set(row.page,indexed);
+        recognized.push(indexed);
       }
-      if (count) {
+      if (recognized.length) {
         recognizedPages.set(key,data);
-        selected.add(source.id);
-        notice = ['Erkannter Text ist für die nächste Frage verfügbar. Prüfe Zitate am Original.', 'Tanınan metin sonraki soruda kullanılabilir. Alıntıları özgün sayfadan kontrol et.'];
+        await useIndex(source,{ocr:recognized});
+        if (request !== work || !allowed()) return;
+        const missed = rows.length-recognized.length;
+        notice = missed ? [`${recognized.length} von ${rows.length} Seiten erkannt. ${missed} ohne lesbaren Text.`, `${rows.length} sayfanın ${recognized.length} tanesi okundu. ${missed} sayfada okunabilir metin yok.`]
+          : ['Erkannter Text ist für die nächste Frage verfügbar. Prüfe Zitate am Original.', 'Tanınan metin sonraki soruda kullanılabilir. Alıntıları özgün sayfadan kontrol et.'];
+        if (!selected.has(source.id)) notice = [
+          'Wähle das erkannte Dokument unter Quellen aus, um es zu durchsuchen. '+notice[0],
+          'Aramak için tanınan belgeyi Kaynaklar bölümünde seç. '+notice[1]
+        ];
       } else {
+        setSourceState(source,'unreadable');
         notice = ['Auf diesen Seiten wurde kein Text erkannt.', 'Bu sayfalarda metin tanınamadı.'];
       }
     } catch {
-      if (request === work) notice = ['Texterkennung derzeit nicht verfügbar. Prüfe Datei, Seiten und Verbindung.', 'Metin tanıma kullanılamıyor. Dosyayı, sayfaları ve bağlantını kontrol et.'];
+      if (request === work) {
+        setSourceState(source,'error');
+        notice = ['Texterkennung derzeit nicht verfügbar. Prüfe Datei, Seiten und Verbindung.', 'Metin tanıma kullanılamıyor. Dosyayı, sayfaları ve bağlantını kontrol et.'];
+      }
     } finally {
       await releasePdf(work);
+      if (sourceStates.get(sourceKey(source)) === 'working') setSourceState(source,null);
       if (request === work) { request = null; render(); }
     }
   }
@@ -700,7 +863,11 @@
   picker.addEventListener('change', event => {
     const input = event.target;
     if (!allowed() || request || loadingPreferences || savingPreferences || !(input instanceof HTMLInputElement)) return;
-    if (input.checked) selected.add(input.value);
+    if (input.checked) {
+      selected.add(input.value);
+      const source = options.find(row=>row.id === input.value);
+      if (source) void useIndex(source);
+    }
     else selected.delete(input.value);
     notice = null;
     preferencesChanged();
@@ -732,6 +899,40 @@
     }
     renderNotice();
   });
+  photoFile.addEventListener('change', async () => {
+    const [file] = photoFile.files;
+    photoFile.value = '';
+    if (!allowed() || request || loadingPreferences || savingPreferences || !file) return;
+    if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 20*1024*1024) {
+      notice = ['Wähle ein JPG, PNG oder WebP bis 20 MB.', 'En fazla 20 MB boyutunda JPG, PNG veya WebP seç.'];
+      renderNotice();
+      return;
+    }
+    localPhoto = {id:photoId,title:file.name,file,image:true};
+    selected.add(photoId);
+    syncSources();
+    await useIndex(localPhoto);
+    if (!allowed() || localPhoto?.file !== file || request || recognizedPages.get(file)?.size) return;
+    ocrSource.value = photoId;
+    updateOcrControls();
+    $('menbaOcrLanguage').value = 'multilingual';
+    ocrTools.open = true;
+    void readScan();
+  });
+  category.addEventListener('change',render);
+  ocrSource.addEventListener('change',updateOcrControls);
+  clearChat.addEventListener('click', () => {
+    if (!allowed() || request) return;
+    turns = [];
+    retryQuestion = notice = null;
+    question.value = '';
+    render();
+  });
+  retry.addEventListener('click', () => {
+    if (!allowed() || request || !retryQuestion) return;
+    question.value = retryQuestion;
+    void run();
+  });
   form.addEventListener('submit', event => {
     event.preventDefault();
     void run();
@@ -740,6 +941,7 @@
     event.preventDefault();
     void readScan();
   });
+  $('menbaOcrNext').addEventListener('click',()=>void readScan(true));
   stop.addEventListener('click', () => {
     cancel();
     notice = ['Vorgang abgebrochen.', 'İşlem iptal edildi.'];
@@ -761,12 +963,16 @@
       cachedPages.clear();
       recognizedPages.clear();
       sharedVersions.clear();
+      sourceStates.clear();
+      loadedIndexes.clear();
       options = [];
       localQuran = null;
+      localPhoto = null;
       quranFile.value = '';
+      photoFile.value = '';
       selected.clear();
-      if (owner) selected.add(hadisId);
       notice = null;
+      retryQuestion = null;
       turns = [];
       question.value = '';
       if (owner) {

@@ -28,7 +28,8 @@
         seen.add(row.id);
         if (row.has_pdf === true) {
           const title = typeof row.title === 'string' && row.title.trim() ? row.title.trim() : 'PDF';
-          sources.push({id:sourceId(row.id), shareId:row.id, title});
+          sources.push({id:sourceId(row.id), shareId:row.id, title,
+            category:typeof row.category === 'string' ? row.category : undefined});
         }
       }
       if (data.length < pageSize) return sources;

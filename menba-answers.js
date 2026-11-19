@@ -62,9 +62,9 @@
     return null;
   }
 
-  const sourceDoubt = /\b(?:nicht|kein(?:e|en|er)?|behauptet|luge|frage|falsch|degil|iddia|sormak|sanilir|yalan)\b/u;
+  const sourceDoubt = /(?:\b(?:nicht|kein(?:e|en|er)?|behauptet|luge|frage|falsch|degil(?:dir)?|iddia|sormak|sanilir|yalan)\b|(?:^|[\p{Z}\p{P}])(?:هل\s|(?:ليس|لم|لا)\s+(?:حرام|محرم|يحرم|يمنع)))/u;
   const porkText = /(?:\b(?:domuz et(?:i|ini|inden|inin)|schweinefleisch(?:es)?|fleisch (?:vom schwein|des schweins))\b|لحم\s+(?:ال)?خنزير)/u;
-  const prohibitionText = /(?:\b(?:haram ki(?:ldi|lindi|linmistir|lmistir)|yasak(?:ladi|landi|lanmistir)|verboten|untersagt|verwehrt|verbietet|verbot)\b|(?:حرمت\s+عليكم|حرم\s+عليكم))/u;
+  const prohibitionText = /(?:\b(?:haramdir|haram ki(?:ldi|lindi|linmistir|lmistir)|yasak(?:ladi|landi|lanmistir)|verboten|untersagt|verwehrt|verbietet|verbot)\b|(?:حرمت\s+عليكم|حرم\s+عليكم))/u;
   const prayerText = /(?:\b(?:namazi|namazlari) (?:dosdogru |geregi gibi )?kilin\b|\bverrichtet (?:das |die )?(?:ritualgebet|gebet(?:e)?)\b|اقيموا\s+الصلو?ا?ة)/u;
   const fastingText = /(?:\b(?:oruc(?:u)?|fasten)\b|الصيام|تصوموا)/u;
   const dutyText = /(?:\b(?:farz kilin(?:di|mistir)|yazildi|vorgeschrieben|auferlegt)\b|كتب\s+عليكم)/u;
@@ -111,31 +111,35 @@
 
   function validReference(row) {
     if (!row || row.ocr === true || typeof row.text !== 'string' || typeof row.source !== 'string' || !row.source.trim()) return false;
-    if (!Number.isSafeInteger(row.page) || row.page < 1 || typeof row.verse !== 'string') return false;
+    if (!Number.isSafeInteger(row.page) || row.page < 1) return false;
+    if (row.verse === undefined) return row.quran !== true && row.meal !== true;
+    if (typeof row.verse !== 'string') return false;
     const parsed = /^(\d{1,3}):(\d{1,3})$/u.exec(row.verse.trim());
     if (!parsed) return false;
     const [,chapter,verse] = parsed.map(Number);
     return chapter > 0 && chapter <= 114 && verse > 0 && verse <= 286;
   }
 
-  function response(topic, kind, proof, language) {
+  function response(topic, kind, proof, language, verse) {
     const tr = language === 'tr';
-    if (kind === 'source') return tr ? 'Dayanak, bu yanıta eklenen ayettir.' : 'Die Grundlage ist die unten angegebene Koranstelle.';
+    if (kind === 'source') return verse
+      ? tr ? 'Dayanak, bu yanıta eklenen ayettir.' : 'Die Grundlage ist die unten angegebene Koranstelle.'
+      : tr ? 'Dayanak, aşağıda sayfa numarasıyla belirtilen bölümdür.' : 'Die Grundlage ist die unten angegebene Buchstelle.';
     if (topic === 'pork') {
       if (kind !== 'exception') {
-        const main = tr ? 'Bu ayet, domuz etini yemeyi yasaklıyor.' : 'Die Stelle verbietet, Schweinefleisch zu essen.';
+        const main = tr ? 'Bu kaynak, domuz etini yemeyi yasaklıyor.' : 'Die Stelle verbietet, Schweinefleisch zu essen.';
         const exception = tr ? ' Zorunlu bir durum için sınırlı bir istisna da belirtiliyor.' : ' Für eine Zwangslage nennt sie eine begrenzte Ausnahme.';
         return main + (proof.exception ? exception : '');
       }
-      const main = tr ? 'Zor durumda kalan kişi için ayette bir istisna var. İzin, belirtilen sınırı aşmama şartına bağlı.'
+      const main = tr ? 'Kaynak, zor durumda kalan kişi için bir istisna belirtiyor. İzin, belirtilen sınırı aşmama şartına bağlı.'
         : 'Die Stelle nennt eine Ausnahme für eine Zwangslage. Sie gilt unter der Bedingung, das genannte Maß einzuhalten.';
       const rights = tr ? ' Başkasının hakkı da gözetilmeli.' : ' Auch die Rechte anderer müssen gewahrt bleiben.';
       return main + (proof.rights ? rights : '');
     }
-    if (topic === 'prayer') return tr ? 'Ayet, namaz kılmayı emrediyor.' : 'Die Stelle fordert dazu auf, das Gebet zu verrichten.';
-    if (kind === 'exception') return tr ? 'Bu ayete göre hasta olan veya yolculukta bulunan kişi, oruç tutamadığı günleri başka günlerde tamamlayabilir.'
+    if (topic === 'prayer') return tr ? 'Kaynak, namaz kılmayı emrediyor.' : 'Die Stelle fordert dazu auf, das Gebet zu verrichten.';
+    if (kind === 'exception') return tr ? 'Kaynağa göre hasta olan veya yolculukta bulunan kişi, oruç tutamadığı günleri başka günlerde tamamlayabilir.'
       : 'Die Stelle nennt Krankheit und Reisen als Fälle, in denen die Fastentage an anderen Tagen nachgeholt werden.';
-    return tr ? 'Bu ayet, inananlara oruç tutmanın farz kılındığını bildiriyor.' : 'Die Stelle beschreibt das Fasten als Pflicht für die Gläubigen.';
+    return tr ? 'Kaynak, inananlara oruç tutmanın farz kılındığını bildiriyor.' : 'Die Stelle beschreibt das Fasten als Pflicht für die Gläubigen.';
   }
 
   function compose(intent, evidence, language = 'de') {
@@ -145,7 +149,7 @@
       if (!validReference(row)) continue;
       const claim = intent.kind === 'source' ? intent.claim ?? 'ruling' : intent.kind;
       const proof = prove(intent.topic, claim, row.text);
-      if (proof.supported) return {text:response(intent.topic, intent.kind, proof, language), citations:[index + 1]};
+      if (proof.supported) return {text:response(intent.topic, intent.kind, proof, language, row.verse), citations:[index + 1]};
     }
     return null;
   }

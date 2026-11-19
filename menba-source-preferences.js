@@ -3,6 +3,7 @@
 
   const databaseName = 'kzn-sd-menba-preferences';
   const storeName = 'sources';
+  const indexName = 'document-text';
   const maxBytes = 50 * 1024 * 1024;
 
   const approvedAccount = accountId => typeof accountId === 'string' && accountId.length > 0
@@ -12,9 +13,13 @@
 
   function openDatabase() {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open(databaseName, 1);
+      const request = indexedDB.open(databaseName, 2);
       let blocked = false;
-      request.onupgradeneeded = () => request.result.createObjectStore(storeName);
+      request.onupgradeneeded = () => {
+        for (const name of [storeName,indexName]) {
+          if (!request.result.objectStoreNames.contains(name)) request.result.createObjectStore(name);
+        }
+      };
       request.onerror = () => reject(request.error);
       request.onblocked = () => {
         blocked = true;
@@ -29,7 +34,7 @@
     });
   }
 
-  async function useStore(accountId, mode, operation) {
+  async function useStore(accountId, mode, operation, name = storeName) {
     const revision = accessRequest;
     const allowed = () => approvedAccount(accountId) && revision === accessRequest;
     const denied = () => new Error('Source preferences require the active account');
@@ -39,8 +44,8 @@
     try {
       if (!allowed()) throw denied();
       return await new Promise((resolve, reject) => {
-        const transaction = database.transaction(storeName, mode);
-        const request = operation(transaction.objectStore(storeName));
+        const transaction = database.transaction(name, mode);
+        const request = operation(transaction.objectStore(name));
         const abortIfAccountChanged = () => {
           if (!allowed()) {
             try { transaction.abort(); } catch { /* The transaction can already have committed. */ }
@@ -80,5 +85,24 @@
     await useStore(accountId, 'readwrite', store => store.put({ids:sanitizeIds(ids),file},accountId));
   }
 
-  globalThis.MenbaSourcePreferences = Object.freeze({load, save});
+  async function loadIndex(accountId, sourceId, version) {
+    const entry = await useStore(accountId,'readonly',store => store.get([accountId,sourceId]),indexName);
+    return entry?.version === version ? entry : null;
+  }
+
+  async function saveIndex(accountId, sourceId, version, update) {
+    await useStore(accountId,'readwrite',store => {
+      const key = [accountId,sourceId];
+      const request = store.get(key);
+      request.onsuccess = () => {
+        const previous = request.result?.version === version ? request.result : {version,ocr:[]};
+        const pages = new Map(previous.ocr.map(row => [row.page,row]));
+        for (const row of update.ocr ?? []) pages.set(row.page,row);
+        store.put({...previous,...update,ocr:[...pages.values()]},key);
+      };
+      return request;
+    },indexName);
+  }
+
+  globalThis.MenbaSourcePreferences = Object.freeze({load, save, loadIndex, saveIndex});
 })();

@@ -1376,7 +1376,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
 <link rel="stylesheet" href="lending.css">
 <link rel="stylesheet" href="admin-beta.css">
 <link rel="stylesheet" href="shared-library.css">
-<link rel="stylesheet" href="menba.css?v=chat-answer20261119">
+<link rel="stylesheet" href="menba.css?v=source-repair">
 <link rel="stylesheet" href="sidebar-modern.css?v=20261119">
 </head>
 <body>
@@ -1677,20 +1677,24 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
       <button type="button" id="menbaSelectAll" disabled>Alle auswählen</button>
       <button type="button" id="menbaSaveSources" data-de="Auswahl speichern" data-tr="Seçimi kaydet" disabled>Auswahl speichern</button>
     </div>
+    <label class="menba-category"><span data-de="Quellen nach Kategorie filtern" data-tr="Kaynakları kategoriye göre filtrele">Quellen nach Kategorie filtern</span><select id="menbaCategory"></select></label>
     <div id="menbaSources" class="menba-sources"></div>
     <p id="menbaSelectionStatus" class="menba-status" role="status"></p>
     <p id="menbaLocalSaveHint" class="menba-status" data-de="Beim Speichern bleibt die gewählte Geräte-PDF auf diesem Gerät." data-tr="Kaydedilen yerel Kur’an PDF’si bu cihazda kalır." hidden>Beim Speichern bleibt die gewählte Geräte-PDF auf diesem Gerät.</p>
     <label class="menba-quran-file"><span data-de="Koran-PDF vom Gerät öffnen" data-tr="Cihazdan Kur’an PDF’si aç">Koran-PDF vom Gerät öffnen</span><input id="menbaQuranFile" type="file" accept="application/pdf,.pdf"></label>
+    <label class="menba-quran-file"><span data-de="Fotografierte Buchseite erkennen" data-tr="Kitap sayfası fotoğrafını tanı">Fotografierte Buchseite erkennen</span><input id="menbaPhotoFile" type="file" accept="image/jpeg,image/png,image/webp"></label>
     <p id="menbaSourceStatus" class="menba-status" role="status"></p>
     <details id="menbaOcrTools" class="menba-ocr" hidden>
-      <summary data-de="Gescannte PDF-Seiten lesbar machen" data-tr="Taranan PDF sayfalarını metne dönüştür">Gescannte PDF-Seiten lesbar machen</summary>
+      <summary data-de="Gescannte Seiten lesbar machen" data-tr="Taranan sayfaları metne dönüştür">Gescannte Seiten lesbar machen</summary>
       <form id="menbaOcrForm">
-        <label><span data-de="PDF" data-tr="PDF">PDF</span><select id="menbaOcrSource" required></select></label>
+        <label><span data-de="Dokument" data-tr="Belge">Dokument</span><select id="menbaOcrSource" required></select></label>
         <label><span data-de="Schrift / Sprache" data-tr="Yazı / dil">Schrift / Sprache</span>
           <select id="menbaOcrLanguage">
             <option value="ottoman" data-de="Osmanische Schrift (Näherung)" data-tr="Osmanlı yazısı (yaklaşık)">Osmanische Schrift (Näherung)</option>
             <option value="arabic" data-de="Arabisch" data-tr="Arapça">Arabisch</option>
             <option value="mixed" data-de="Arabisch und Türkisch" data-tr="Arapça ve Türkçe">Arabisch und Türkisch</option>
+            <option value="multilingual" data-de="Arabisch, Deutsch und Türkisch" data-tr="Arapça, Almanca ve Türkçe">Arabisch, Deutsch und Türkisch</option>
+            <option value="german" data-de="Deutsch" data-tr="Almanca">Deutsch</option>
             <option value="turkish" data-de="Türkisch (lateinische Schrift)" data-tr="Türkçe (Latin alfabesi)">Türkisch (lateinische Schrift)</option>
           </select>
         </label>
@@ -1700,12 +1704,17 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
         </div>
         <p class="menba-status" data-de="Bis zu fünf Seiten pro Durchlauf. Erkannter Text kann vom Original abweichen." data-tr="Bir seferde en fazla beş sayfa. Tanınan metin özgün sayfadan farklı olabilir.">Bis zu fünf Seiten pro Durchlauf. Erkannter Text kann vom Original abweichen.</p>
         <button id="menbaOcrStartButton" type="submit" data-de="Text erkennen" data-tr="Metni tanı">Text erkennen</button>
+        <button id="menbaOcrNext" type="button" data-de="Nächste unlesbare Seiten erkennen" data-tr="Sonraki okunamayan sayfaları tanı">Nächste unlesbare Seiten erkennen</button>
       </form>
     </details>
   </details>
   <div id="menbaResults" class="menba-results" aria-label="Menba Chat"></div>
   <p id="menbaStatus" class="menba-status menba-answer-status" role="status"></p>
   <button id="menbaCancel" type="button" hidden data-de="Abbrechen" data-tr="İptal">Abbrechen</button>
+  <div class="menba-chat-actions">
+    <button id="menbaRetry" type="button" hidden data-de="Erneut versuchen" data-tr="Yeniden dene">Erneut versuchen</button>
+    <button id="menbaClearChat" type="button" hidden data-de="Chat löschen" data-tr="Sohbeti temizle">Chat löschen</button>
+  </div>
   <form id="menbaForm" class="menba-form">
     <div class="menba-question-field">
       <label for="menbaQuestion" data-de="Deine Frage" data-tr="Soru">Deine Frage</label>
@@ -2619,12 +2628,12 @@ document.addEventListener('library-language',()=>{drawEditor();refreshCards();})
 <script src="shared-library.js?v=sidebar20261119"></script>
 <script src="library-workspace.js?v=sidebar20261119"></script>
 <script src="sidebar-stats.js?v=20261119"></script>
-<script src="menba-search.js?v=sources20261119"></script>
-<script src="menba-ocr.js"></script>
+<script src="menba-search.js?v=source-repair"></script>
+<script src="menba-ocr.js?v=source-repair"></script>
 <script src="menba-quran.js?v=chat-answer20261119"></script>
 <script src="menba-quran-edition.js?v=quran20261119"></script>
-<script src="menba-shared-sources.js?v=20261119"></script>
-<script src="menba-source-preferences.js?v=20261119"></script>
-<script src="menba-answers.js?v=20261119"></script>
-<script src="menba.js?v=chat-answer20261119"></script>
+<script src="menba-shared-sources.js?v=source-repair"></script>
+<script src="menba-source-preferences.js?v=source-repair"></script>
+<script src="menba-answers.js?v=source-repair"></script>
+<script src="menba.js?v=source-repair"></script>
 </body></html>
