@@ -22,6 +22,17 @@
 .menba-source-menu[open] > summary,.menba-ocr[open] > summary { margin-bottom: .45rem; }
 .menba-source-actions { display: flex; flex-wrap: wrap; gap: .45rem; margin: .55rem 0; }
 .menba-chat-actions { display: flex; flex-wrap: wrap; gap: .45rem; }
+.menba-learning-options { display:flex; flex-wrap:wrap; align-items:end; gap:.65rem; margin:.65rem 0; }
+.menba-learning-options label { display:grid; gap:.3rem; min-width:0; }
+.menba-learning-options select, .menba-learning-options button, .menba-reply .menba-mark {
+  max-width:100%; padding:.5rem; border:1px solid var(--menba-line); border-radius:5px;
+  background:#20150f; color:var(--menba-ink); font:inherit;
+}
+.menba-learning-card { margin:.7rem 0; border-block-start:1px solid var(--menba-line); padding-top:.6rem; }
+.menba-learning-card h4 { margin:0; color:var(--menba-gold); }
+.menba-reply details summary { cursor:pointer; color:var(--menba-gold); }
+.menba-cloud-consent { display:flex; align-items:flex-start; gap:.5rem; color:var(--menba-muted); }
+.menba-cloud-consent input { flex:none; width:1rem; height:1rem; margin:.25rem 0 0; accent-color:var(--menba-gold); }
 .menba-category { display: grid; gap: .3rem; margin: .65rem 0; }
 .menba-category select {
   min-width: 0; padding: .45rem; border: 1px solid var(--menba-line);
