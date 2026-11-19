@@ -32,6 +32,10 @@
     weshalb wie wieder wir wird wo woher wohin wozu zu zum zur zwar zwischen
     erklär erkläre erklären erklärt erklaerung beschreib beschreibe beschreiben sag sage sagt sagen bitte
     möchte wissen erfahren bitte allgemein religiös islamisch
+    deutsch deutsche deutschen deutsches türkisch türkische türkischen türkisches
+    schritt schritten einfach einfacher vereinfacht beispiel beispiele übungen übung
+    ausschnitt auszug textabschnitt abschnitt kapitel seite zusammenfassung zusammenfassen
+    wiederholungsfragen vorbereiten fünf quellenbasiert enthalten
     bedeuten bedeutet nenn nenne nennen zeig zeigt zeigen zeige steht stehen quelle quellen buch
     finde finden find finr sucht suche such suchen gib gefunden stelle stellen fundstelle fundstellen
     passende passendes passenden passender thema themen bezüglich dazu erklären erfahre erfahren nennt
@@ -46,10 +50,16 @@
     bana sana bize size ver verir verebilir soyler misin misiniz ilgili dair konu konusunda konulu bahseden ornek lutfen bahseder serifi serif
     demek denir yaziyor diyor bahsediyor nelerdir miymis gore nasildir yapilir
     soru cevap anlami tanimi nasilca
+    konusu konusunu konusunun konular konulari kitabinin kitabinda kitabin kitabi
+    basit basitce aciklar aciklaniyor aciklanir aciklamasi anlatir anlatiliyor anlatilan
+    adim adimlara bolum bolumu bolumunu bolumunde ozet ozetle ozetler hazirla
+    hazirlar olustur olusturur ornegi ornekler ornekleri Almanca Turkce anlayamadim anlamadim
+    soruluk dayali misin musun hazirlar hazirlayabilir verebilir tekrar
     ما ماذا من لمن بم عن عند بعد مع قبل على الى في هذا هذه ذلك تلك هو هي هما
     هم هن كان كانت يكون تكون هل متى اين كيف لماذا كم يا او كل بين الذي التي
     الذين نحن انت انتم انا ان انه وان فان بان فإن ولم لن لا لكي لكن ثم اذا
     اشرح وضح اخبرني اذكر ورد يقول نص كتاب السؤال جواب الرجاء معنى تعريف حكم اعطني اعطيني هات ارني اريد ابحث
+    موضوع مواضيع باللغة بالالمانية بالتركية ببساطة اشرحها شرح مقطع فقرة ذكر يذكر
   `.trim().split(/\s+/u).map(normalize));
 
   function significant(word) {
@@ -86,6 +96,7 @@
     ['sarf', 'tasrif', 'صرف', 'تصريف'],
     ['nahiv', 'nahw', 'نحو'],
     ['masdar', 'mastar', 'مصدر'],
+    ['fiil', 'fiili', 'fiiller', 'fiillerin', 'çekimli fiil', 'Verben', 'Verb', 'الأفعال', 'فعل', 'أفعال'],
     ['abdest', 'wudu', 'wudhu', 'wuzu', 'Gebetswaschung', 'rituelle Waschung', 'وضوء'],
     ['gusul', 'ghusl', 'غسل'],
     ['namaz', 'gebet', 'ritualgebet', 'pflichtgebet', 'salah', 'salat', 'صلاة'],
@@ -263,10 +274,14 @@
 
   function find(question, pages) {
     if (typeof question !== 'string' || !Array.isArray(pages)) return [];
-    const questionWords = queryTerms(question).filter(significant);
+    const questionWords = queryTerms(question).filter(word=>significant(word) && !/^\d+$/u.test(word));
     const mainTerms = questionWords.filter(word => !hadithWord.test(word));
     const terms = (mainTerms.length ? mainTerms : questionWords).slice(0, 16);
-    if (!terms.length) return [];
+    const requestedBook = /„([^“]{2,160})“|«([^»]{2,160})»|“([^”]{2,160})”/u.exec(question);
+    const bookTitle = requestedBook?.slice(1).find(Boolean);
+    const identifyingBook = requestedBook && (/\b(?:in|aus|buch|buchtitel)\s*$/iu.test(question.slice(0,requestedBook.index))
+      || /^\s*(?:kitab\p{L}*|buch\b)/iu.test(question.slice(requestedBook.index+requestedBook[0].length)));
+    const bookKey = identifyingBook && normalize(bookTitle).replace(/[^\p{L}\p{N}]+/gu,' ').trim();
     const available = [];
     const titleCache = new Map();
     for (const page of pages) {
@@ -274,15 +289,30 @@
       const sourceTitle = typeof page.source === 'string' ? page.source : '';
       if (!titleCache.has(sourceTitle)) titleCache.set(sourceTitle, new Set([...tokens(sourceTitle)].map(({word}) => word)));
       const title = titleCache.get(sourceTitle);
-      const named = terms.some(term => titleTerms.has(term) && title.has(term));
+      const exactBook = bookKey && normalize(sourceTitle).replace(/[^\p{L}\p{N}]+/gu,' ').trim() === bookKey;
+      const named = exactBook || terms.some(term => titleTerms.has(term) && title.has(term));
+      if (bookKey && !exactBook) continue;
       available.push({page, title, named});
     }
     const namedSource = available.some(({named}) => named);
+    if (/\b(?:inhalt(?:sverzeichnis)?|icindekiler|hangi konular|ilk konusunu)\b|فهرس/u.test(normalize(question))) {
+      const scoped = available.filter(entry=>!namedSource || entry.named).map(({page})=>page);
+      if (new Set(scoped.map(page=>page.sourceId)).size === 1) {
+        const heading = /(?:^|\n)\s*(?:[iİ][cç]indekiler|inhaltsverzeichnis|(?:ال)?فهرس)(?:\s|$)/iu;
+        const contents = scoped.find(page=>heading.test(page.text));
+        const match = contents?.text.match(heading);
+        if (match) {
+          const text = contents.text.slice(match.index).trim().slice(0,maxPassageLength).trim();
+          if (text.split(/\s+/u).length >= 5) return [{sourceId:contents.sourceId,source:contents.source,page:contents.page,text}];
+        }
+      }
+    }
+    if (!terms.length) return [];
     const candidates = [];
     for (const {page, title, named} of available) {
       if (namedSource && !named) continue;
       // A named source narrows the search but is never evidence for a passage.
-      const remaining = terms.filter(term => !titleTerms.has(term) || !title.has(term));
+      const remaining = terms.filter(term => !title.has(term) || (!titleTerms.has(term) && !bookKey));
       const bodyTerms = remaining.length ? remaining : terms;
       const indexes = new Map(bodyTerms.map((term, index) => [term, index]));
       const threshold = bodyTerms.length === 1 ? 1 : Math.max(2, Math.ceil(bodyTerms.length / 2));
@@ -304,5 +334,15 @@
     return result;
   }
 
-  globalThis.MenbaSearch = Object.freeze({find,inspectHadith,isHadithSource});
+  function keywords(text) {
+    const original = new Map();
+    for (const {word,start,end} of tokens(text.slice(0,3000))) {
+      const value = text.slice(start,end);
+      if (!significant(word) || value.length < 5 || value.length > 42 || !/\p{L}/u.test(value) || hadithWord.test(word)) continue;
+      if (!original.has(word)) original.set(word,value);
+    }
+    return [...original.values()].slice(0,16);
+  }
+
+  globalThis.MenbaSearch = Object.freeze({find,inspectHadith,isHadithSource,keywords});
 })();
