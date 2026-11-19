@@ -260,16 +260,21 @@
       const canvas = document.createElement('canvas');
       canvas.width = Math.ceil(viewport.width);
       canvas.height = Math.ceil(viewport.height);
-      const renderTask = page.render({canvas,viewport,background:'#fff'});
+      const canvasContext = canvas.getContext('2d',{alpha:false});
+      const renderTask = page.render({canvas,canvasContext,viewport,background:'#fff'});
       const abort = () => renderTask.cancel();
       signal.addEventListener('abort',abort,{once:true});
       try {
         await renderTask.promise;
         signal.throwIfAborted();
         if (!entry.ranges?.length) return canvas.toDataURL('image/png');
-        const lines = entry.ranges.map(box => {
-          const [a,b,c,d] = viewport.convertToViewportRectangle(box);
-          return [Math.floor(Math.min(a,c)),Math.floor(Math.min(b,d)),Math.ceil(Math.abs(c-a)),Math.ceil(Math.abs(d-b))];
+        const [a,b,c,d,e,f] = viewport.transform;
+        const lines = entry.ranges.map(([left,bottom,right,top]) => {
+          const x1 = a*left + c*bottom + e;
+          const x2 = a*right + c*top + e;
+          const y1 = b*left + d*bottom + f;
+          const y2 = b*right + d*top + f;
+          return [Math.floor(Math.min(x1,x2)),Math.floor(Math.min(y1,y2)),Math.ceil(Math.abs(x2-x1)),Math.ceil(Math.abs(y2-y1))];
         });
         const crop = document.createElement('canvas');
         const padding = 12;
