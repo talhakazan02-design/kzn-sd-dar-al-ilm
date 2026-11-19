@@ -9,6 +9,8 @@
   const saveSources = $('menbaSaveSources');
   const selectionStatus = $('menbaSelectionStatus');
   const localSaveHint = $('menbaLocalSaveHint');
+  const cloudPilot = $('menbaCloudPilot');
+  const cloudToggle = $('menbaCloudToggle');
   const question = $('menbaQuestion');
   const ask = $('menbaAsk');
   const status = $('menbaStatus');
@@ -43,6 +45,11 @@
 
   function allowed() {
     return Boolean(owner && owner === currentUser?.id && accessState === 'approved');
+  }
+
+  function cloudPilotAllowed() {
+    return Boolean(cloudPilot && cloudToggle && allowed() && document.documentElement.dataset.betaOwner === 'true'
+      && MenbaCloudChat.canUse(cloudPilot.dataset.endpoint));
   }
 
   const pickableSources = () => options.filter(source => selected.has(source.id));
@@ -187,6 +194,11 @@
     saveSources.disabled = !canAsk || busy;
     selectionStatus.textContent = selectionNotice ? tr(...selectionNotice) : '';
     localSaveHint.hidden = !(canAsk && localQuran && selected.has(localQuranId));
+    if (cloudPilot) {
+      cloudPilot.hidden = !cloudPilotAllowed();
+      cloudToggle.disabled = cloudPilot.hidden || busy;
+      if (cloudPilot.hidden) cloudToggle.checked = false;
+    }
   }
 
   function render() {
@@ -501,9 +513,31 @@
   }
 
   function answerLanguage(question) {
+    if (/^\P{L}*\p{Script=Arabic}/u.test(question)) return 'ar';
     if (/\b(?:ist|sind|warum|wo steht|welche|schwein(?:efleisch)?|kannst|darf|darfst)\b/iu.test(question)) return 'de';
     if (/[çğıöşüİ]/u.test(question) || /\b(?:domuz|haram mi|nedir|neden|nedeni|nasil|peki|hangi|ne demek)\b/iu.test(question)) return 'tr';
     return lang;
+  }
+
+  const maySendExcerpt = entry => !entry.ocr && !entry.sourceId.startsWith('shared:');
+
+  async function runCloudPilot(turn, previous, work) {
+    const evidence = turn.evidence.map(entry => maySendExcerpt(entry) ? entry : {...entry,text:''});
+    if (!evidence.some(entry => entry.text)) return;
+    const context = previous?.evidence.some(maySendExcerpt) ? previous.retrievalQuestion : '';
+    notice = ['Die Testantwort wird formuliert und mit den Fundstellen verglichen …', 'Deneme yanıtı hazırlanıyor ve kaynaklarla karşılaştırılıyor …'];
+    render();
+    try {
+      const answer = await MenbaCloudChat.answer({
+        endpoint:cloudPilot.dataset.endpoint,consent:cloudToggle.checked,question:turn.question,previousQuestion:context,
+        evidence,language:answerLanguage(turn.question),signal:work.controller.signal,
+      });
+      if (answer && request === work && cloudPilotAllowed() && cloudToggle.checked) turn.answer = answer;
+    } catch {
+      if (request === work && cloudPilotAllowed()) {
+        turn.notice = ['Die Testantwort ist gerade nicht verfügbar. Hier sind die Fundstellen.', 'Deneme yanıtı şu anda hazır değil. İlgili kaynaklar aşağıda.'];
+      }
+    }
   }
 
   async function run() {
@@ -618,6 +652,10 @@
       if (scans.length) {
         const labels = scans.join(', ');
         turn.notice = [turn.notice[0]+` Ohne lesbare Textebene: ${labels}. Nutze die Texterkennung unter Quellen.`, turn.notice[1]+` Okunabilir metin katmanı yok: ${labels}. Kaynaklar menüsündeki metin tanımayı kullan.`];
+      }
+      if (!turn.answer && cloudPilotAllowed() && cloudToggle.checked && turn.evidence.length) {
+        await runCloudPilot(turn,previous,work);
+        if (request !== work || !allowed()) return;
       }
       const [first] = turn.evidence;
       if (!turn.answer && first?.quran && first.ranges) {
@@ -764,6 +802,7 @@
       options = [];
       localQuran = null;
       quranFile.value = '';
+      if (cloudToggle) cloudToggle.checked = false;
       selected.clear();
       if (owner) selected.add(hadisId);
       notice = null;
@@ -778,6 +817,7 @@
     else render();
   }
   document.addEventListener('library-access', syncAccount);
+  document.addEventListener('beta-role-access', renderSourceControls);
   document.addEventListener('library-books', syncSources);
   document.addEventListener('library-shared-books', () => {
     if (portal === 'menba') void refreshSharedSources();
