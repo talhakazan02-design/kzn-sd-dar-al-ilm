@@ -1682,6 +1682,10 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
     <p id="menbaLocalSaveHint" class="menba-status" data-de="Beim Speichern bleibt die gewählte Geräte-PDF auf diesem Gerät." data-tr="Kaydedilen yerel Kur’an PDF’si bu cihazda kalır." hidden>Beim Speichern bleibt die gewählte Geräte-PDF auf diesem Gerät.</p>
     <label class="menba-quran-file"><span data-de="Koran-PDF vom Gerät öffnen" data-tr="Cihazdan Kur’an PDF’si aç">Koran-PDF vom Gerät öffnen</span><input id="menbaQuranFile" type="file" accept="application/pdf,.pdf"></label>
     <p id="menbaSourceStatus" class="menba-status" role="status"></p>
+    <div id="menbaCloudPilot" class="menba-ocr" data-endpoint="" hidden>
+      <label><input type="checkbox" id="menbaCloudToggle"> <span data-de="Cloudflare-Test für eigene Quellen" data-tr="Kendi kaynaklarınla Cloudflare denemesi">Cloudflare-Test für eigene Quellen</span></label>
+      <p class="menba-status" data-de="Nach der Aktivierung werden deine Frage und kurze Auszüge eigener Quellen bei Cloudflare verarbeitet." data-tr="Etkinleştirildiğinde sorun ve kendi kaynaklarından kısa bölümler Cloudflare’da işlenir.">Nach der Aktivierung werden deine Frage und kurze Auszüge eigener Quellen bei Cloudflare verarbeitet.</p>
+    </div>
     <details id="menbaOcrTools" class="menba-ocr" hidden>
       <summary data-de="Gescannte PDF-Seiten lesbar machen" data-tr="Taranan PDF sayfalarını metne dönüştür">Gescannte PDF-Seiten lesbar machen</summary>
       <form id="menbaOcrForm">
@@ -2626,5 +2630,6 @@ document.addEventListener('library-language',()=>{drawEditor();refreshCards();})
 <script src="menba-shared-sources.js?v=20261119"></script>
 <script src="menba-source-preferences.js?v=20261119"></script>
 <script src="menba-answers.js?v=20261119"></script>
-<script src="menba.js?v=chat-answer20261119"></script>
+<script src="menba-cloud-chat.js?v=pilot20261119"></script>
+<script src="menba.js?v=cloud-pilot20261119"></script>
 </body></html>
