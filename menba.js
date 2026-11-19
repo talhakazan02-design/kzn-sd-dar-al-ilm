@@ -151,12 +151,30 @@
       passage.append(quote, cite);
       if (turn.quran) {
         if (entry.preview) {
+          const frame = document.createElement('div');
+          frame.className = 'menba-original-frame';
+          frame.dir = entry.ranges ? 'rtl' : 'ltr';
           const preview = document.createElement('img');
           preview.className = 'menba-original';
           preview.src = entry.preview;
           preview.alt = entry.ranges ? tr(`Arabischer Originalvers ${entry.verse}`, `${entry.verse} ayetinin Arapça aslı`)
             : tr(`Originalseite ${entry.page}`, `Özgün PDF sayfası ${entry.page}`);
-          passage.insertBefore(preview, passage.firstChild);
+          frame.append(preview);
+
+          const zoom = document.createElement('button');
+          zoom.type = 'button';
+          zoom.className = 'menba-original-zoom';
+          const updateZoom = () => {
+            const expanded = Boolean(entry.zoomed);
+            frame.dataset.expanded = String(expanded);
+            frame.tabIndex = expanded ? 0 : -1;
+            zoom.setAttribute('aria-expanded', String(expanded));
+            zoom.textContent = expanded ? tr('Original verkleinern', 'Orijinali küçült')
+              : tr('Original vergrößern', 'Orijinali büyüt');
+          };
+          zoom.addEventListener('click', () => { entry.zoomed = !entry.zoomed; updateZoom(); });
+          updateZoom();
+          passage.prepend(frame, zoom);
         } else {
           const button = document.createElement('button');
           button.type = 'button';
