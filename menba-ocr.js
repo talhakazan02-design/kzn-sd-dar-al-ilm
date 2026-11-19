@@ -5,7 +5,9 @@
   const TESSERACT_CORE_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@7.0.0';
   const MODELS = new Map([
     ['mixed', 'ara+tur'],
+    ['multilingual', 'ara+tur+deu'],
     ['arabic', 'ara'],
+    ['german', 'deu'],
     ['ottoman', 'ara+fas'],
     ['turkish', 'tur'],
   ]);
@@ -142,5 +144,34 @@
     }
   }
 
-  globalThis.MenbaOCR = Object.freeze({ recognize });
+  async function recognizeImage(file, {language = 'mixed', signal, onProgress} = {}) {
+    if (!MODELS.has(language)) throw new RangeError('Invalid OCR language');
+    signal?.throwIfAborted();
+    const worker = new Worker(workerScript, {name:'Menba OCR'});
+    let bitmap;
+    const canvas = document.createElement('canvas');
+    try {
+      bitmap = await createImageBitmap(file);
+      signal?.throwIfAborted();
+      const scale = Math.min(1,3200/Math.max(bitmap.width,bitmap.height));
+      canvas.width = Math.max(1,Math.round(bitmap.width*scale));
+      canvas.height = Math.max(1,Math.round(bitmap.height*scale));
+      const context = canvas.getContext('2d',{alpha:false});
+      if (!context) throw Error('OCR canvas is unavailable');
+      context.fillStyle = '#fff';
+      context.fillRect(0,0,canvas.width,canvas.height);
+      context.drawImage(bitmap,0,0,canvas.width,canvas.height);
+      const image = await cancelable(new Promise(resolve => canvas.toBlob(resolve)),signal);
+      if (!image) throw Error('Image could not be decoded');
+      await workerRequest(worker,{type:'start',language},signal);
+      const result = await workerRequest(worker,{type:'recognize',image},signal,progress => onProgress?.({page:1,progress}));
+      return [{page:1,text:result.text.normalize('NFC').trim(),confidence:result.confidence}];
+    } finally {
+      bitmap?.close();
+      canvas.width = canvas.height = 0;
+      worker.terminate();
+    }
+  }
+
+  globalThis.MenbaOCR = Object.freeze({ recognize, recognizeImage });
 })();

@@ -21,6 +21,12 @@
 .menba-source-menu summary,.menba-ocr summary { color: var(--menba-gold); cursor: pointer; }
 .menba-source-menu[open] > summary,.menba-ocr[open] > summary { margin-bottom: .45rem; }
 .menba-source-actions { display: flex; flex-wrap: wrap; gap: .45rem; margin: .55rem 0; }
+.menba-chat-actions { display: flex; flex-wrap: wrap; gap: .45rem; }
+.menba-category { display: grid; gap: .3rem; margin: .65rem 0; }
+.menba-category select {
+  min-width: 0; padding: .45rem; border: 1px solid var(--menba-line);
+  border-radius: 5px; background: #1b110e; color: var(--menba-ink); font: inherit;
+}
 .menba-ocr { margin: .6rem 0 0; }
 #menbaOcrForm { display: grid; gap: .6rem; }
 #menbaOcrForm label { display: grid; gap: .3rem; min-width: 0; }
@@ -81,6 +87,7 @@
 }
 
 .menba-sources :is(label:hover, label:focus-within) { background: #a980491a; }
+.menba-source-option small { display: block; margin-top: .18rem; color: var(--menba-muted); }
 
 .menba-sources input[type="checkbox"] {
   flex: none;
@@ -183,11 +190,11 @@
 .menba-reply .menba-answer { color: #fff0d9; font-size: 1.06em; }
 .menba-turn .menba-passage { border-inline-start: 2px solid #b287503f; padding-inline-start: .65rem; margin: .6rem 0; }
 .menba-turn .menba-citation { margin-top: .35rem; color: var(--menba-gold); font-size: .95em; }
-.menba-panel :is(#menbaCancel,#menbaOcrStartButton,.menba-original-button,.menba-original-zoom,.menba-source-actions button) {
+.menba-panel :is(#menbaCancel,#menbaOcrStartButton,#menbaOcrNext,.menba-original-button,.menba-original-zoom,.menba-source-actions button,.menba-chat-actions button) {
   width: fit-content; min-height: 2.75rem; padding: .4rem .65rem; border: 1px solid var(--menba-line); border-radius: 6px;
   background: #322116; color: var(--menba-ink); font: inherit; cursor: pointer;
 }
-.menba-panel :is(#menbaCancel,#menbaOcrStartButton,.menba-original-button,.menba-source-actions button):disabled { opacity: .55; }
+.menba-panel :is(#menbaCancel,#menbaOcrStartButton,#menbaOcrNext,.menba-original-button,.menba-original-zoom,.menba-source-actions button,.menba-chat-actions button):disabled { opacity: .55; }
 .menba-quran-file { display: grid; gap: .35rem; margin-top: .6rem; }
 .menba-quran-file input { min-width: 0; max-width: 100%; font: inherit; }
 .menba-quran-file input::file-selector-button { background: #322116; color: var(--menba-ink); border: 1px solid var(--menba-line); border-radius: 5px; padding: .4rem .55rem; margin-inline-end: .45rem; font: inherit; }

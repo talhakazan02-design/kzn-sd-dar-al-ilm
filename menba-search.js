@@ -30,7 +30,8 @@
     so soll sollen sowas über um und uns unter vom von vor war waren was weil
     weiter welche welchem welchen welcher welches wem wen wenn wer werde werden
     weshalb wie wieder wir wird wo woher wohin wozu zu zum zur zwar zwischen
-    erklär erkläre erklären erklaert beschreib beschreibe beschreiben sag sage sagt sagen bitte
+    erklär erkläre erklären erklärt erklaerung beschreib beschreibe beschreiben sag sage sagt sagen bitte
+    möchte wissen erfahren bitte allgemein religiös islamisch
     bedeuten bedeutet nenn nenne nennen zeig zeigt zeigen zeige steht stehen quelle quellen buch
     finde finden find finr sucht suche such suchen gib gefunden stelle stellen fundstelle fundstellen
     passende passendes passenden passender thema themen bezüglich dazu erklären erfahre erfahren nennt
@@ -85,11 +86,17 @@
     ['sarf', 'tasrif', 'صرف', 'تصريف'],
     ['nahiv', 'nahw', 'نحو'],
     ['masdar', 'mastar', 'مصدر'],
-    ['abdest', 'wudu', 'wudhu', 'wuzu', 'وضوء'],
+    ['abdest', 'wudu', 'wudhu', 'wuzu', 'Gebetswaschung', 'rituelle Waschung', 'وضوء'],
     ['gusul', 'ghusl', 'غسل'],
     ['namaz', 'gebet', 'ritualgebet', 'pflichtgebet', 'salah', 'salat', 'صلاة'],
     ['oruc', 'fasten', 'sawm', 'صوم', 'صيام'],
     ['zekat', 'zakat', 'pflichtabgabe', 'زكاة'],
+    ['domuz', 'schwein', 'schweinefleisch', 'domuz eti', 'خنزير', 'لحم الخنزير'],
+    ['haram', 'haramdır', 'verboten', 'Verbot', 'yasak', 'حرام', 'محرم', 'حرمت'],
+    ['yemek', 'essen', 'verzehr', 'verzehren', 'yeme', 'أكل'],
+    ['sehadet', 'Glaubensbekenntnis', 'kelime-i şehadet', 'الشهادة'],
+    ['hac', 'hacc', 'hadsch', 'pilgerfahrt', 'حج'],
+    ['istigfar', 'um Vergebung bitten', 'istiğfar', 'استغفار'],
     ['sabir', 'sabr', 'geduld', 'geduldig', 'صبر'],
     ['gunah', 'sünde', 'sünden', 'sündigen', 'ذنب', 'ذنوب'],
     ['tovbe', 'reue', 'bereuen', 'توبة'],
