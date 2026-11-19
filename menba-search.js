@@ -31,7 +31,9 @@
     weiter welche welchem welchen welcher welches wem wen wenn wer werde werden
     weshalb wie wieder wir wird wo woher wohin wozu zu zum zur zwar zwischen
     erklär erkläre erklären erklaert beschreib beschreibe beschreiben sag sage sagt sagen bitte
-    bedeuten bedeutet nenne zeigt zeigen zeige steht stehen quelle quellen buch
+    bedeuten bedeutet nenn nenne nennen zeig zeigt zeigen zeige steht stehen quelle quellen buch
+    finde finden find finr sucht suche such suchen gib gefunden stelle stellen fundstelle fundstellen
+    passende passendes passenden passender thema themen bezüglich dazu erklären erfahre erfahren nennt
     arabisch arabischen osmanisch osmanischen turkisch turkischen yazili
     osmanlica osmanli arapca arapcasinda turkce
     besteht worin woruber woraus auskunft antwort frage bedeutung erklarung definition
@@ -39,13 +41,14 @@
     nereden neden neyi neye neyin niye hangi hangisi kim kime kac kactir bir birde
     bu bunu buna bunlar su sunu ona o ve veya ile icin gibi hem ama ya da de
     daha en mi mu musun ben sen biz siz onlar olarak olan olur oldu degil
-    ifade et anlat acikla soyle goster bul kisaca bilgi hakkinda anlamina geliyor
+    ifade et anlat acikla soyle soyler goster gosterir bul bulabilir bulabilirsen bulur kisaca bilgi hakkinda anlamina geliyor
+    bana sana bize size ver verir verebilir soyler misin misiniz ilgili dair konu konusunda konulu bahseden ornek lutfen bahseder serifi serif
     demek denir yaziyor diyor bahsediyor nelerdir miymis gore nasildir yapilir
     soru cevap anlami tanimi nasilca
     ما ماذا من لمن بم عن عند بعد مع قبل على الى في هذا هذه ذلك تلك هو هي هما
     هم هن كان كانت يكون تكون هل متى اين كيف لماذا كم يا او كل بين الذي التي
     الذين نحن انت انتم انا ان انه وان فان بان فإن ولم لن لا لكي لكن ثم اذا
-    اشرح وضح اخبرني اذكر ورد يقول نص كتاب السؤال جواب الرجاء معنى تعريف حكم
+    اشرح وضح اخبرني اذكر ورد يقول نص كتاب السؤال جواب الرجاء معنى تعريف حكم اعطني اعطيني هات ارني اريد ابحث
   `.trim().split(/\s+/u).map(normalize));
 
   function significant(word) {
@@ -61,7 +64,8 @@
     'e', 'en', 'er', 'ern', 'es', 'n', 's', 'i', 'in', 'a', 'da', 'de',
     'ta', 'te', 'dan', 'den', 'tan', 'ten', 'daki', 'deki', 'lar', 'ler',
     'lari', 'leri', 'larin', 'lerin', 'ini', 'ina', 'inin', 'nin', 'unun', 'nun',
-    'umuz', 'imiz', 'imizde', 'dir', 'tir'
+    'umuz', 'imiz', 'imizde', 'dir', 'tir', 'ya', 'ye', 'yi', 'yu', 'la', 'le',
+    'si', 'su', 'sina', 'sine', 'sini', 'sunu', 'indan', 'inden'
   ]);
 
   // These equivalents help find a citation. They never contribute text to one.
@@ -83,9 +87,17 @@
     ['masdar', 'mastar', 'مصدر'],
     ['abdest', 'wudu', 'wudhu', 'wuzu', 'وضوء'],
     ['gusul', 'ghusl', 'غسل'],
-    ['namaz', 'ritualgebet', 'salah', 'salat', 'صلاة'],
-    ['oruc', 'sawm', 'صوم', 'صيام'],
-    ['zekat', 'zakat', 'زكاة']
+    ['namaz', 'gebet', 'ritualgebet', 'pflichtgebet', 'salah', 'salat', 'صلاة'],
+    ['oruc', 'fasten', 'sawm', 'صوم', 'صيام'],
+    ['zekat', 'zakat', 'pflichtabgabe', 'زكاة'],
+    ['sabir', 'sabr', 'geduld', 'geduldig', 'صبر'],
+    ['gunah', 'sünde', 'sünden', 'sündigen', 'ذنب', 'ذنوب'],
+    ['tovbe', 'reue', 'bereuen', 'توبة'],
+    ['merhamet', 'barmherzigkeit', 'erbarmen', 'rahmet', 'رحمة'],
+    ['allah', 'gott', 'ٱللَّه'],
+    ['anne', 'ana', 'mutter', 'أم'],
+    ['baba', 'vater', 'أب'],
+    ['ebeveyn', 'eltern', 'anne baba', 'ana baba', 'والدين']
   ];
   const aliases = new Map();
   const phrases = [];
@@ -162,6 +174,7 @@
 
   function bestWindow(hits, threshold) {
     let start = 0;
+    let exactOccurrences = 0;
     const seen = new Map();
     const exact = new Map();
     let best = null;
@@ -172,18 +185,25 @@
     };
     for (const hit of hits) {
       add(seen, hit.term);
-      if (hit.exact) add(exact, hit.term);
+      if (hit.exact) {
+        add(exact, hit.term);
+        exactOccurrences++;
+      }
       while (hit.end - hits[start].start > maxEvidenceSpan) {
         const prior = hits[start++];
         remove(seen, prior.term);
-        if (prior.exact) remove(exact, prior.term);
+        if (prior.exact) {
+          remove(exact, prior.term);
+          exactOccurrences--;
+        }
         if (start === hits.length) return best;
         if (prior === hit) break;
       }
       // Prefix overlap alone does not establish a relevant passage.
       if (seen.size < threshold || exact.size === 0) continue;
       const span = hit.end - hits[start].start;
-      const score = seen.size * 12 + exact.size * 2 + (1 - span / maxEvidenceSpan);
+      const repeatedEvidence = Math.min(2, exactOccurrences - exact.size) * .7;
+      const score = seen.size * 12 + exact.size * 2 + repeatedEvidence + (1 - span / maxEvidenceSpan);
       if (!best || score > best.score) best = {start: hits[start].start, end: hit.end, score};
     }
     return best;
@@ -213,10 +233,32 @@
     return text.slice(start, end).trim();
   }
 
+  const hadithWord = /^(?:hadis(?:i|in|ler|leri|lerden|te)?|hadith(?:e|en)?|(?:ال)?حديث(?:ا)?|(?:ال)?احاديث)$/u;
+
+  function queryTerms(question) {
+    return [...new Set([...tokens(question.slice(0, 1000))].map(({word}) => word))];
+  }
+
+  function inspectHadith(question) {
+    const terms = queryTerms(question);
+    if (!terms.some(word => hadithWord.test(word))) return null;
+    const topical = terms.some(word => significant(word) && !hadithWord.test(word));
+    const definition = /^(?:was (?:ist|sind|bedeutet)|(?:hadis|hadith) ne(?:dir| demek)|ما(?: هو| معني))(?=$|[\p{Z}\p{P}])/u.test(normalize(question.trim()));
+    return {sample:!topical && !definition};
+  }
+
+  function isHadithSource(title) {
+    if (typeof title !== 'string') return false;
+    const knownCollection = /(?:^|[^\p{L}])(?:sahih(?:i)?[\s'-]+(?:al[\s'-]+)?muslim|riyazu[s'’]*[\s'-]+salihin|eb[uû][\s'-]+dav[uû]d)(?=$|[^\p{L}])/u;
+    return knownCollection.test(normalize(title)) || [...tokens(title)].some(({word}) =>
+      hadithWord.test(word) || /^(?:hadithsammlung(?:en)?|hadithbuch|buhari|bukhari|tirmizi|tirmidhi|nesai|nasai|muvatta|muwatta)$/u.test(word));
+  }
+
   function find(question, pages) {
     if (typeof question !== 'string' || !Array.isArray(pages)) return [];
-    const terms = [...new Set([...tokens(question.slice(0, 1000))]
-      .map(({word}) => word).filter(significant))].slice(0, 16);
+    const questionWords = queryTerms(question).filter(significant);
+    const mainTerms = questionWords.filter(word => !hadithWord.test(word));
+    const terms = (mainTerms.length ? mainTerms : questionWords).slice(0, 16);
     if (!terms.length) return [];
     const available = [];
     const titleCache = new Map();
@@ -255,5 +297,5 @@
     return result;
   }
 
-  globalThis.MenbaSearch = Object.freeze({find});
+  globalThis.MenbaSearch = Object.freeze({find,inspectHadith,isHadithSource});
 })();

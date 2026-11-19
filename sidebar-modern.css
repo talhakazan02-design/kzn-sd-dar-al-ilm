@@ -1,0 +1,248 @@
+:root {
+  --library-sidebar-width: 248px;
+}
+
+#librarySidebar {
+  --sidebar-gold: #dfb471;
+  --sidebar-text: #f3e3c7;
+  --sidebar-muted: #c7ad88;
+  --sidebar-line: #a9814a54;
+  position: fixed !important;
+  inset: 0 auto 0 0;
+  z-index: 24;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: var(--library-sidebar-width) !important;
+  height: 100vh;
+  height: 100dvh;
+  padding: 10px 14px 16px !important;
+  overflow: hidden auto !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #82623a #171009;
+  background: radial-gradient(ellipse at 50% 0%, #3b2918 0%, transparent 40%), linear-gradient(#191008, #0c0907 78%) !important;
+  border-right: 1px solid #a6814c !important;
+  box-shadow: inset -4px 0 0 #d8a75d0b, 4px 0 18px #0005;
+  color: var(--sidebar-text);
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+#librarySidebar::before { inset-inline: 5px; }
+
+#librarySidebar .sidebar-logo {
+  display: block !important;
+  flex: none;
+  padding: 2px 0 10px !important;
+  border-bottom: 1px solid var(--sidebar-line) !important;
+}
+
+#librarySidebar .sidebar-logo .heritage-logo {
+  width: 128px !important;
+  height: 123px !important;
+  filter: none;
+}
+
+#librarySidebar .sidebar-logo::before { font-size: 15px; margin: 0; }
+#librarySidebar .sidebar-logo::after { font-size: 9px; margin: 5px 0 0 8px; }
+
+#librarySidebar .sidebar-content, #librarySidebar .sidebar-nav {
+  display: grid !important;
+  align-content: start;
+  gap: 0 !important;
+  min-width: 0;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+
+#librarySidebar .sidebar-section {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--sidebar-line);
+}
+
+#librarySidebar .sidebar-section-title {
+  margin: 0 8px 4px;
+  color: var(--sidebar-gold);
+  font: 600 11px/1.35 Georgia, 'Times New Roman', serif;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+#librarySidebar .sidebar-nav button {
+  display: flex;
+  align-items: center;
+  width: 100% !important;
+  min-height: 34px !important;
+  box-sizing: border-box;
+  gap: 8px;
+  padding: 6px 7px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  color: var(--sidebar-text) !important;
+  font: 400 .875rem/1.3 Georgia, 'Times New Roman', serif !important;
+  text-align: start;
+  transition: background-color .18s ease, border-color .18s ease;
+}
+
+#librarySidebar .sidebar-nav button:not(:disabled):hover {
+  background: #d9aa6214 !important;
+  border-color: #a17a463f !important;
+}
+
+#librarySidebar .sidebar-nav button[aria-current="page"],
+#librarySidebar .sidebar-nav button[aria-current="page"]:hover {
+  background: #d9aa6228 !important;
+  border-color: #bd975c !important;
+  color: #ffedcc !important;
+}
+
+#librarySidebar .sidebar-nav button:disabled {
+  color: var(--sidebar-muted) !important;
+  cursor: default;
+  opacity: 1;
+}
+
+#librarySidebar .sidebar-label { min-width: 0; overflow-wrap: anywhere; }
+#librarySidebar .symbol {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px !important;
+  color: var(--sidebar-gold) !important;
+  font-size: 16px !important;
+}
+
+#librarySidebar :is(.symbol, #sidebarClose) svg,
+#sidebarToggle svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+}
+
+#librarySidebar .sidebar-badge {
+  flex: none;
+  margin-inline-start: auto;
+  padding: 1px 5px;
+  border: 1px solid #9c784f;
+  border-radius: 4px;
+  color: var(--sidebar-muted);
+  font: 400 .68rem/1.3 Georgia, 'Times New Roman', serif;
+  white-space: nowrap;
+}
+
+#librarySidebar .sidebar-stat-list {
+  display: grid;
+  gap: 5px;
+  margin: 0 8px;
+  font-size: .81rem;
+  line-height: 1.3;
+}
+
+#librarySidebar .sidebar-stat-list > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 8px;
+}
+
+#librarySidebar .sidebar-stat-list dd {
+  margin: 0;
+  color: var(--sidebar-gold);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+#librarySidebar .sidebar-quote {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+#librarySidebar .sidebar-quote p {
+  margin: 0 8px;
+  color: var(--sidebar-muted);
+  font: italic .82rem/1.45 Georgia, 'Times New Roman', serif;
+}
+
+#sidebarToggle, #sidebarClose, #sidebarBackdrop { display: none; }
+
+#librarySidebar button:focus-visible, #sidebarToggle:focus-visible {
+  outline: 2px solid #f4d099;
+  outline-offset: 2px;
+}
+
+@media (min-width: 761px) {
+  body > header { margin-left: var(--library-sidebar-width); }
+  body > main { margin-left: var(--library-sidebar-width) !important; }
+  body::before {
+    left: var(--library-sidebar-width) !important;
+    width: calc(100% - var(--library-sidebar-width)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  #librarySidebar {
+    z-index: 81;
+    visibility: hidden;
+    pointer-events: none;
+    width: min(var(--library-sidebar-width), calc(100vw - 48px)) !important;
+    padding-top: max(46px, calc(env(safe-area-inset-top) + 46px)) !important;
+    padding-bottom: max(16px, calc(env(safe-area-inset-bottom) + 12px)) !important;
+    transform: translateX(-100%);
+    transition: transform .2s ease, visibility 0s linear .2s;
+  }
+
+  .sidebar-open #librarySidebar {
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(0);
+    transition-delay: 0s;
+  }
+
+  #sidebarBackdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    background: #080604b8;
+  }
+
+  body.sidebar-open { overflow: hidden; }
+
+  #sidebarToggle, #librarySidebar #sidebarClose {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 7px 10px !important;
+    border: 1px solid #a6814c;
+    border-radius: 6px;
+    background: #20170f;
+    color: #efce98;
+    font: 600 .85rem/1.3 Georgia, 'Times New Roman', serif;
+    cursor: pointer;
+  }
+
+  #librarySidebar #sidebarClose {
+    position: absolute;
+    inset: max(4px, env(safe-area-inset-top)) 9px auto auto;
+  }
+
+  #librarySidebar .sidebar-nav button { min-height: 44px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #librarySidebar, #librarySidebar .sidebar-nav button { transition: none; }
+}
+
+#librarySidebar[hidden], #librarySidebar [hidden], #sidebarToggle[hidden], #sidebarBackdrop[hidden] {
+  display: none !important;
+}

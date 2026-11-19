@@ -236,6 +236,7 @@
       if (error) throw error;
       after();
       message = success;
+      document.dispatchEvent(new Event('library-shared-books'));
       await refresh();
     } catch (error) {
       if (current()) message = explain(error);
