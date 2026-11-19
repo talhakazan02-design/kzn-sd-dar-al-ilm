@@ -127,6 +127,14 @@
     }
   });
   sidebar.addEventListener('click', event => {
+    const mode = event.target.closest('[data-menba-mode]');
+    if (mode && !mode.hidden && accessState === 'approved') {
+      if (drawerOpen) setDrawer(false,false);
+      openPortal('menba');
+      document.dispatchEvent(new CustomEvent('menba-select-mode',{detail:mode.dataset.menbaMode}));
+      $('menbaMode')?.focus({preventScroll:true});
+      return;
+    }
     const button = event.target.closest('[data-sidebar-portal]');
     if (!button || accessState !== 'approved') return;
     const fromDrawer = drawerOpen;

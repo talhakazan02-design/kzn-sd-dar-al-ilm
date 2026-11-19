@@ -35,6 +35,7 @@
   const selected = new Set();
   const cachedPages = new Map();
   const recognizedPages = new Map();
+  const attemptedOcr = new Map();
   const sharedVersions = new Map();
   const sourceStates = new Map();
   const loadedIndexes = new Set();
@@ -57,12 +58,16 @@
   let retryQuestion = null;
   let hocaAllowed = false;
   let hocaRequest = 0;
+  let nextDiagnosticAt = 0;
 
   function allowed() {
     return Boolean(owner && owner === currentUser?.id && accessState === 'approved');
   }
 
   const pickableSources = () => options.filter(source => selected.has(source.id));
+  function sourcesChanged() {
+    document.dispatchEvent(new Event('menba-source-change'));
+  }
 
   function sourceLabels(source) {
     return {...source,
@@ -86,9 +91,11 @@
     if (localPhoto) options.push(localPhoto);
     const active = new Set(options.map(source => source.id));
     const changed = new Set(options.filter(source => prior.has(source.id) && prior.get(source.id) !== sourceKey(source)).map(source => source.id));
+    if (changed.size || prior.size !== options.length || options.some(source=>!prior.has(source.id))) sourcesChanged();
     const paths = new Set(options.map(sourceKey));
     for (const key of cachedPages.keys()) if (!paths.has(key)) cachedPages.delete(key);
     for (const key of recognizedPages.keys()) if (!paths.has(key)) recognizedPages.delete(key);
+    for (const key of attemptedOcr.keys()) if (!paths.has(key)) attemptedOcr.delete(key);
     for (const key of sourceStates.keys()) if (!paths.has(key)) sourceStates.delete(key);
     for (const key of loadedIndexes) if (!paths.has(key)) loadedIndexes.delete(key);
     for (const key of sharedVersions.keys()) if (!active.has(key)) sharedVersions.delete(key);
@@ -127,7 +134,7 @@
       if (!version || !current()) return;
       if (update) {
         await MenbaSourcePreferences.saveIndex(account,source.id,version,update);
-        return;
+        return true;
       }
       const index = await MenbaSourcePreferences.loadIndex(account,source.id,version);
       if (!current()) return;
@@ -213,6 +220,7 @@
   }
 
   function preferencesChanged() {
+    sourcesChanged();
     selectionNotice = null;
     renderSourceControls();
   }
@@ -324,6 +332,7 @@
     renderNotice();
     form.setAttribute('aria-busy', String(busy));
     results.replaceChildren(...turns.map(renderTurn));
+    document.dispatchEvent(new CustomEvent('menba-busy',{detail:busy}));
   }
 
   function renderLearning(canAsk,busy) {
@@ -331,6 +340,27 @@
       learningMode.add(new Option('Hoca Modu','hoca'));
     }
     if (!hocaAllowed) learningMode.querySelector('[value="hoca"]')?.remove();
+    $('menbaHocaNav').hidden = !canAsk || !hocaAllowed;
+    for (const button of document.querySelectorAll('[data-menba-mode]')) {
+      if (portal === 'menba' && learningMode.value === button.dataset.menbaMode) button.setAttribute('aria-current','page');
+      else button.removeAttribute('aria-current');
+    }
+    if (portal === 'menba' && learningMode.value !== 'chat') {
+      document.querySelector('#librarySidebar [data-sidebar-portal="menba"]')?.removeAttribute('aria-current');
+    }
+    const info = $('menbaModeInfo');
+    info.hidden = learningMode.value === 'chat';
+    info.replaceChildren();
+    if (!info.hidden) {
+      const heading = document.createElement('h3');
+      heading.textContent = learningMode.selectedOptions[0].textContent+' · '+tr('Beta-Version','Beta Sürümü');
+      const hoca = learningMode.value === 'hoca';
+      info.append(heading,paragraph(hoca
+        ? tr('Plane deinen Unterricht und entwirf Quiz und Hausaufgaben mit ausgewählten Quellen.',
+          'Derslerini planla, seçili kaynaklarla test ve ödev taslakları hazırla.')
+        : tr('Wiederhole Themen, löse Übungen und prüfe dein Wissen mit MENBA.',
+          'Konuları tekrar et, alıştırmaları çöz ve MENBA ile kendini sına.')));
+    }
     const picked = learningTask.value;
     const activities = MenbaLearning.tasks[learningMode.value] ?? [];
     learningTask.replaceChildren(...activities.map(([key,de,turkish])=>new Option(tr(de,turkish),key)));
@@ -375,6 +405,20 @@
     element.className = className;
     element.textContent = value;
     return element;
+  }
+
+  function helpButton(de,turkish,action) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'menba-help-button';
+    button.textContent = tr(de,turkish);
+    button.addEventListener('click',action);
+    return button;
+  }
+
+  function showSources() {
+    sourceSummary.parentElement.open = true;
+    sourceSummary.focus();
   }
 
   function renderTurn(turn) {
@@ -479,6 +523,19 @@
       }
       reply.append(passage);
     });
+    if (!turn.evidence.length) {
+      const actions = document.createElement('div');
+      actions.append(
+        helpButton('Quellen auswählen','Kaynak Seç',showSources),
+        helpButton('Beispielfragen','Örnek Sorular',()=>{
+          const templates = $('menbaQuestionTemplates');
+          templates.open = true;
+          templates.querySelector('summary').focus();
+        }),
+        helpButton('Andere Frage stellen','Başka Soru Dene',()=>question.focus())
+      );
+      reply.append(actions);
+    }
     item.append(reply);
     return item;
   }
@@ -498,7 +555,9 @@
   function clearSharedText(source, work) {
     cachedPages.delete(source.id);
     recognizedPages.delete(source.id);
+    attemptedOcr.delete(source.id);
     sharedVersions.delete(source.id);
+    sourcesChanged();
     turns = turns.filter(turn => turn === work.turn || !turn.sources.some(item => item.id === source.id));
     if (work.turn?.evidence.some(entry => entry.sourceId === source.id)) {
       work.turn.answer = null;
@@ -531,11 +590,18 @@
         ? {data:{signedUrl:(grant ?? await authorizeShared(source, work)).url}}
         : await db.storage.from(STORAGE_BUCKET).createSignedUrl(source.path, 60);
       signal.throwIfAborted();
-      if (error || !data?.signedUrl) throw Error('Source is not available');
-      const response = await fetch(data.signedUrl, {signal, referrerPolicy:'no-referrer'});
-      if (!response.ok) throw Error('Source is not available');
+      if (error || !data?.signedUrl) throw Object.assign(new Error('PDF access denied'),{stage:'sign'});
+      const response = await fetch(data.signedUrl, {signal, referrerPolicy:'no-referrer'}).catch(error=>{
+        signal.throwIfAborted();
+        throw Object.assign(new Error('PDF download failed',{cause:error}),{stage:'download'});
+      });
+      if (!response.ok) throw Object.assign(new Error('PDF unavailable'),{stage:`HTTP ${response.status}`});
       bytes = await response.arrayBuffer();
     }
+    if (!(bytes.byteLength > 0 && bytes.byteLength <= 50*1024*1024)) {
+      throw Object.assign(new Error('Invalid PDF size'),{stage:'size'});
+    }
+    work.report?.(source,'download',{bytes:bytes.byteLength});
     pdfModule ??= import(pdfBase+'build/pdf.min.mjs').catch(error => { pdfModule = null; throw error; });
     const pdfjs = await pdfModule;
     signal.throwIfAborted();
@@ -560,6 +626,7 @@
       const failedPages = [];
       for (let number = 1; number <= pdf.numPages; number++) {
         signal.throwIfAborted();
+        if (number === 1 || number % 20 === 0 || number === pdf.numPages) work.report?.(source,'page',{number,total:pdf.numPages});
         let page;
         try {
           page = await pdf.getPage(number);
@@ -584,17 +651,6 @@
     const task = work.task;
     work.task = null;
     await task.destroy().catch(() => {});
-  }
-
-  function findQuran(query,pages) {
-    const verses = pages.flatMap(page => (page.verses || []).map(row => ({
-      ...row, sourceId:page.sourceId, source:page.source, page:page.page, meal:true
-    })));
-    const results = MenbaQuran.findVerses(query,verses);
-    if (results.length >= 3) return results;
-    const found = new Set(results.map(result => result.verse).filter(Boolean));
-    const excerpts = MenbaQuran.find(query,pages.filter(page => !page.verses?.length));
-    return results.concat(excerpts.filter(entry => !found.has(entry.verse))).slice(0,3);
   }
 
   async function originalImage(entry,source,work) {
@@ -693,12 +749,75 @@
   }
 
   function answerLanguage(question) {
+    if (/\b(?:auf deutsch|almanca)\b/iu.test(question)) return 'de';
+    if (/\b(?:auf türkisch|türkçe)\b/iu.test(question)) return 'tr';
+    if ((question.match(/\p{Script=Arabic}/gu)?.length ?? 0) >= 5) return 'ar';
     if (/\b(?:ist|sind|warum|wo steht|welche|schwein(?:efleisch)?|kannst|darf|darfst)\b/iu.test(question)) return 'de';
     if (/[çğıöşüİ]/u.test(question) || /\b(?:domuz|haram mi|nedir|neden|nedeni|nasil|peki|hangi|ne demek)\b/iu.test(question)) return 'tr';
     return lang;
   }
 
-  async function run() {
+  const isQuran = source => source.quran || cachedPages.get(sourceKey(source))?.quran === true;
+
+  async function collectSources(work,quranOnly = false) {
+    const pages = [];
+    const quranSources = new Set();
+    const unavailable = [];
+    const scans = [];
+    let foundQuran = work.sources.some(isQuran);
+    for (const source of work.sources) {
+      if (request !== work) return;
+      progress(source);
+      const key = sourceKey(source);
+      let grant;
+      try {
+        if (source.shareId) grant = await authorizeShared(source,work);
+        await useIndex(source);
+        if (request !== work || !allowed()) return;
+        let extracted = cachedPages.get(key);
+        if (work.force || !extracted) {
+          setSourceState(source,'working');
+          extracted = source.id === hadisId ? {pages:await fetchHadis(work), quran:false}
+            : source.image ? {pages:[],quran:false,totalPages:1} : await extractPdf(source, work, grant, quranOnly);
+          if (request !== work || !allowed()) return;
+          if (extracted) {
+            cachedPages.set(key, extracted);
+            sourcesChanged();
+            const persisted = await useIndex(source,{parsed:extracted});
+            work.report?.(source,'extract',{total:extracted.totalPages ?? extracted.pages.length,readable:extracted.pages.length,failed:extracted.failedPages?.length ?? 0,persisted:Boolean(persisted)});
+          }
+          if (request !== work || !allowed()) return;
+        }
+        if (!extracted || (quranOnly && !extracted.quran)) continue;
+        if (extracted.quran) { foundQuran = true; quranSources.add(source.id); }
+        const ocr = recognizedPages.get(key);
+        const indexed = new Set([...extracted.pages.map(page=>page.page),...(ocr?.keys() ?? [])]);
+        const failed = (extracted.failedPages ?? []).some(page=>!indexed.has(page));
+        if (failed) unavailable.push(source.title);
+        if (extracted.totalPages && indexed.size < extracted.totalPages && !failed) {
+          scans.push(indexed.size ? `${source.title} (${indexed.size}/${extracted.totalPages})` : source.title);
+        }
+        addDocumentPages(pages,extracted,ocr);
+        setSourceState(source,failed && !indexed.size ? 'error' : null);
+      } catch (error) {
+        if (request !== work) return;
+        work.report?.(source,'error',error?.stage ?? 'extract');
+        const ocr = !source.shareId || grant ? recognizedPages.get(key) : null;
+        if (ocr?.size && (!quranOnly || isQuran(source))) {
+          foundQuran ||= isQuran(source);
+          if (isQuran(source)) quranSources.add(source.id);
+          pages.push(...ocr.values());
+        }
+        else { unavailable.push(source.title); setSourceState(source,'error'); }
+      } finally {
+        if (sourceStates.get(key) === 'working') setSourceState(source,null);
+      }
+    }
+    if (request !== work || !allowed()) return;
+    return {pages,quranSources,unavailable,scans,foundQuran};
+  }
+
+  async function run(force = false) {
     const text = question.value.trim();
     if (!allowed() || request || loadingPreferences || !text) return;
     retryQuestion = null;
@@ -711,23 +830,13 @@
     const previous = contextFor(text,intent,last);
     const retrievalQuestion = previous?.retrievalQuestion ?? text;
     const picked = pickableSources();
-    const isQuran = source => source.quran || cachedPages.get(sourceKey(source))?.quran === true;
-    const anyQuran = picked.some(isQuran);
-    const hadith = MenbaSearch.inspectHadith(retrievalQuestion);
-    const onlyQuran = anyQuran && picked.every(source => isQuran(source) || source.id === hadisId);
-    const inspected = !hadith && MenbaQuran.inspect(retrievalQuestion,{inQuran:onlyQuran || (anyQuran && Boolean(intent))});
-    const quran = inspected && intent && !inspected.reference && !inspected.quranRequested && !inspected.dietaryRuling
-      ? {...inspected,topic:intent.query} : inspected;
-    const quranOnly = Boolean(quran && (quran.quranRequested || (onlyQuran && !quran.dietaryRuling)));
-    let sources = picked;
-    if (quranOnly) sources = anyQuran ? picked.filter(isQuran) : picked.filter(source => source.id !== hadisId);
-    else if (hadith?.sample) sources = picked.filter(source => source.id === hadisId);
-    else if (hadith) sources = picked.filter(source => source.hadith && !source.quran);
+    const plan = MenbaQuestionChecks.plan(retrievalQuestion,pickableSources(),intent,isQuran,hadisId);
+    const {sources,quran,quranOnly,hadith} = plan;
     if (!sources.length) {
       sourceSummary.parentElement.open = true;
       if (quranOnly) notice = quranSourceHelp();
       else if (hadith) notice = ['Wähle unter Quellen eine Hadis-Sammlung aus.', 'Kaynaklar bölümünde bir Hadis derlemesi seç.'];
-      else notice = ['Wähle unter Quellen mindestens ein Buch für deine Frage aus.', 'Sorun için Kaynaklar bölümünden en az bir kitap seç.'];
+      else notice = ['Wähle zuerst eine Quelle.', 'Lütfen önce kaynak seçin.'];
       renderNotice();
       return;
     }
@@ -737,75 +846,18 @@
       return;
     }
     const turn = {question:text, retrievalQuestion, sources, evidence:[], notice:null, warning:[], answer:null, intent, mode};
-    const work = {controller:new AbortController(), sources, task:null, turn};
+    const work = {controller:new AbortController(), sources, task:null, turn, force};
     request = work;
     turns.push(turn);
     question.value = '';
     render();
     try {
-      const pages = [];
-      const quranSources = new Set();
-      const unavailable = [];
-      const scans = [];
-      let foundQuran = sources.some(isQuran);
-      for (const source of work.sources) {
-        if (request !== work) return;
-        progress(source);
-        const key = sourceKey(source);
-        let grant;
-        try {
-          if (source.shareId) grant = await authorizeShared(source,work);
-          await useIndex(source);
-          if (request !== work || !allowed()) return;
-          let extracted = cachedPages.get(key);
-          if (!extracted || extracted.failedPages?.length) {
-            setSourceState(source,'working');
-            extracted = source.id === hadisId ? {pages:await fetchHadis(work), quran:false}
-              : source.image ? {pages:[],quran:false,totalPages:1} : await extractPdf(source, work, grant, quranOnly);
-            if (request !== work || !allowed()) return;
-            if (extracted) {
-              cachedPages.set(key, extracted);
-              if (!extracted.failedPages?.length) await useIndex(source,{parsed:extracted});
-            }
-            if (request !== work || !allowed()) return;
-          }
-          if (!extracted || (quranOnly && !extracted.quran)) continue;
-          if (extracted.quran) { foundQuran = true; quranSources.add(source.id); }
-          const ocr = recognizedPages.get(key);
-          const indexed = new Set([...extracted.pages.map(page=>page.page),...(ocr?.keys() ?? [])]);
-          const failed = (extracted.failedPages ?? []).some(page=>!indexed.has(page));
-          if (failed) unavailable.push(source.title);
-          if (extracted.totalPages && indexed.size < extracted.totalPages && !failed) {
-            scans.push(indexed.size ? `${source.title} (${indexed.size}/${extracted.totalPages})` : source.title);
-          }
-          addDocumentPages(pages,extracted,ocr);
-          setSourceState(source,failed && !indexed.size ? 'error' : null);
-        } catch {
-          if (request !== work) return;
-          const ocr = !source.shareId || grant ? recognizedPages.get(key) : null;
-          if (ocr?.size && (!quranOnly || isQuran(source))) {
-            foundQuran ||= isQuran(source);
-            if (isQuran(source)) quranSources.add(source.id);
-            pages.push(...ocr.values());
-          }
-          else { unavailable.push(source.title); setSourceState(source,'error'); }
-        } finally {
-          if (sourceStates.get(key) === 'working') setSourceState(source,null);
-        }
-      }
-      if (request !== work || !allowed()) return;
-      const ocrKeys = new Set(pages.filter(page => page.ocr).map(page => `${page.sourceId}:${page.page}`));
-      const quranRows = quran ? findQuran(quran,pages.filter(page => quranSources.has(page.sourceId))) : [];
-      const dietaryRows = !quranOnly && !quranRows.length && quran?.dietaryRuling
-        ? MenbaQuran.findVerses(quran,pages.filter(page => !quranSources.has(page.sourceId))) : [];
-      const rows = quranOnly || quranRows.length ? quranRows : dietaryRows.length ? dietaryRows
-        : MenbaSearch.find(retrievalQuestion,pages);
-      const hadithRows = hadith?.sample ? pages.filter(page => page.sourceId === hadisId) : [];
-      turn.evidence = (hadithRows.length ? [hadithRows[Math.floor(Math.random()*hadithRows.length)]] : rows).map(entry => ({
-        ...entry, quran:quranSources.has(entry.sourceId), sharedVersion:sharedVersions.get(entry.sourceId),
-        ocr:ocrKeys.has(`${entry.sourceId}:${entry.page}`)
-      }));
-      turn.answer = MenbaAnswers.compose(intent,turn.evidence,answerLanguage(text));
+      const snapshot = await collectSources(work,quranOnly);
+      if (!snapshot) return;
+      const {unavailable,scans,foundQuran} = snapshot;
+      const {evidence,quranRows} = MenbaQuestionChecks.rank(plan,snapshot,hadisId);
+      turn.evidence = evidence.map(entry=>({...entry,sharedVersion:sharedVersions.get(entry.sourceId)}));
+      turn.answer = MenbaQuestionChecks.localAnswer(retrievalQuestion,intent,turn.evidence,answerLanguage(text));
       if (mode !== 'chat') {
         turn.learning = MenbaLearning.prepare(mode,task,turn.evidence);
         if (turn.learning?.quiz) turn.answer = null;
@@ -845,6 +897,11 @@
           : ['Passende Stellen aus deinen Quellen', 'Kaynaklarındaki ilgili bölümler']
         : quranOnly && !foundQuran ? quranSourceHelp()
           : insufficient;
+      if (!turn.evidence.length && unavailable.length && !snapshot.pages.length) {
+        turn.notice = ['Beim Laden der Quellen ist ein technischer Fehler aufgetreten.', 'Kaynak araması sırasında teknik bir sorun oluştu.'];
+      } else if (!turn.evidence.length && scans.length && !snapshot.pages.length) {
+        turn.notice = ['Diese Quelle ist noch nicht durchsuchbar.', 'Bu kaynak henüz okunabilir hâle getirilmedi.'];
+      }
       if (!turn.evidence.length && sources.length === 1 && sources[0].id === hadisId && !unavailable.length) {
         turn.notice = [turn.notice[0]+' Durchsucht wurde nur die ausgewählte Hadis-Textfassung. Weitere PDFs kannst du unter Quellen auswählen.',
           turn.notice[1]+' Yalnızca seçili Hadis metni arandı. Kaynaklar bölümünden başka PDF’ler seçebilirsin.'];
@@ -859,7 +916,7 @@
         turn.warning.push([`Seiten ohne lesbaren Text: ${labels}. Nutze die Texterkennung unter Quellen.`, `Okunabilir metni olmayan sayfalar: ${labels}. Kaynaklar menüsündeki metin tanımayı kullan.`]);
       }
       const [first] = turn.evidence;
-      if (!turn.answer && !turn.learning?.quiz && first?.quran && first.ranges) {
+      if ((!turn.answer || turn.answer.kind === 'excerpt') && !turn.learning?.quiz && first?.quran && first.ranges) {
         const source = sources.find(option => option.id === first.sourceId);
         if (source) {
           notice = ['Arabischer Vers wird aus der PDF geladen …', 'Arapça ayet PDF’den yükleniyor …'];
@@ -909,16 +966,21 @@
       const key = sourceKey(source);
       const data = recognizedPages.get(key) || new Map();
       const totalPages = pdf?.numPages ?? 1;
+      const tried = attemptedOcr.get(key) ?? new Set();
       if (next) {
         const known = new Set([...(cachedPages.get(key)?.pages.map(page=>page.page) ?? []),...data.keys()]);
+        const finished = number => known.has(number) || tried.has(number);
         start = 1;
-        while (start <= totalPages && known.has(start)) start++;
+        while (start <= totalPages && finished(start)) start++;
         if (start > totalPages) {
-          notice = ['Alle Seiten haben bereits lesbaren Text.', 'Tüm sayfalarda okunabilir metin var.'];
+          notice = known.size === totalPages
+            ? ['Alle Seiten haben bereits lesbaren Text.', 'Tüm sayfalarda okunabilir metin var.']
+            : ['Alle Seiten wurden geprüft. Einzelne unlesbare Seiten kannst du mit einer anderen Sprache erneut versuchen.',
+              'Tüm sayfalar kontrol edildi. Okunamayan sayfaları farklı bir dil seçerek tekrar deneyebilirsin.'];
           return;
         }
         end = start;
-        while (end < totalPages && end-start < 4 && !known.has(end+1)) end++;
+        while (end < totalPages && end-start < 4 && !finished(end+1)) end++;
       }
       if (end > totalPages) {
         notice = [`Die PDF hat ${pdf.numPages} Seiten. Passe den Bereich an.`, `PDF ${pdf.numPages} sayfa. Aralığı değiştir.`];
@@ -936,13 +998,16 @@
       if (request !== work || !allowed()) return;
       const recognized = [];
       for (const row of rows) {
+        tried.add(row.page);
         if (row.confidence < 25 || !/\p{L}/u.test(row.text)) continue;
         const indexed = {page:row.page,text:row.text,sourceId:source.id,source:source.title,ocr:true};
         data.set(row.page,indexed);
         recognized.push(indexed);
       }
+      attemptedOcr.set(key,tried);
       if (recognized.length) {
         recognizedPages.set(key,data);
+        sourcesChanged();
         await useIndex(source,{ocr:recognized});
         if (request !== work || !allowed()) return;
         const missed = rows.length-recognized.length;
@@ -967,6 +1032,124 @@
       if (request === work) { request = null; render(); }
     }
   }
+
+  async function testOwner() {
+    const account = owner;
+    const epoch = accountEpoch;
+    if (!allowed() || document.documentElement.dataset.betaOwner !== 'true') return false;
+    const {data,error} = await db.rpc('library_beta_get_access');
+    return !error && Array.isArray(data) && data.length === 1 && data[0]?.is_owner === true
+      && allowed() && owner === account && accountEpoch === epoch;
+  }
+
+  async function processForTest(sourceIds,{admin=false,useOcr=false,language='turkish',signal,onProgress} = {}) {
+    if (!allowed() || request || loadingPreferences || signal?.aborted) throw Error('busy');
+    if (admin && !await testOwner()) throw Error('access');
+    if (!allowed() || request || signal?.aborted) throw Error('busy');
+    if (admin && Date.now() < nextDiagnosticAt) throw Error('rate');
+    const sources = pickableSources().filter(source=>sourceIds.includes(source.id)).slice(0,admin ? 1 : 3);
+    if (!sources.length) throw Error('selection');
+    const controller = new AbortController();
+    const diagnostics = new Map();
+    const work = {controller,sources,task:null,force:admin,report(source,stage,value) {
+      const entries = diagnostics.get(source.id) ?? {};
+      entries[stage] = value;
+      diagnostics.set(source.id,entries);
+      onProgress?.(stage,value);
+    }};
+    const abort = () => { controller.abort(); void releasePdf(work); };
+    signal?.addEventListener('abort',abort,{once:true});
+    const timeout = setTimeout(abort,120000);
+    if (admin) nextDiagnosticAt = Date.now()+5000;
+    request = work;
+    render();
+    try {
+      const snapshot = await collectSources(work);
+      controller.signal.throwIfAborted();
+      if (!snapshot || request !== work || !allowed()) throw Error('access');
+      const [source] = sources;
+      const key = sourceKey(source);
+      const record = diagnostics.get(source.id) ?? {};
+      const pdfState = cachedPages.get(key);
+      let ocr = {state:'skip'};
+      if (admin && useOcr && source.id !== hadisId && !record.error && pdfState?.totalPages) {
+        const indexed = new Set([...pdfState.pages.map(page=>page.page),...(recognizedPages.get(key)?.keys() ?? [])]);
+        let page = 1;
+        while (page <= pdfState.totalPages && indexed.has(page)) page++;
+        if (page <= pdfState.totalPages) {
+          try {
+            const pdf = source.image ? null : await openPdf(source,work);
+            const settings = {start:page,end:page,language,signal:controller.signal,onProgress:()=>onProgress?.('ocr',{page})};
+            const [row] = source.image ? await MenbaOCR.recognizeImage(source.file,settings) : await MenbaOCR.recognize(pdf,settings);
+            controller.signal.throwIfAborted();
+            if (request !== work || !allowed()) throw Error('access');
+            if (!row || row.confidence < 25 || !/\p{L}/u.test(row.text)) ocr = {state:'review',page};
+            else {
+              const entry = {sourceId:source.id,source:source.title,page,text:row.text,ocr:true};
+              const recognized = recognizedPages.get(key) ?? new Map();
+              recognized.set(page,entry);
+              recognizedPages.set(key,recognized);
+              await useIndex(source,{ocr:[entry]});
+              snapshot.pages.push(entry);
+              sourcesChanged();
+              ocr = {state:'pass',page};
+            }
+          } catch(error) {
+            if (controller.signal.aborted) throw error;
+            ocr = {state:'fail',page};
+          } finally { await releasePdf(work); }
+        }
+      }
+      let stored = null;
+      if (admin && record.extract?.persisted) {
+        try {
+          const version = await indexVersion(source);
+          const index = await MenbaSourcePreferences.loadIndex(owner,source.id,version);
+          stored = index?.parsed?.pages.length === record.extract.readable && (ocr.state !== 'pass' || index.ocr.some(row=>row.page === ocr.page));
+        } catch { stored = false; }
+      }
+      controller.signal.throwIfAborted();
+      if (request !== work || !allowed()) throw Error('access');
+      return {snapshot,source,sources,record,ocr,stored};
+    } finally {
+      clearTimeout(timeout);
+      signal?.removeEventListener('abort',abort);
+      if (request === work) { request = null; notice = null; render(); }
+    }
+  }
+
+  const testOptions = sources => ({sources,hadisId,isQuran,language:lang});
+  async function suggestQuestions(signal) {
+    const {snapshot,sources} = await processForTest(pickableSources().map(source=>source.id),{signal});
+    return MenbaQuestionChecks.candidates(snapshot.pages,lang).map(candidate=>
+      MenbaQuestionChecks.test(candidate,snapshot,testOptions(sources)));
+  }
+
+  async function diagnoseSource(sourceId,settings) {
+    const {snapshot,source,sources,record,ocr,stored} = await processForTest([sourceId],{...settings,admin:true});
+    const configuration = testOptions(sources);
+    const candidates = MenbaQuestionChecks.candidates(snapshot.pages,lang,6);
+    const questions = [...MenbaQuestionChecks.standardQuestions.map(text=>({text})),...candidates]
+      .map(candidate=>MenbaQuestionChecks.test(candidate,snapshot,configuration));
+    const multilingual = ['de','tr','ar'].map(language=>{
+      const [candidate] = MenbaQuestionChecks.candidates(snapshot.pages,language,1);
+      return candidate ? MenbaQuestionChecks.test(candidate,snapshot,{...configuration,language}).status : 'skip';
+    });
+    const missing = MenbaQuestionChecks.test({text:'Xylutronium Befund XQQZK'},snapshot,configuration);
+    const emptyScope = MenbaQuestionChecks.test({text:candidates[0]?.text ?? 'Emsile nedir?'},snapshot,{...configuration,sources:[]});
+    return {
+      title:source.title,record,ocr,stored,questions,multilingual,
+      pages:snapshot.pages.length,wrongMatch:missing.found>0,scopeClean:emptyScope.found===0,
+      privateIndex:!source.shareId && source.id !== hadisId,localFile:Boolean(source.file),
+      publicText:source.id === hadisId,
+      cloudConfigured:MenbaCloudChat.canUse(cloud.dataset.endpoint)
+    };
+  }
+
+  window.MenbaDiagnosticAccess = Object.freeze({
+    selectedSources:()=>allowed() ? pickableSources().map(({id,title})=>({id,title})) : [],
+    suggestQuestions,diagnoseSource
+  });
 
   picker.addEventListener('change', event => {
     const input = event.target;
@@ -1029,6 +1212,11 @@
   });
   category.addEventListener('change',render);
   learningMode.addEventListener('change',()=>renderLearning(allowed(),Boolean(request)));
+  document.addEventListener('menba-select-mode',event=>{
+    if (!allowed() || request || !['talebe','hoca'].includes(event.detail) || (event.detail === 'hoca' && !hocaAllowed)) return;
+    learningMode.value = event.detail;
+    renderLearning(true,false);
+  });
   useTopic.addEventListener('click',()=>{
     question.value = turns.at(-1)?.retrievalQuestion ?? '';
     question.focus();
@@ -1044,7 +1232,7 @@
   retry.addEventListener('click', () => {
     if (!allowed() || request || !retryQuestion) return;
     question.value = retryQuestion;
-    void run();
+    void run(true);
   });
   form.addEventListener('submit', event => {
     event.preventDefault();
@@ -1072,12 +1260,15 @@
       ++accountEpoch;
       ++hocaRequest;
       hocaAllowed = false;
+      nextDiagnosticAt = 0;
       learningMode.value = 'chat';
+      sourcesChanged();
       loadingPreferences = Boolean(owner);
       savingPreferences = false;
       selectionNotice = null;
       cachedPages.clear();
       recognizedPages.clear();
+      attemptedOcr.clear();
       sharedVersions.clear();
       sourceStates.clear();
       loadedIndexes.clear();
