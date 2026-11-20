@@ -59,10 +59,12 @@
     const {quran,quranOnly,text,hadith} = plan;
     const scope = new Set(plan.sources.map(source=>source.id));
     const eligible = pages.filter(page=>scope.has(page.sourceId) && (!quranOnly || quranSources.has(page.sourceId)));
-    const quranRows = quran ? findQuran(quran,eligible.filter(page=>quranSources.has(page.sourceId))) : [];
+    const prayerParts = MenbaSearch.prayerPartsQuestion(text);
+    const quranRows = quran && !prayerParts.length ? findQuran(quran,eligible.filter(page=>quranSources.has(page.sourceId))) : [];
     const dietaryRows = !quranOnly && !quranRows.length && quran?.dietaryRuling
       ? MenbaQuran.findVerses(quran,eligible.filter(page=>!quranSources.has(page.sourceId))) : [];
-    const rows = quranOnly || quranRows.length ? quranRows : dietaryRows.length ? dietaryRows : MenbaSearch.find(text,eligible);
+    const rows = prayerParts.length ? MenbaSearch.find(text,eligible)
+      : quranOnly || quranRows.length ? quranRows : dietaryRows.length ? dietaryRows : MenbaSearch.find(text,eligible);
     const samples = hadith?.sample ? eligible.filter(page=>page.sourceId === hadisId) : [];
     const ocr = new Set(eligible.filter(row=>row.ocr).map(row=>`${row.sourceId}:${row.page}`));
     const evidence = (samples.length ? [samples[Math.floor(Math.random()*samples.length)]] : rows).map(entry=>({

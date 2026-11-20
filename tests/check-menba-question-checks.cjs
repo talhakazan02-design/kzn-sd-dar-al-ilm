@@ -50,6 +50,30 @@ assert.equal(checks.checkCitation({...emsile,text:'Das Buch behauptet etwas ande
 const quran = {id:'q',title:'Koran',quran:true};
 const verse = {verse:'2:43',text:'Namazı dosdoğru kılın ve zekâtı verin.'};
 const rawQuran = {sourceId:'q',source:'Koran',page:7,text:verse.text,verses:[verse]};
+const tecvid = {id:'t',title:'Tecvid'};
+const unrelatedPreface = {sourceId:'t',source:'Tecvid',page:5,text:'Onunla amel etmeyi farz Allahü Teâlâ’ya mahsustur. Salat-ü Selam; en güzel okuyan ve ümmetine Peygamber Efendimiz Hz.'};
+const ilmihal = {id:'i',title:'İlmihal'};
+const lesson = {sourceId:'i',source:'İlmihal',page:64,text:'Namazın Farzları\nNamazın dışında ve içinde yerine getirilen farzlar vardır. Kıyam, rükû ve secde namazın içindeki farzlardandır.'};
+const otherLesson = {...lesson,sourceId:'t',source:'Tecvid',text:'Namazın içindeki farzlar arasında kıyam ve rükû yer alır.'};
+const contents = {...lesson,text:'İçindekiler\nNamazın Farzları ..... 64\nNamazın Vacipleri ..... 68'};
+const prayerSnapshot = {pages:[unrelatedPreface,rawQuran,otherLesson,lesson],quranSources:new Set(['q'])};
+function prayerEvidence(question,sources,pages=prayerSnapshot.pages) {
+  const plan=checks.plan(question,sources,MenbaAnswers.inspect(question),source=>Boolean(source.quran),'curated');
+  return checks.rank(plan,{...prayerSnapshot,pages},'curated').evidence;
+}
+for (const question of ['Namazin Farzlari','Namazın farzları nelerdir?', 'Namazın farzlarını açıklar mısın?']) {
+  assert.deepEqual(prayerEvidence(question,[tecvid,quran],[unrelatedPreface,rawQuran]),[],question);
+  assert.equal(prayerEvidence(question,[tecvid,quran,ilmihal])[0]?.sourceId,ilmihal.id,question);
+}
+assert.deepEqual(prayerEvidence('İlmihal’de namazın farzları nelerdir?', [tecvid,ilmihal],[otherLesson]),[]);
+assert.deepEqual(prayerEvidence('Namazın farzları',[ilmihal],[contents]),[]);
+assert.deepEqual(prayerEvidence('Namazın farzları',[ilmihal],[{...lesson,text:'Namazın Farzları'}]),[]);
+assert.deepEqual(prayerEvidence('Namazın farzları',[ilmihal],[{...lesson,text:'Namaz kılmak her Müslümana farzdır.'}]),[]);
+assert.equal(prayerEvidence('Namazın farzları',[ilmihal],[{...lesson,ocr:true}])[0]?.ocr,true);
+assert.equal(prayerEvidence('Was sind die Pflichtbestandteile des Gebets?', [ilmihal])[0]?.page,64);
+assert.equal(prayerEvidence('ما فرائض الصلاة؟',[ilmihal])[0]?.page,64);
+assert.equal(prayerEvidence('Namaz hakkında bir ayet',[quran])[0]?.verse,'2:43');
+assert.deepEqual(MenbaSearch.find('Namaz',[unrelatedPreface]),[]);
 const candidates = checks.candidates([rawQuran],'tr');
 assert.ok(candidates.length >= 1);
 const observed = checks.test(candidates[0],{pages:[rawQuran],quranSources:new Set(['q'])},{
