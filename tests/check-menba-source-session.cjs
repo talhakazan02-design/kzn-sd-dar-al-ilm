@@ -8,6 +8,7 @@ const origin = 'https://library.example';
 const excerpt = 'Die Sternlaterne wird am Donnerstag im Lesesaal aufgestellt.';
 const fixture = `
 window.fileGranted = true;
+window.fixtureHoca = true;
 window.signedRequests = 0;
 const fixtureUser = {id:'reader'};
 const fixtureBooks = [
@@ -57,7 +58,8 @@ const query = name => ({
 window.supabase = {createClient:()=>({
   auth:{getSession:async()=>({data:{session:{user:fixtureUser,access_token:'synthetic-fixture-session-token'}}}),getUser:async()=>({data:{user:fixtureUser}}),onAuthStateChange(){}},
   from:name=>name.startsWith('library_menba_template') ? templateQuery(name) : query(name),
-  rpc:async name=>({data:name === 'library_beta_get_access' ? [{is_owner:true,capabilities:[]}] : [],error:null}),
+  rpc:async name=>({data:name === 'library_beta_get_access' ? [{is_owner:true,capabilities:[]}]
+    : name === 'library_menba_access' ? [{user_id:fixtureUser.id,is_hoca:window.fixtureHoca}] : [],error:null}),
   storage:{from:()=>({async createSignedUrl(file){
     if(file !== 'test.pdf') throw Error('Unexpected source was used');
     window.signedRequests++;
@@ -71,7 +73,10 @@ export function getDocument({data}) {
   const str = new TextDecoder().decode(data);
   return {destroy:async()=>{},promise:Promise.resolve({
     getMetadata:async()=>({}),numPages:1,
-    getPage:async()=>({getTextContent:async()=>({items:[{str}]}),cleanup(){}})
+    getPage:async()=>({getTextContent:async()=>({items:[{str}]}),cleanup(){},
+      getViewport:({scale})=>({width:100*scale,height:100*scale}),
+      render:({canvasContext})=>{ canvasContext.fillRect(0,0,20,20); return {promise:Promise.resolve(),cancel(){}}; }
+    })
   })};
 }`;
 
@@ -93,6 +98,7 @@ async function check() {
     let downloads = 0;
     let externalPosts = 0;
     let cloudCalls = 0;
+    const requests = [];
     const types = {js:'text/javascript',css:'text/css',json:'application/json'};
     await page.route('**/*', async route=>{
       const url = new URL(route.request().url());
@@ -103,7 +109,10 @@ async function check() {
         const headers = {'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'authorization,content-type','Access-Control-Allow-Methods':'POST,OPTIONS'};
         if (route.request().method() === 'OPTIONS') return route.fulfill({status:204,headers});
         cloudCalls++;
-        return route.fulfill({status:200,headers,json:{text:'Die Laterne steht im Lesesaal.',citations:[{number:1,quote:excerpt}]}});
+        const input = route.request().postDataJSON();
+        requests.push(input);
+        const text = input.draft ? 'Einstieg der Lesestunde\n\nDie Laterne steht im Lesesaal.' : 'Die Laterne steht im Lesesaal.';
+        return route.fulfill({status:200,headers,json:{text,mode:input.mode,citations:[{number:1,quote:excerpt}]}});
       }
       if (url.origin !== origin) {
         if (route.request().method() === 'POST') externalPosts++;
@@ -176,7 +185,12 @@ async function check() {
     const boxes = async () => Promise.all([tools.boundingBox(),conversation.boundingBox()]);
     const [aside, desktopChat] = await boxes();
     assert(aside.x + aside.width <= desktopChat.x,'Desktop places sources beside the conversation');
-    const sourceMenu = tools.locator('.menba-source-menu').first();
+    const sourcesPanel = page.locator('.menba-sources-panel');
+    await page.setViewportSize({width:1920,height:1000});
+    const [wideTools,wideChat,wideSources] = await Promise.all([tools.boundingBox(),conversation.boundingBox(),sourcesPanel.boundingBox()]);
+    assert(wideTools.x+wideTools.width<=wideChat.x && wideChat.x+wideChat.width<=wideSources.x,'Wide MENBA has tools, chat and sources in that order');
+    await page.setViewportSize({width:1440,height:900});
+    const sourceMenu = sourcesPanel.locator('.menba-source-menu').first();
     await page.locator('#menbaSourcesSummary').click();
     assert.equal(await sourceMenu.evaluate(element=>element.open),false);
     const templates = page.locator('#menbaQuestionTemplates');
@@ -235,6 +249,9 @@ async function check() {
     assert.equal(await turns.count(),0);
     assert.equal(await question.inputValue(),'');
     assert(await book.isChecked());
+    await page.locator('[data-menba-start=explain]').click();
+    assert.equal(await templates.locator('#menbaTemplateChoice').inputValue(),'0');
+    await templates.locator(':scope > summary').click();
     await ask();
     await latest.locator('.menba-citation').filter({hasText:'Bibliotheksordnung · Sayfa 1'}).waitFor();
     assert(await question.evaluate(element=>parseFloat(getComputedStyle(element).fontSize) >= 18));
@@ -314,6 +331,92 @@ async function check() {
     assert.equal(await question.inputValue(),'Welche Textstelle erwähnt „Donnerstag im Lesesaal“?');
     assert.equal(await turns.count(),turnCount);
 
+    await page.setViewportSize({width:390,height:780});
+    await page.locator('#menbaSourcesSummary').click();
+    if (!await book.isChecked()) await book.check();
+    const workMode = page.locator('.menba-work-mode').filter({has:page.locator('#menbaMode')});
+    await workMode.locator('summary').click();
+    const chooseMode = workMode.locator('#menbaMode');
+    const style = workMode.locator('#menbaExplanationMode');
+    const askText = async text=>{
+      await question.fill(text);
+      await page.locator('#menbaAsk').click();
+      await page.waitForFunction(()=>!document.getElementById('menbaAsk').disabled);
+    };
+    await chooseMode.selectOption('talebe');
+    await workMode.getByText(/Sade Anlatım · Kurze Sätze/u).waitFor();
+    await askText(questionText);
+    await askText('Hocam, anlamadım.');
+    assert.equal(await latest.getByText(/Hast du diesen Schritt verstanden/u).count(),0);
+    await consent.check();
+    await askText('Ich verstehe es immer noch nicht.');
+    await workMode.getByText(/wurde Rehberli Anlatım aktiviert/u).waitFor();
+    await latest.getByText('Schritt 1 · Hast du diesen Schritt verstanden?').waitFor();
+    assert.deepEqual([requests.at(-1).mode,requests.at(-1).previousQuestion],['guided',questionText]);
+    await latest.getByRole('button',{name:'Verstanden, weiter'}).click();
+    assert.equal(await consent.isChecked(),false);
+    await consent.check();
+    await askText(await question.inputValue());
+    await latest.getByText('Schritt 2 · Hast du diesen Schritt verstanden?').waitFor();
+    assert.equal(requests.at(-1).step,2);
+    await askText('Verstanden');
+    await workMode.getByText(/Sade Anlatım · Kurze Sätze/u).waitFor();
+    await style.selectOption('simple');
+    await askText('Hocam, anlamadım.');
+    await askText('Yine anlamadım.');
+    assert.equal(await style.inputValue(),'simple');
+
+    await chooseMode.selectOption('hoca');
+    assert.equal(await style.inputValue(),'menba');
+    await style.selectOption('scholarly');
+    assert.equal(await workMode.locator('#menbaExplanationDepth').inputValue(),'balanced');
+    await workMode.locator('#menbaExplanationDepth').selectOption('detail');
+    const sohbet = page.locator('#menbaSohbet');
+    await sohbet.locator('summary').click();
+    await sohbet.locator('[name=topic]').fill(questionText);
+    await sohbet.locator('[name=minutes]').selectOption('20');
+    await sohbet.locator('[name=audience]').selectOption('youth');
+    await sohbet.locator('[name=depth]').selectOption('deep');
+    await sohbet.locator('[name=cloud]').check();
+    await sohbet.getByRole('button',{name:'Sohbet-Entwurf erstellen'}).click();
+    await latest.getByText('Prüfe den Sohbet-Entwurf vor der Verwendung.').waitFor();
+    await latest.locator('.menba-answer-sources').getByText('Quellen',{exact:true}).waitFor();
+    assert.equal(await latest.locator('.menba-answer').count(),2);
+    assert.equal(await latest.locator('.menba-answer').first().textContent(),'Einstieg der Lesestunde');
+    assert.deepEqual(requests.at(-1).draft,{minutes:20,audience:'youth'});
+    assert.equal(requests.at(-1).depth,'deep');
+    assert(await sohbet.locator('form').evaluate(element=>element.scrollWidth <= element.clientWidth+1));
+    assert(await page.locator('.menba-panel').evaluate(element=>element.scrollWidth <= element.clientWidth+1));
+    await saveScreenshot('menba-hoca-mobile.png');
+    await page.evaluate(()=>{window.fixtureHoca = false;document.dispatchEvent(new Event('menba-role-change'));});
+    await sohbet.waitFor({state:'hidden'});
+    assert.equal(await chooseMode.locator('[value=hoca]').count(),0);
+
+    await chooseMode.selectOption('chat');
+    await page.locator('#menbaHistory > summary').click();
+    await page.locator('#menbaHistoryList').getByRole('button',{name:questionText,exact:true}).first().click();
+    assert.equal(await turns.filter({hasText:questionText}).first().evaluate(element=>document.activeElement === element),true);
+    await page.locator('#menbaSearchSources').fill('bibliotheks');
+    assert.equal(await other.count(),0);
+    assert.equal(await book.count(),1);
+    await page.locator('#menbaSearchSources').fill('');
+    await page.locator('#menbaSelectedOnly').check();
+    assert.equal(await other.count(),0);
+    await page.locator('#menbaSelectedOnly').uncheck();
+    await askText(questionText);
+    await latest.getByRole('button',{name:'Ein Beispiel geben'}).click();
+    assert.equal(await consent.isChecked(),false);
+    await consent.check();
+    await page.locator('#menbaAsk').click();
+    await latest.getByText('Die Laterne steht im Lesesaal.').waitFor();
+    assert.equal(requests.at(-1).previousQuestion,questionText);
+    const sourceDetails = latest.locator('.menba-passage');
+    assert.equal(await sourceDetails.evaluate(element=>element.open),false);
+    await latest.getByRole('button',{name:'Quellen anzeigen'}).click();
+    assert.equal(await sourceDetails.evaluate(element=>element.open),true);
+    await sourceDetails.getByRole('button',{name:'Originalseite anzeigen'}).click();
+    await sourceDetails.getByRole('img',{name:'Originalseite 1'}).waitFor();
+
     page.once('dialog',dialog=>void dialog.dismiss());
     await row('Gemeinsame Suchvorlage').getByRole('button',{name:'Löschen'}).click();
     assert.equal(await row('Gemeinsame Suchvorlage').count(),1);
@@ -339,6 +442,7 @@ async function check() {
     console.log('PASS: desktop and mobile conversation, templates, sources, editing, copying, local retry, new conversation and TR labels.');
     console.log('PASS: admin question trace checks the exact quote, citation, cache reuse and optional cloud transfer.');
     console.log('PASS: create, test, edit, duplicate, save, favorite, find, filter, fill, confirm deletion and restore templates.');
+    console.log('PASS: role defaults, guided follow-ups, manual override, draft inputs, verified quotes and mobile controls.');
   } finally {
     await browser.close();
   }

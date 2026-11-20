@@ -1,6 +1,6 @@
 # MENBA Workers AI
 
-The browser can use the optional Worker after a member explicitly opts in for an individual question. The Worker receives the question, a short follow-up context when present, and up to three excerpts from the selected, currently accessible sources. The Worker uses a Supabase session only to check membership and owner permissions. It does not keep questions, answers, excerpts or session tokens in the quota store.
+The browser can use the optional Worker after a member explicitly opts in for an individual question or Sohbet draft. The Worker receives the question, a short follow-up context when present, the requested explanation mode and up to six excerpts from the selected, currently accessible sources. Draft requests also include the chosen duration and audience. The Worker uses a Supabase session to check membership, Hoca and owner permissions. The quota store keeps usage only.
 
 ## Deployment order
 
@@ -11,7 +11,14 @@ The browser can use the optional Worker after a member explicitly opts in for an
 
 ## Limits
 
-The Worker reserves Neurons before either model call, uses reported token counts to settle the estimate when available, then discards the reservation. The ledger stores only the usage day, estimated Neurons, configured limits and opaque account IDs. The owner can set a daily limit of 0–10,000 for approved members. A zero limit disables model requests. Local search and learning activities use no Neurons.
+The Worker reserves Neurons for up to two calls to `@cf/google/gemma-4-26b-a4b-it`, one to write and one to verify each answer. It uses reported token counts to settle the estimate when available, then discards the reservation. The ledger stores the usage day, estimated Neurons, configured limits and opaque account IDs. The owner can set a daily limit of 0–10,000 for approved members. A zero limit disables model requests. Local search and learning activities use no Neurons.
+
+| İlmî Derinlik | Maximum excerpts | Maximum draft output tokens |
+| --- | ---: | ---: |
+| Öz | 2 | 480 |
+| İzah | 3 | 900 |
+| Tafsil | 5 | 1,500 |
+| Derin Tetkik | 6 | 2,200 |
 
 The admin page displays MENBA's estimate. Cloudflare provides the official account-wide figure in its dashboard. Other Workers on the same account can consume part of the free allocation. The budget resets at midnight UTC.
 

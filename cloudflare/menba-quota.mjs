@@ -52,10 +52,10 @@ export class MenbaQuota {
   }
 }
 
-export function reservationCost(input) {
+export function reservationCost(input, answerTokens = 360, answerCharacters = 650) {
   const bytes = new TextEncoder().encode(JSON.stringify(input)).length;
   // Upper estimate includes both prompts, the verifier's copy of the answer, templates and output caps.
-  return Math.ceil(((bytes + 1600)*2 + 3200) * .009091 + (360+120) * .027273);
+  return Math.ceil((bytes*2 + 6400 + answerCharacters*4) * .009091 + (answerTokens+120) * .027273);
 }
 
 export function reportedCost(usage) {

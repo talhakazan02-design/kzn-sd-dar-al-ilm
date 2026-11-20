@@ -1,5 +1,14 @@
 # MENBA AI – Änderungsverlauf
 
+## Beta 0.4.0 · Chat-Oberfläche und Hoca-Talebe-Erklärungen · Release-Kandidat
+
+- MENBA Anlatım, Sade Anlatım, Rehberli Anlatım und İlmî Anlatım. Talebeler können Schritt für Schritt weitergehen. Hocalar wählen Öz, İzah, Tafsil oder Derin Tetkik.
+- „Sohbet Hazırla“ übernimmt Thema, Dauer, Zielgruppe, Vertiefung und ausgewählte Quellen. Der Chat kennzeichnet fertige Entwürfe zur Prüfung durch den Hoca. Bei geringer Quellenabdeckung bleiben die belegten Fundstellen verfügbar.
+- Auf breiten Bildschirmen stehen Sitzungsverlauf und Vorlagen links, der Chat in der Mitte und die Quellenauswahl rechts. Auf kleinen Bildschirmen sind die Menüs einklappbar. Quellensuche, Filter für ausgewählte Bücher, Startaktionen und kontextbezogene Rückfragen sind auf Deutsch und Türkisch verfügbar.
+- Die formulierte Erklärung steht vor den Quellen. MENBA zeigt Buch, vorhandenen Dateinamen, PDF-Seite und geprüften Auszug. Die Originalseite lässt sich bei vorhandener PDF direkt aus der Fundstelle öffnen. Neu verarbeitete PDFs behalten zusammenhängende Wörter bei eng benachbarten PDF-Textfragmenten. Für Scanquellen führt die leere Trefferansicht direkt zur lokalen Texterkennung.
+- Der Worker verwendet weiter Gemma 4. Pro Anfrage sind höchstens zwei Modellaufrufe vorgesehen, einer zum Formulieren und einer zur Belegprüfung. Bis zu sechs Auszüge und 2.200 Ausgabetokens bei Derin Tetkik. Die Verbrauchsschätzung wird mit den von Cloudflare gemeldeten Tokenzahlen abgerechnet, sofern diese verfügbar sind.
+- Getestet mit Chrome auf PC und Smartphone, lokaler Worker- und Supabase-Prüfung, echten DE/TR-Fragen in der bereitgestellten Koran-PDF und lokaler OCR in den bereitgestellten Hadis- und İlmihal-Dateien. „Namazın farzları“ und „Namazın içindeki farzlar nelerdir?“ lieferten PDF-Seite 54 im *Resimli Muhtasar İlmihal*. Der Treffer wurde mit der Originalseite verglichen. Die simulierten Worker-Antworten prüfen Abläufe, Belegbindung und Limits. Der produktive Worker wurde für diese Version noch nicht bereitgestellt.
+
 ## Beta 0.3.0 · Phase 2 · Release-Kandidat
 
 ### Neu · Yenilikler
