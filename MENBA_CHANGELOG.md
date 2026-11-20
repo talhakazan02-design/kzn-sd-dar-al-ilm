@@ -1,5 +1,23 @@
 # MENBA AI – Änderungsverlauf
 
+## Beta 0.2.1 · Phase 1 des Zuverlässigkeitsupdates · Release-Kandidat
+
+### Behobene Fehler · Düzeltilen Hatalar
+
+- Ein ausdrücklich genanntes und ausgewähltes Buch bestimmt den Suchbereich. Die automatische Erkennung von Koranfragen oder Hadis-Fragen verdrängt es nicht mehr.
+- Die Suche nach einem Wortlaut verlangt eine zusammenhängende Textstelle. Getrennte Stichwörter führen nur noch in der normalen Stichwortsuche zu Treffern. Bei einem exakten Treffer in der Koran-Ausgabe bleibt der Ayet dem Auszug zugeordnet.
+
+### Verbesserungen · İyileştirmeler
+
+- Der Admin-Testbereich prüft eine konkrete Frage anhand einer ausgewählten Quelle. Er zeigt Zugriff, Texterkennung, Index, Suchmethode, Fundstelle, mögliche Cloud-Übermittlung und Antwortprüfung.
+- Die Diagnose nutzt den vorhandenen Index. „Quelle neu verarbeiten“ stößt die Verarbeitung ausdrücklich erneut an.
+- Bei unvollständiger Suche unterscheidet die Oberfläche den lesbaren Teil, fehlenden Dateizugriff und fehlgeschlagene OCR. Eine unbestätigte Modellantwort hat einen eigenen Status.
+
+### Bekannte Grenzen · Bilinen Sorunlar
+
+- Buchscans brauchen OCR und eine Sichtprüfung. Ohne ausreichende Stelle erscheint keine belegte fachliche Antwort. Vorhandene lokale Fundstellen bleiben bei einer Störung des Cloud-Dienstes verfügbar.
+- Die Versionsübersicht und der Diagnosebericht enthalten den geprüften Stand. Eigene Vorlagen sind für die nächste freizugebende Phase vorgesehen.
+
 ## Beta 0.2.0 · Phase 2 · Release-Kandidat
 
 ### Neu · Yenilikler

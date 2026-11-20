@@ -2,7 +2,19 @@
 
 MENBA beantwortet Fachfragen anhand ausdrücklich ausgewählter und zugänglicher Quellen. Buch, PDF-Seite und gegebenenfalls Ayet gehören zum Beleg. Wenn der Beleg fehlt, bleibt die Frage offen. Externe Modellaufrufe brauchen eine aktive Zustimmung pro Frage. Das Original bleibt die Grundlage für die Prüfung von OCR und Übersetzungen.
 
-Der Stand in diesem Zweig ist **Beta 0.2.0 · Phase 2**. Dieser Release-Kandidat baut auf der zur Prüfung vorliegenden Phase 1 auf. [Phase-1-Entwurf auf GitHub](https://github.com/talhakazan02-design/kzn-sd-dar-al-ilm/pull/25)
+**Beta 0.2.0** ist veröffentlicht. Dieser Zweig bereitet **Beta 0.2.1** für den neuen Auftrag vor. [Veröffentlichte Ausgangsversion](https://github.com/talhakazan02-design/kzn-sd-dar-al-ilm/commit/416adc1f275bf5e7b487d54a2f8b2055b8b572e7)
+
+## Update für zuverlässige Antworten und eigene Vorlagen
+
+| Phase | Umfang und Stand |
+| --- | --- |
+| 1 · Zuverlässigkeit | Buchauswahl, exakte Fundstellen, Fehlerdiagnose und Tests mit echten Quellen. Ergebnisse im [Diagnosebericht](MENBA-DIAGNOSE.md#phase-1-des-neuen-auftrags-zur-antwortqualität). |
+| 2 · Vorlagenverwaltung | Eigene und zentrale Vorlagen, Platzhalter, Suche, Kategorien und Favoriten. Umsetzung nach Freigabe. |
+| 3 · Oberfläche | Navigation für gespeicherte Vorlagen, Quellenpanel und weiterführende Antwortaktionen. Die Beta 0.2.0 liefert bereits den responsiven Chat als Grundlage. |
+| 4 · Intelligente Vorschläge | Fragen aus echten Abschnitten ableiten und Vorlagentests mit nachvollziehbaren Ergebnissen ermöglichen. |
+| 5 · Weiterentwicklung | Mehrsprachige Abdeckung, Indexierung und OCR für größere Bibliotheken, Laufzeiten und Verbrauchsmessung anhand realer Testfälle. |
+
+## Bisheriger Entwicklungsplan der Beta
 
 | Phase | Stand | Nächster Entwicklungsschritt |
 | --- | --- | --- |

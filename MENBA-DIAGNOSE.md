@@ -1,5 +1,39 @@
 # MENBA Diagnose
 
+## Phase 1 des neuen Auftrags zur Antwortqualität
+
+### Reproduzierte Ursachen
+
+| Situation | Verhalten der Beta 0.2.0 | Korrektur |
+| --- | --- | --- |
+| „Was steht in ‹Emsile› zum Thema Koran lesen?“ bei ausgewähltem Emsile und Koran | Der Suchplan enthielt nur die Koran-Quelle. | Der genannte Buchtitel wird zuerst mit der aktuellen Auswahl abgeglichen. Titel außerhalb der Auswahl führen zum Quellenhinweis. |
+| Suche nach dem genauen Wortlaut „Sternlaterne Lesesaal“, wenn die Wörter getrennt vorkommen | Die Stichwortsuche lieferte einen Treffer, den die nachfolgende Antwortprüfung als Wortlaut verwarf. | Ein exakter Suchmodus setzt einen zusammenhängenden Treffer voraus. Unterschiedliche Leerzeichen oder Zeilenumbrüche gelten dabei als Trennung der Wörter. |
+| Test oder Chat mit unvollständiger Verarbeitung | Fehlende Zugriffsrechte, nicht erkannter Text und unbelegte Modellantworten konnten zusammen mit einer allgemeinen Meldung erscheinen. | Fehlerstufen bleiben im Testbericht erkennbar. Im Chat wird auf den tatsächlich durchsuchten Teil und den betroffenen Verarbeitungsschritt hingewiesen. |
+
+### Verarbeitung und Diagnosegrenzen
+
+- Eigene und gemeinsame PDFs werden über den bestehenden Supabase-Zugriff autorisiert. Der Browser verarbeitet PDF-Text und OCR. Der Textindex liegt für eigene und lokal geöffnete Quellen in IndexedDB und für gemeinsame Quellen in der Sitzung. Supabase verwaltet den Zugriff und die Dateien.
+- Die Suche kombiniert einen exakten Modus mit der vorhandenen Stichwort-, Volltext- und Ayet-Suche sowie bekannten Begriffen in Deutsch, Türkisch und Arabisch. Eine Anbindung an Vektorsuche ist für den aktuellen Fix nicht erforderlich.
+- Der Admin-Test prüft eine ausgewählte Quelle. Er weist für eine konkrete Frage Suchbereich, Treffer, Belegprüfung und Status des Modellaufrufs aus. Ein freiwilliger Cloud-Test startet bei Bedarf einmal für die eingegebene Frage. Ungeprüfte OCR-Auszüge werden dafür ausgelassen. Ohne explizite Auswahl bleibt die Frage im Browser.
+- Im bestehenden Worker ist `@cf/google/gemma-4-26b-a4b-it` konfiguriert. Die vorgeschaltete Anwendung begrenzt den Kontext auf bis zu drei kurze Auszüge. Der Worker prüft die Antwort gegen das Zitat. Der Adminbereich zeigt den aus dem Token-Verbrauch geschätzten MENBA-Verbrauch. Cloudflare dokumentiert eine kostenlose Zuteilung von 10.000 Neurons je UTC-Tag. [Gemma-Modell](https://developers.cloudflare.com/workers-ai/models/gemma-4-26b-a4b-it/) · [Workers-AI-Kontingente](https://developers.cloudflare.com/workers-ai/platform/pricing/)
+
+### Erneut mit echten Quellen geprüft
+
+| Quelle und Frage | Ergebnis |
+| --- | --- |
+| `@kuran-kelime-meali.pdf` · „Hangi metin bölümünde Namazı dosdoğru kılın geçiyor?“ | Im Chat und in der Admin-Diagnose belegt. Der Auszug stammt aus Ayet **2:43** auf **PDF-Seite 7**. Die Diagnose hat den vorhandenen Index benutzt. |
+| Veröffentlichte Hadis-Textfassung · „Hangi metin bölümünde Ana babaya bakmak ibadettir geçiyor?“ | Der Chat belegte die Antwort mit **Hadis 41, Seite 2**. |
+| Veröffentlichte Hadis-Textfassung · „Bu hadis anne ve babaya bakmayı nasıl nitelendiriyor?“ | Separater Test des bestehenden Worker-Codes mit Cloudflare Workers AI und dem öffentlich bereitgestellten Satz. Das Modell formulierte die Antwort auf Türkisch und lieferte das überprüfte Originalzitat. Der aus der Antwort und ihrer Belegprüfung geschätzte Verbrauch betrug **5 Neurons**. Die Anmeldung und das Kontingent waren in diesem Modelltest nachgebildet. [Öffentliche Hadis-Textfassung](https://talhakazan02-design.github.io/kzn-sd-dar-al-ilm/hadis-text.json) |
+| `Hadisi Serfler.pdf` · gezielte OCR | **0 von 2 Seiten** mit eingebetteter Textebene. OCR erkannte Text auf beiden Seiten. Der automatisch formulierte Antworttest blieb bei dieser Probe offen, weil OCR-Text vor einer bestätigten Antwort am Original geprüft werden muss. |
+
+### Fehlgeschlagene Fälle und nächste Schritte
+
+- Die beiden Regressionen ließen sich auf Beta 0.2.0 nachstellen. Nach der Korrektur bestehen die Tests für Buchbindung, exakten Wortlaut und Seitenangabe.
+- In der wiederholten Prüfung der echten Koran-PDF bestanden **6 von 15** Beispielen vollständig. Die neun Standardfragen zu anderen Quellen wie Emsile oder Maksud wurden in dieser Koran-PDF nicht belegt. Der Durchlauf belegt keine allgemeine Trefferquote für die Bibliothek.
+- Emsile und Maksud bleiben anhand der früheren Sichtung Scan-Fälle mit kaum beziehungsweise ohne eingebettete Textebene. Die genaue İlmihal-Seite zu „Namazın farzları“ wartet weiterhin auf Bestätigung am Original. Diese privaten Dateien wurden für den neuen Testlauf nicht erneut geprüft.
+- Technischer Browsertest mit Testdaten prüft die neue Admin-Diagnose, die Einwilligung, den Umgang mit verweigertem Zugriff, erneute Indexnutzung und die Darstellung eines belegten Modellresultats. Such-, Kontingent- und SQL-Rollentests sind ebenfalls Teil der Prüfung.
+- Die nächste freizugebende Phase ist die Verwaltung eigener und zentraler Vorlagen. Weitere Phasen können den überprüften Text der Scanbücher gezielt ausbauen und Laufzeit und Trefferabdeckung messen.
+
 ## Bestandsaufnahme Phase 1
 
 | Bereich | Komponente | Geprüfter Stand und Grenze |

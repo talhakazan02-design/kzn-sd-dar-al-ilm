@@ -25,7 +25,7 @@ const query = name => ({
 window.supabase = {createClient:()=>({
   auth:{getSession:async()=>({data:{session:{user:fixtureUser,access_token:'synthetic-fixture-session-token'}}}),getUser:async()=>({data:{user:fixtureUser}}),onAuthStateChange(){}},
   from:query,
-  rpc:async()=>({data:[],error:null}),
+  rpc:async name=>({data:name === 'library_beta_get_access' ? [{is_owner:true,capabilities:[]}] : [],error:null}),
   storage:{from:()=>({async createSignedUrl(file){
     if(file !== 'test.pdf') throw Error('Unexpected source was used');
     window.signedRequests++;
@@ -129,6 +129,7 @@ async function check() {
     await ask();
     assert.equal(await citation.count(),0,'The revoked file must disappear from answers');
     await chat.getByText(/technischer Fehler/u).waitFor();
+    await chat.getByText(/Datei nicht erreichbar oder Zugriff verweigert/u).waitFor();
     assert.equal(await page.evaluate(()=>window.signedRequests),3);
     assert.equal(downloads,1);
 
@@ -207,9 +208,24 @@ async function check() {
     assert(await question.evaluate(element=>parseFloat(getComputedStyle(element).fontSize) >= 18));
     assert(await latest.locator('blockquote').evaluate(element=>parseFloat(getComputedStyle(element).fontSize) >= 18));
     await saveScreenshot('menba-phase-2-mobile.png');
+
+    await page.setViewportSize({width:1440,height:900});
+    await page.locator('#langBtn').click();
+    await page.locator('#betaAdminNav').click();
+    await page.locator('#menbaTestCenter summary').click();
+    await page.locator('#menbaTestQuestion').fill('Welche Textstelle erwähnt „Donnerstag im Lesesaal“?');
+    await page.locator('#menbaTestRun').click();
+    const report = page.locator('#menbaTestReport');
+    await report.getByText('Antwort und Fundstelle belegt.').waitFor();
+    await report.getByText('Kein Cloud-Transfer für diese Frage.').waitFor();
+    await report.getByText(/Bibliotheksordnung · PDF-Seite 1/u).waitFor();
+    await report.getByText(/Vorhandenen Index wiederverwendet/u).waitFor();
+    assert.equal(downloads,1,'Admin diagnosis must reuse the authorized index');
+    assert.equal(cloudCalls,1,'An admin test stays local by default');
     assert.deepEqual(errors,[]);
     console.log('PASS: source consent, fresh Storage grant, removed stale citations and reused authorized PDF index.');
     console.log('PASS: desktop and mobile conversation, templates, sources, editing, copying, local retry, new conversation and TR labels.');
+    console.log('PASS: admin question trace checks the exact quote, citation, cache reuse and optional cloud transfer.');
   } finally {
     await browser.close();
   }
