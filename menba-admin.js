@@ -146,7 +146,7 @@
       return;
     }
     const {total,budget:maximum,used,limit,day} = quotaState;
-    const number = value => new Intl.NumberFormat(lang === 'tr' ? 'tr-TR' : 'de-DE').format(value);
+    const number = value => new Intl.NumberFormat(libraryLocale()).format(value);
     message(budget,
       `${day} (UTC) · ${number(total)} / ${number(maximum)} Neurons für MENBA verbucht · ${number(Math.max(0,maximum-total))} verfügbar. Verbrauch geschätzt.`,
       `${day} (UTC) · MENBA için ${number(total)} / ${number(maximum)} Neurons ayrıldı · ${number(Math.max(0,maximum-total))} kaldı. Tahmini kullanım.`);

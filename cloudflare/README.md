@@ -2,6 +2,8 @@
 
 The browser can use the optional Worker after a member explicitly opts in for an individual question or Sohbet draft. The Worker receives the question, a short follow-up context when present, the requested explanation mode and up to six excerpts from the selected, currently accessible sources. Draft requests also include the chosen duration and audience. The Worker uses a Supabase session to check membership, Hoca and owner permissions. The quota store keeps usage only.
 
+The answer endpoint supports German, Turkish, English and Arabic. An explanation uses the requested language, and each verified quotation retains the wording found in its selected source. Deploy this Worker version before enabling English cloud answers on the website.
+
 ## Deployment order
 
 1. Apply `MENBA-ADMIN.sql` to the existing Supabase project after validating the migration on that project's schema.

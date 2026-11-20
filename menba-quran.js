@@ -5,7 +5,7 @@
   const words = /[\p{L}\p{N}][\p{L}\p{M}\p{N}\u0640\u200c\u200d]*/gu;
   const quranName = /(?:^|[^\p{L}\p{N}])(?:koran(?:s|ausgabe|text|ubersetzung)?|(?:kur|qur)['’\s-]?an(?:i|in|a|da|dan|de|den|daki)?|mushafi?|(?:بال|لل|ال)?قران|(?:ال)?مصحف)(?![\p{L}\p{N}])/u;
   const otherSource = /(?:^|[^\p{L}])(?:tafsir\w*|tefsir\w*|hadis\w*|hadith\w*|tecvid\w*|tajwid\w*|grammatik\w*|kommentar\w*|تفسير)(?!\p{L})/u;
-  const otherVerse = /(?:^|[^\p{L}])(?:gedicht|strophe|lied|songtext|bibel|injil|incil)(?!\p{L})/u;
+  const otherVerse = /(?:^|[^\p{L}])(?:gedicht|strophe|lied|songtext|bibel|injil|incil|bible|biblical|poem|poetry|song)(?!\p{L})/u;
   const otherRulingSource = /(?:^|[^\p{L}])(?:ilmihal\w*|ilmihalbuch|hadis\w*|hadith\w*|tafsir\w*|tefsir\w*|حديث|تفسير)(?!\p{L})/u;
   const verseName = /^(?:ayy?et|ayet(?:i|in|ler|leri|lerden|le)?|ayetikerime(?:yi|ye|de|den|nin|ler|leri|lerden)?|aya[th]?|ayahs|(?:koran|quran)?vers(?:e|en|es)?|ايه|ايات|الايه|الايات)$/u;
   const verseHonorific = /^(?:kerime(?:yi|ye|de|den|nin|si|ler|leri|lerden)?|(?:ال)?كريمه)$/u;
@@ -18,6 +18,7 @@
     nennen zeigen heisst warum wieso weshalb darf durfen sollte sollten muss mussen alakali bulabilirsen bulunmaktadir diyor getirir getirebilir getirebilirsin gonderir gonderebilir gonderebilirsin gosterebilir gosterebilirsin konusunda konusundaki listeler listeleyebilir listeleyebilirsin mi mu midir mudur musun musunuz miyim muyum miyiz muyuz onerir onerebilir onerebilirsin paylasir paylasabilir paylasabilirsin soyle soyler soyleyebilir soyleyebilirsin verebilir verebilirsin yazar yazabilir yazabilirsin ornegi ornegini neden niye acaba
     عن ما ماذا من في القران القرآن بالمصحف حول اريد ايتني اريد اعثر ابحث ابحثلي اعطني هات هل لي على اي التي الذي ورد ذكرت اذكر اذكرلي كريم الشريف سوره كلمات موضوع بخصوص الايه الايات مع بعد قبل او كيف اين هي هو لنا او اعطيني ارني شاهد
     koran quran qur an qurani mushafi ubersetzung koranubersetzung korantext koranausgabe sure surah kerim pdf لماذا
+    a about an and any are as at be by can could do does explain find for from get give has have how i in is it list me mention mentions my of on or please read relevant say says show some tell the there this to topic what where which why with would you your english german turkish arabic translation
   `.trim().split(/\s+/u).map(normalize));
 
   function normalize(value) {
@@ -30,19 +31,19 @@
 
   // Equivalents guide local retrieval. The returned quote always comes from the supplied source.
   const equivalents = [
-    'namaz salat salah salahh ritualgebet pflichtgebet gebet beten betet الصلاة صلاه صلوه الصلوه صلوات',
-    'oruc savm siyam fasten fastet fastenzeit صوم صيام',
+    'namaz salat salah salahh ritualgebet pflichtgebet gebet beten betet prayer prayers الصلاة صلاه صلوه الصلوه صلوات',
+    'oruc savm siyam fasten fastet fastenzeit fasting صوم صيام',
     'zekat zakat pflichtabgabe almose almosen زكاه زكوة',
-    'sabir geduld geduldig sabret sabreden صبر صابرين اصبر',
-    'adalet adil gerechtigkeit gerecht عدل قسط',
-    'rahmet merhamet barmherzigkeit barmherzig erbarmen رحمه رحيم',
-    'sukur dankbarkeit dankbar dankt sukret شكر تشكرون',
-    'bagislanma vergebung vergib vergibt magfiret istigfar مغفره استغفر',
+    'sabir geduld geduldig sabret sabreden patience patient صبر صابرين اصبر',
+    'adalet adil gerechtigkeit gerecht justice عدل قسط',
+    'rahmet merhamet barmherzigkeit barmherzig erbarmen mercy merciful رحمه رحيم',
+    'sukur dankbarkeit dankbar dankt sukret gratitude grateful شكر تشكرون',
+    'bagislanma vergebung vergib vergibt magfiret istigfar forgiveness forgive مغفره استغفر',
     'gunah sunde sunden sundigen sundigt ذنب ذنوب اثم اثام',
-    'sadaka spende spenden sadaka صدقه صدقات',
-    'hac hadsch pilgerfahrt hajj حج',
-    'cennet paradies جنه جنات',
-    'ebeveyn eltern والدين',
+    'sadaka spende spenden sadaka charity صدقه صدقات',
+    'hac hadsch pilgerfahrt hajj pilgrimage حج',
+    'cennet paradies paradise جنه جنات',
+    'ebeveyn eltern parents والدين',
     'domuz schwein schweine schweinefleisch schweinfleisch pork خنزير خنازير'
   ];
   const aliases = new Map();

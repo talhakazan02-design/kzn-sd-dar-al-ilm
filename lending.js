@@ -48,7 +48,7 @@
   const activeBooks = () => myBooks().filter(book => !book.deleted_at && book.visibility === 'private');
   const booksById = () => new Map(myBooks().map(book => [book.id, book]));
   const activeLists = () => activePage === 'personal' ? ['personal'] : ['offers', 'requests'];
-  const formatDate = value => new Intl.DateTimeFormat(lang === 'tr' ? 'tr-TR' : 'de-DE')
+  const formatDate = value => new Intl.DateTimeFormat(libraryLocale())
     .format(new Date(value.length === 10 ? value + 'T00:00:00' : value));
 
   function chooseBook(select, list) {

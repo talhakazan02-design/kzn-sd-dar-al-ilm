@@ -1,5 +1,13 @@
 # MENBA AI – Änderungsverlauf
 
+## Beta 0.5.0 · Deutsch, Türkisch und Englisch · Release-Kandidat
+
+- DE, TR und EN sind im Header auswählbar. Die Oberfläche, Datumsformate und Dateiauswahl folgen der lokal gespeicherten Einstellung. Titel, Mitgliedsinhalte und Quellenauszüge bleiben in der Originalsprache.
+- MENBA erkennt die Fragesprache. Die separat wählbare Antwortsprache hat Vorrang. Englische Suchbegriffe können auf türkische und arabische Fundstellen abgebildet werden. Die Antwort und das Originalzitat erscheinen getrennt. Für die lokale Texterkennung kann Englisch ausgewählt werden.
+- Browserprüfung auf PC und Smartphone in allen drei Sprachen mit An- und Abmeldung, privater und gemeinsamer Bibliothek, Rollenprüfung, MENBA Test Center und gespeicherten Spracheinstellungen. Die Cloud-Antworten und Rollen wurden in isolierten Tests simuliert.
+- Echte englische Fragen zu Gebet, Fasten und Schweinefleisch lieferten belegte Treffer in der bereitgestellten türkischen Kelime-Meal-PDF. Die Test-Suite prüft außerdem englische Suche in arabischem Text, ausreichende Quellenbelege und die Vermeidung falscher Zuordnungen.
+- Der neue Worker akzeptiert Englisch mit demselben Modell und derselben geprüften Quellenbindung. Die Version ist für Prüfung und spätere Bereitstellung vorbereitet. Sie benötigt keine zusätzliche Datenbankmigration für Sprachpräferenzen.
+
 ## Beta 0.4.0 · Chat-Oberfläche und Hoca-Talebe-Erklärungen · Release-Kandidat
 
 - MENBA Anlatım, Sade Anlatım, Rehberli Anlatım und İlmî Anlatım. Talebeler können Schritt für Schritt weitergehen. Hocalar wählen Öz, İzah, Tafsil oder Derin Tetkik.

@@ -5,6 +5,7 @@ const {runInNewContext} = require('node:vm');
 
 require('../menba-search.js');
 require('../menba-answers.js');
+require('../menba-language.js');
 const {find} = globalThis.MenbaSearch;
 const {inspect, compose} = globalThis.MenbaAnswers;
 
@@ -29,6 +30,22 @@ assert.equal(compose(intent,[{...porkPage,verse:'115:1'}]),null);
 assert.equal(compose(intent,[{...porkPage,text:'Domuz eti yemek haram değildir.'}]),null);
 assert.equal(compose(intent,[{...porkPage,text:'Ist Schweinefleisch essen verboten?'}]),null);
 assert.equal(compose(intent,[{...porkPage,text:'Schweinefleisch ist nicht verboten.'}]),null);
+const englishPork = 'Is eating pork haram?';
+assert.deepEqual(compose(inspect(englishPork),find(englishPork,pages),'en'),{
+  text:'The passage prohibits eating pork.',citations:[1]
+});
+assert.equal(find('How is ablution performed?', [arabicPage])[0]?.page,9);
+assert.deepEqual(find('What does the book say about volcanoes?',pages),[]);
+assert.equal(compose(inspect(englishPork),[{...porkPage,text:'Pork is allowed but wine is prohibited.'}],'en'),null);
+assert.equal(compose(inspect(englishPork),[{...porkPage,text:'Pork is not prohibited.'}],'en'),null);
+const {detect} = globalThis.MenbaLanguage;
+assert.equal(detect(englishPork,'','de'),'en');
+assert.equal(detect('Ist Fasten Pflicht?','','en'),'de');
+assert.equal(detect('Namaz hakkında bir ayet-i kerime','','en'),'tr');
+assert.equal(detect('ما موضوع كتاب الأمثلة؟','','en'),'ar');
+assert.equal(detect('Erkläre Namaz auf Englisch.','','de'),'en');
+assert.equal(detect('Explain this in English','tr','en'),'tr');
+assert.equal(detect('Örnekleri İngilizce açıkla','','tr'),'en');
 
 async function checkSharedAccess() {
   const state = {

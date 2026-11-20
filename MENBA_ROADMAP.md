@@ -20,6 +20,10 @@ MENBA beantwortet Fachfragen anhand ausdrücklich ausgewählter und zugängliche
 - **İlmî Anlatım** und **Sohbet Hazırla** setzen die serverseitig bestätigte Hoca-Rolle oder den Hauptadmin voraus. Die vier Vertiefungsstufen begrenzen Quellenzahl und Antwortumfang. Ausformulierte Antworten folgen der bestehenden Cloud-Zustimmung und der Belegprüfung.
 - Die Testfassung prüft die Suche und Zitate mit lokal bereitgestellten PDFs sowie die Modi, Rollen und Verbrauchsgrenzen mit simulierten Worker-Antworten. Ein authentifizierter Lauf mit dem veröffentlichten Modell gehört zur Freigabe des neuen Workers.
 
+## Dritte Sprache
+
+Englisch nutzt die bestehende zentrale Sprachverwaltung. Die Schaltflächen im Header speichern die Sprache gerätebezogen. Die Antwortsprache lässt sich für MENBA separat wählen. Der englische Suchwortschatz ergänzt die gemeinsame Begriffsliste. Die Autorisierung der PDFs und die Pflicht, Aussagen an gefundene Stellen zu binden, gelten für jede Sprache. Für weitere Themen wird die Abdeckung anhand von Fragen zu tatsächlich vorhandenen Buchstellen geprüft.
+
 ## Bisheriger Entwicklungsplan der Beta
 
 | Phase | Stand | Nächster Entwicklungsschritt |

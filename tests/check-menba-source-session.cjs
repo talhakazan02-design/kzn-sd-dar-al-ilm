@@ -9,6 +9,8 @@ const excerpt = 'Die Sternlaterne wird am Donnerstag im Lesesaal aufgestellt.';
 const fixture = `
 window.fileGranted = true;
 window.fixtureHoca = true;
+const guestFixture = new URL(location.href).searchParams.has('guest');
+let fixtureSignedIn = !guestFixture;
 window.signedRequests = 0;
 const fixtureUser = {id:'reader'};
 const fixtureBooks = [
@@ -56,10 +58,12 @@ const query = name => ({
   }
 });
 window.supabase = {createClient:()=>({
-  auth:{getSession:async()=>({data:{session:{user:fixtureUser,access_token:'synthetic-fixture-session-token'}}}),getUser:async()=>({data:{user:fixtureUser}}),onAuthStateChange(){}},
+  auth:{getSession:async()=>({data:{session:fixtureSignedIn ? {user:fixtureUser,access_token:'synthetic-fixture-session-token'} : null}}),
+    getUser:async()=>({data:{user:fixtureUser}}),onAuthStateChange(){},signOut:async()=>{fixtureSignedIn=false;return {error:null}},
+    signInWithPassword:async({password})=>{fixtureSignedIn=password==='synthetic-password';return {error:fixtureSignedIn ? null : Error('fixture')}}},
   from:name=>name.startsWith('library_menba_template') ? templateQuery(name) : query(name),
-  rpc:async name=>({data:name === 'library_beta_get_access' ? [{is_owner:true,capabilities:[]}]
-    : name === 'library_menba_access' ? [{user_id:fixtureUser.id,is_hoca:window.fixtureHoca}] : [],error:null}),
+  rpc:async name=>({data:name === 'library_beta_get_access' ? [{is_owner:!guestFixture,capabilities:[]}]
+    : name === 'library_menba_access' ? [{user_id:fixtureUser.id,is_hoca:!guestFixture&&window.fixtureHoca}] : [],error:null}),
   storage:{from:()=>({async createSignedUrl(file){
     if(file !== 'test.pdf') throw Error('Unexpected source was used');
     window.signedRequests++;
@@ -111,7 +115,8 @@ async function check() {
         cloudCalls++;
         const input = route.request().postDataJSON();
         requests.push(input);
-        const text = input.draft ? 'Einstieg der Lesestunde\n\nDie Laterne steht im Lesesaal.' : 'Die Laterne steht im Lesesaal.';
+        const text = input.draft ? 'Einstieg der Lesestunde\n\nDie Laterne steht im Lesesaal.'
+          : ({en:'The lantern is in the reading room.',tr:'Fener okuma salonunda.'})[input.language] ?? 'Die Laterne steht im Lesesaal.';
         return route.fulfill({status:200,headers,json:{text,mode:input.mode,citations:[{number:1,quote:excerpt}]}});
       }
       if (url.origin !== origin) {
@@ -230,7 +235,7 @@ async function check() {
     assert.equal(await consent.isChecked(),false);
     assert.equal(cloudCalls,1,'Retry must not implicitly send to Cloudflare');
 
-    await page.locator('#langBtn').click();
+    await page.locator('[data-library-lang=tr]').click();
     await latest.getByRole('button',{name:'Soruyu düzenle'}).waitFor();
     assert.match(await latest.locator('.menba-citation').textContent(),/Sayfa 1/u);
     assert.equal(await page.locator('#menbaClearChat').textContent(),'Yeni sohbet');
@@ -259,7 +264,7 @@ async function check() {
     await saveScreenshot('menba-phase-2-mobile.png');
 
     await page.setViewportSize({width:1440,height:900});
-    await page.locator('#langBtn').click();
+    await page.locator('[data-library-lang=de]').click();
     await page.locator('#betaAdminNav').click();
     await page.locator('#menbaTestCenter summary').click();
     await page.locator('#menbaTestQuestion').fill('Welche Textstelle erwähnt „Donnerstag im Lesesaal“?');
@@ -329,6 +334,7 @@ async function check() {
     const turnCount = await turns.count();
     await fill.getByRole('button',{name:'In den Chat übernehmen'}).click();
     assert.equal(await question.inputValue(),'Welche Textstelle erwähnt „Donnerstag im Lesesaal“?');
+
     assert.equal(await turns.count(),turnCount);
 
     await page.setViewportSize({width:390,height:780});
@@ -437,12 +443,82 @@ async function check() {
     await fill.getByRole('button',{name:'In den Chat übernehmen'}).click();
     assert.equal(await question.inputValue(),'Welche Textstelle erwähnt „Donnerstag im Lesesaal“?');
 
+    for (const [width,height] of [[1440,900],[390,780],[320,720]]) {
+      await page.setViewportSize({width,height});
+      for (const [language,label] of [['de','Neue Unterhaltung'],['tr','Yeni sohbet'],['en','New conversation']]) {
+        const toggle = page.locator(`[data-library-lang=${language}]`);
+        await toggle.click();
+        assert.equal(await toggle.getAttribute('aria-pressed'),'true');
+        assert.equal(await page.locator('html').getAttribute('lang'),language);
+        assert.equal(await page.locator('#menbaClearChat').textContent(),label);
+        assert(await page.locator('#libraryLanguages').evaluate(element=>{
+          const rect=element.getBoundingClientRect();return rect.left>=0 && rect.right<=innerWidth && element.scrollWidth<=element.clientWidth+1;
+        }));
+      }
+    }
+    const translationGaps = await page.evaluate(()=>{
+      const prefixes = ['de','beta-de','beta-admin-de','lend-de','share-de'];
+      const keys = prefixes.flatMap(name=>[...document.querySelectorAll(`[data-${name}]`)].map(element=>element.getAttribute(`data-${name}`)));
+      return [...new Set(keys.concat(Object.keys(turkish)))].filter(key=>!Object.hasOwn(libraryEnglish,key));
+    });
+    assert.deepEqual(translationGaps,[]);
+    await page.locator('#menbaSourcesSummary').click();
+    if (!await book.isChecked()) await book.check();
+    const englishQuestion = 'Where is the Sternlaterne in the Lesesaal?';
+    await consent.check();
+    await question.fill(englishQuestion);
+    await page.locator('#menbaAsk').click();
+    await latest.getByText('The lantern is in the reading room.').waitFor();
+    assert.equal(requests.at(-1).language,'en');
+    const enQuote = latest.locator('.menba-passage');
+    await enQuote.locator('summary').click();
+    assert.equal(await enQuote.locator('blockquote').textContent(),excerpt);
+    await enQuote.getByText('Original excerpt').waitFor();
+    await page.locator('#menbaModeSummary').click();
+    assert(await page.locator('#menbaAnswerLanguage').isVisible());
+    await page.locator('#menbaAnswerLanguage').selectOption('tr');
+    await consent.check();
+    await question.fill(englishQuestion);
+    await page.locator('#menbaAsk').click();
+    await latest.getByText('Fener okuma salonunda.').waitFor();
+    assert.equal(requests.at(-1).language,'tr');
+    await page.reload();
+    assert.equal(await page.locator('html').getAttribute('lang'),'en');
+    assert.equal(await page.locator('#menbaAnswerLanguage').inputValue(),'tr');
+    await page.setViewportSize({width:1440,height:900});
+    await page.locator('#betaAdminNav').click();
+    await page.locator('#betaAdminTitle').waitFor();
+    assert.equal(await page.locator('#betaAdminTitle').textContent(),'Administration');
+    assert.equal(await page.locator('#menbaTestCenter > summary').textContent(),'MENBA Test Center');
+
+    await page.setViewportSize({width:390,height:780});
+    await page.goto(`${origin}/?guest=1`);
+    await page.getByRole('button',{name:'Sign in with password'}).waitFor();
+    await page.locator('#loginEmail').fill('reader@example.test');
+    await page.locator('#loginPassword').fill('invalid-fixture');
+    await page.getByRole('button',{name:'Sign in with password'}).click();
+    await page.locator('#loginFeedback').getByText(/Sign-in failed/u).waitFor();
+    await page.locator('#loginPassword').fill('synthetic-password');
+    await page.getByRole('button',{name:'Sign in with password'}).click();
+    await page.locator('#libraryArea').waitFor();
+    await page.locator('#libraryArea .portal [data-portal=mine]').click();
+    assert.equal(await page.locator('#sectionTitle').textContent(),'My books');
+    await page.locator('#libraryArea .portal [data-portal=shared]').click();
+    assert.equal(await page.locator('#sectionTitle').textContent(),'Shared library');
+    await page.locator('#libraryArea .portal [data-portal=menba]').click();
+    assert.equal(await page.locator('#betaAdminNav').evaluate(element=>element.hidden),true);
+    assert.equal(await page.locator('#menbaHocaNav').evaluate(element=>element.hidden),true);
+    await page.locator('#loginBtn').click();
+    await page.getByRole('button',{name:'Sign in with password'}).waitFor();
+    assert.equal(await page.locator('#libraryArea').isVisible(),false);
+
     assert.deepEqual(errors,[]);
     console.log('PASS: source consent, fresh Storage grant, removed stale citations and reused authorized PDF index.');
     console.log('PASS: desktop and mobile conversation, templates, sources, editing, copying, local retry, new conversation and TR labels.');
     console.log('PASS: admin question trace checks the exact quote, citation, cache reuse and optional cloud transfer.');
     console.log('PASS: create, test, edit, duplicate, save, favorite, find, filter, fill, confirm deletion and restore templates.');
     console.log('PASS: role defaults, guided follow-ups, manual override, draft inputs, verified quotes and mobile controls.');
+    console.log('PASS: DE/TR/EN UI, saved preferences, sign-in and role gates, English replies and the original citation.');
   } finally {
     await browser.close();
   }

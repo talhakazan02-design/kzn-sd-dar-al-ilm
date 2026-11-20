@@ -11,7 +11,8 @@
     ['Test vorbereiten','Test Oluştur','Kannst du einen Test mit fünf Fragen zu {topic} vorbereiten?','{topic} hakkında 5 soruluk bir test hazırlar mısın?'],
     ['Auf Deutsch erklären','Almanca Açıkla','Kannst du {topic} auf Deutsch erklären?','{topic} konusunu Almanca açıklar mısın?'],
     ['Auf Türkisch erklären','Türkçe Açıkla','Kannst du {topic} auf Türkisch erklären?','{topic} konusunu Türkçe açıklar mısın?'],
-    ['Schritt für Schritt erklären','Hocam, Anlamadım','Ich habe {topic} nicht verstanden. Kannst du es Schritt für Schritt erklären?','{topic} konusunu anlamadım. Bana adım adım anlatır mısın?']
+    ['Schritt für Schritt erklären','Hocam, Anlamadım','Ich habe {topic} nicht verstanden. Kannst du es Schritt für Schritt erklären?','{topic} konusunu anlamadım. Bana adım adım anlatır mısın?'],
+    ['Auf Englisch erklären','İngilizce Açıkla','Kannst du {topic} auf Englisch erklären?','{topic} konusunu İngilizce açıklar mısın?']
   ];
   const labels = {topic:['Thema','Konu'],book:['Buchtitel','Kitap adı'],chapter:['Abschnitt','Bölüm']};
   const choice = $('menbaTemplateChoice');
@@ -172,9 +173,9 @@
     const extract = record.extract;
     const available = record.download || record.access && extract || publicText && pages || localFile && !record.error;
     const reading = record.error ? 'fail' : extract?.readable && extract.readable === extract.total && !extract.failed ? 'pass' : 'review';
-    const ocrDetail = ocr.reason === 'indexed' ? tr(`Seite ${ocr.page} ist bereits durchsuchbar.`,`Sayfa ${ocr.page} zaten aranabilir.`)
-      : ocr.reason === 'range' ? tr(`Wähle eine Seite von 1 bis ${ocr.total}.`,`1 ile ${ocr.total} arasında bir sayfa seç.`)
-        : ocr.page ? tr(`Seite ${ocr.page} · mit Original vergleichen.`,`Sayfa ${ocr.page} · özgün sayfayla karşılaştır.`)
+    const ocrDetail = ocr.reason === 'indexed' ? tr(`Seite ${ocr.page} ist bereits durchsuchbar.`,`Sayfa ${ocr.page} zaten aranabilir.`, `Page ${ocr.page} is already searchable.`)
+      : ocr.reason === 'range' ? tr(`Wähle eine Seite von 1 bis ${ocr.total}.`,`1 ile ${ocr.total} arasında bir sayfa seç.`, `Select a page from 1 to ${ocr.total}.`)
+        : ocr.page ? tr(`Seite ${ocr.page} · mit Original vergleichen.`,`Sayfa ${ocr.page} · özgün sayfayla karşılaştır.`, `Page ${ocr.page} · compare with original.`)
           : tr('Keine OCR-Probe in diesem Lauf.','Bu testte OCR örneği kullanılmadı.');
     const errors = {
       sign:tr('Storage hat keinen gültigen Zugriff erteilt.','Depolama erişimi verilemedi.'),
@@ -187,15 +188,15 @@
     const checks = [
       [tr('Dokumentverfügbarkeit','Belge erişimi'),available?'pass':'fail',storageDetail],
       [tr('PDF-Text / Index','PDF metni / dizin'),localFile && !extract?.readable && ocr.state === 'pass' ? 'review' : reading,
-        extract ? tr(`${extract.readable}/${extract.total} Seiten mit Textebene · ${extract.failed} Lesefehler.`,`${extract.total} sayfanın ${extract.readable} tanesinde metin · ${extract.failed} okuma hatası.`) : storageDetail],
+        extract ? tr(`${extract.readable}/${extract.total} Seiten mit Textebene · ${extract.failed} Lesefehler.`,`${extract.total} sayfanın ${extract.readable} tanesinde metin · ${extract.failed} okuma hatası.`, `${extract.readable}/${extract.total} pages with a text layer · ${extract.failed} unreadable.`) : storageDetail],
       [tr('OCR','OCR'),ocr.state,ocrDetail],
       [tr('Durchsuchbarer Index','Aranabilir dizin'),pages?'pass':record.error?'skip':'fail',
-        tr(`${pages} Einträge. ${extract?.reused ? 'Vorhandenen Index wiederverwendet.' : 'Prüfung in dieser Sitzung.'}`,`${pages} kayıt. ${extract?.reused ? 'Mevcut dizin yeniden kullanıldı.' : 'Bu oturumda denetlendi.'}`)],
+        tr(`${pages} Einträge. ${extract?.reused ? 'Vorhandenen Index wiederverwendet.' : 'Prüfung in dieser Sitzung.'}`,`${pages} kayıt. ${extract?.reused ? 'Mevcut dizin yeniden kullanıldı.' : 'Bu oturumda denetlendi.'}`, `${pages} entries. ${extract?.reused ? 'Reused the saved index.' : 'Checked in this session.'}`)],
       [tr('Lokale Speicherung','Yerel kayıt'),stored === true?'pass':privateIndex?(extract?'fail':'skip'):'skip',
         stored === true ? tr('Index erneut aus dem Browser-Speicher gelesen.','Dizin tarayıcı deposundan yeniden okundu.')
           : tr('Kein dauerhaft gespeicherter Index in diesem Lauf bestätigt. Gemeinsame Quellen werden sitzungsbezogen geprüft.','Bu testte kalıcı dizin doğrulanmadı. Ortak kaynaklar oturumda denetlenir.')],
-      [tr('Volltextsuche','Tam metin araması'),active.length?'pass':pages?'review':'fail',tr(`${active.length} vollständig geprüfte Fragen.`,`${active.length} tam doğrulanmış soru.`)],
-      [tr('Mehrsprachige Anfrageformen','Çok dilli soru biçimleri'),multilingual.every(value=>value==='pass')?'pass':'review',`DE / TR / AR · ${multilingual.map(value=>tr(...statuses[value])).join(' · ')}`],
+      [tr('Volltextsuche','Tam metin araması'),active.length?'pass':pages?'review':'fail',tr(`${active.length} vollständig geprüfte Fragen.`,`${active.length} tam doğrulanmış soru.`, `${active.length} fully verified questions.`)],
+      [tr('Mehrsprachige Anfrageformen','Çok dilli soru biçimleri'),multilingual.every(value=>value==='pass')?'pass':'review',`DE / TR / EN / AR · ${multilingual.map(value=>tr(...statuses[value])).join(' · ')}`],
       [tr('Vektorsuche','Vektör araması'),'skip',tr('MENBA verwendet Volltext und mehrsprachige Begriffe.','MENBA tam metin ve çok dilli terimler kullanır.')],
       [tr('Supabase-Textsuche','Supabase metin araması'),'skip',tr('Supabase prüft Konten und Dateien. Der Textindex wird im Browser durchsucht.','Supabase hesapları ve dosyaları denetler. Metin dizini tarayıcıda aranır.')],
       [tr('Quellenauswahl','Kaynak seçimi'),result.scopeClean?'pass':'fail',tr('Kontrollfrage ohne Quellen darf keine Treffer liefern.','Kaynaksız kontrol sorusu sonuç vermemeli.')],
@@ -221,7 +222,7 @@
     }
     const details = document.createElement('details');
     const summary = document.createElement('summary');
-    summary.textContent = tr(`Fragen · ${active.length}/${questions.length} vollständig bestanden`,`Sorular · ${active.length}/${questions.length} tam başarılı`);
+    summary.textContent = tr(`Fragen · ${active.length}/${questions.length} vollständig bestanden`,`Sorular · ${active.length}/${questions.length} tam başarılı`, `Questions · ${active.length}/${questions.length} fully passed`);
     const questionList = document.createElement('ul');
     questionList.className = 'menba-test-results';
     for (const row of questions) {
@@ -264,8 +265,8 @@
             : probe.answer ? tr('Antwort und Fundstelle belegt.','Yanıt ve kaynak doğrulandı.')
               : tr('Fundstellen vorhanden. Eine belegte formulierte Antwort fehlt.','Alıntılar bulundu. Kaynakla doğrulanmış bir yanıt yok.');
     for (const line of [
-      tr(`${probe.scope} Quelle im Suchbereich. ${method}.`,`${probe.scope} kaynak arama kapsamında. ${method}.`),
-      tr(`${probe.found} Fundstellen, davon ${probe.verified} mit Buchseite abgeglichen.`,`${probe.found} alıntı, ${probe.verified} tanesi kitap sayfasıyla karşılaştırıldı.`),
+      tr(`${probe.scope} Quelle im Suchbereich. ${method}.`,`${probe.scope} kaynak arama kapsamında. ${method}.`, `Sources searched: ${probe.scope}. ${method}.`),
+      tr(`${probe.found} Fundstellen, davon ${probe.verified} mit Buchseite abgeglichen.`,`${probe.found} alıntı, ${probe.verified} tanesi kitap sayfasıyla karşılaştırıldı.`, `${probe.found} passages, ${probe.verified} verified against their source pages.`),
       probe.sent ? tr('Anfrage an Cloudflare gestartet.','Cloudflare isteği başlatıldı.') : tr('Kein Cloud-Transfer für diese Frage.','Bu soru için bulut aktarımı yapılmadı.'),
       cloudResult,outcome
     ]) {
@@ -316,8 +317,8 @@
         signal:active.signal,useOcr,ocrPage:requestedPage,language:ocrLanguage.value,reprocess:forceOcr,questionText,askCloud,
         onProgress(stage,values) {
           if (!current()) return;
-          if (stage === 'page') status.textContent = tr(`PDF-Seite ${values.number}/${values.total} wird gelesen …`,`PDF sayfası okunuyor: ${values.number}/${values.total} …`);
-          if (stage === 'ocr') status.textContent = tr(`OCR liest Seite ${values.page} …`,`OCR ${values.page}. sayfayı okuyor …`);
+          if (stage === 'page') status.textContent = tr(`PDF-Seite ${values.number}/${values.total} wird gelesen …`,`PDF sayfası okunuyor: ${values.number}/${values.total} …`, `Reading PDF page ${values.number}/${values.total} …`);
+          if (stage === 'ocr') status.textContent = tr(`OCR liest Seite ${values.page} …`,`OCR ${values.page}. sayfayı okuyor …`, `Running OCR on page ${values.page} …`);
         }
       });
       if (!current()) return;

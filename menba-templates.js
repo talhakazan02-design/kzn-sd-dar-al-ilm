@@ -271,7 +271,7 @@
   }
 
   async function remove(row) {
-    if (busy || !editable(row) || !window.confirm(tr(`Vorlage „${row.title}“ löschen?`,`“${row.title}” şablonu silinsin mi?`))) return;
+    if (busy || !editable(row) || !window.confirm(tr(`Vorlage „${row.title}“ löschen?`,`“${row.title}” şablonu silinsin mi?`, `Delete the template “${row.title}”?`))) return;
     await operation(async()=>{
       const {error} = await db.from(templatesTable).delete().eq('id',row.id).select('id').single();
       if (error) throw error;

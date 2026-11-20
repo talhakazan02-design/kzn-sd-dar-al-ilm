@@ -32,6 +32,7 @@
   const useTopic = $('menbaUseTopic');
   const explanationMode = $('menbaExplanationMode');
   const explanationDepth = $('menbaExplanationDepth');
+  const responseLanguage = $('menbaAnswerLanguage');
   const explanationHint = $('menbaExplanationHint');
   const sohbet = $('menbaSohbet');
   const sohbetForm = $('menbaSohbetForm');
@@ -79,6 +80,8 @@
     select.replaceChildren(...Object.entries(explanations.depths).map(([value,label])=>new Option(label,value)));
     select.value = 'balanced';
   }
+  try { responseLanguage.value = localStorage.getItem('menba-answer-language') || ''; } catch {}
+  if (responseLanguage.selectedIndex < 0) responseLanguage.value = '';
 
   function allowed() {
     return Boolean(owner && owner === currentUser?.id && accessState === 'approved');
@@ -179,7 +182,7 @@
     const ocr = recognizedPages.get(key);
     const ready = new Set([...(pdf?.pages.map(row=>row.page) ?? []),...(ocr?.keys() ?? [])]).size;
     const total = source.image ? 1 : pdf?.totalPages;
-    if (ready && total && ready < total) return tr(`Teilweise bereit (${ready}/${total})`, `Kısmen hazır (${ready}/${total})`);
+    if (ready && total && ready < total) return tr(`Teilweise bereit (${ready}/${total})`, `Kısmen hazır (${ready}/${total})`, `Partially ready (${ready}/${total})`);
     if (ready) return tr('Bereit', 'Hazır');
     if (failedOcr.has(key)) return tr('OCR fehlgeschlagen', 'Metin tanıma başarısız');
     if (state === 'unreadable' || pdf?.totalPages) return tr('Kein lesbarer Text', 'Metin tanınamadı');
@@ -293,7 +296,7 @@
     const canAsk = allowed();
     const busy = request !== null || loadingPreferences || savingPreferences;
     const pickedCount = pickableSources().length;
-    sourceSummary.textContent = tr(`Quellen (${pickedCount})`, `Kaynaklar (${pickedCount})`);
+    sourceSummary.textContent = tr(`Quellen (${pickedCount})`, `Kaynaklar (${pickedCount})`, `Sources (${pickedCount})`);
     const loading = !booksLoaded || loadingPreferences || sharedState === 'loading';
     sourceStatus.textContent = !canAsk ? '' : loading ? tr('Quellen werden geladen …', 'Kaynaklar yükleniyor …')
       : sharedState === 'unavailable' ? tr('Gemeinsame Quellen konnten nicht geladen werden.', 'Ortak kaynaklar yüklenemedi.') : '';
@@ -387,6 +390,10 @@
       learningMode.add(new Option('Hoca Modu','hoca'));
     }
     if (!hocaAllowed) learningMode.querySelector('[value="hoca"]')?.remove();
+    for (const [value,name] of [['chat','Chat'],['talebe','Talebe Modu'],['hoca','Hoca Modu']]) {
+      const option = learningMode.querySelector(`[value="${value}"]`);
+      if (option) option.textContent = tr(name,name);
+    }
     const area = learningMode.value;
     const style = explanations.activeMode(area,explanationState);
     const choices = explanations.choices(area);
@@ -573,7 +580,11 @@
     heading.textContent = 'MENBA';
     reply.append(heading);
     if (turn.answer) {
-      for (const block of turn.answer.text.split(/\n\s*\n/u)) reply.append(paragraph(block,'menba-answer'));
+      for (const block of turn.answer.text.split(/\n\s*\n/u)) {
+        const explanation = paragraph(block,'menba-answer');
+        explanation.lang = turn.language;
+        reply.append(explanation);
+      }
     } else reply.append(paragraph(tr(...turn.notice)));
     if (turn.explanation?.draft && turn.answer) reply.append(paragraph(tr('Prüfe den Sohbet-Entwurf vor der Verwendung.','Sohbet taslağını kullanmadan önce kontrol et.'),'menba-mode-message'));
     if (turn.warning.length) reply.append(paragraph(turn.warning.map(message => tr(...message)).join(' '),'menba-status'));
@@ -611,7 +622,7 @@
       const step = turn.explanation.step;
       const feedback = document.createElement('div');
       feedback.className = 'menba-chat-actions';
-      feedback.append(paragraph(tr(`Schritt ${step} · Hast du diesen Schritt verstanden?`,`${step}. adım · Bu adımı anladın mı?`),'menba-mode-message'));
+      feedback.append(paragraph(tr(`Schritt ${step} · Hast du diesen Schritt verstanden?`,`${step}. adım · Bu adımı anladın mı?`, `Step ${step} · Did you understand this step?`),'menba-mode-message'));
       if (turn === turns.at(-1) && learningMode.value === 'talebe') {
         const nextStep = step < 4 && (turn.answer || turn.guidedMore);
         const next = helpButton(nextStep ? 'Verstanden, weiter' : 'Verstanden',nextStep ? 'Anladım, devam et' : 'Anladım',()=>{
@@ -646,6 +657,7 @@
       passage.append(cite);
       if (entry.document && entry.document !== entry.source) passage.append(paragraph(entry.document,'menba-document-name'));
       if (entry.meal) passage.append(paragraph(tr('Türkische Bedeutung aus der PDF', 'PDF’den Türkçe meal'), 'menba-meal-label'));
+      else if (turn.answer && !entry.ocr) passage.append(paragraph(tr('Originalzitat','Özgün alıntı'),'menba-document-name'));
       const quiz = turn.learning?.quiz?.[index];
       if (quiz) {
         const reveal = document.createElement('details');
@@ -662,8 +674,8 @@
           const preview = document.createElement('img');
           preview.className = 'menba-original';
           preview.src = entry.preview;
-          preview.alt = entry.ranges ? tr(`Arabischer Originalvers ${entry.verse}`, `${entry.verse} ayetinin Arapça aslı`)
-            : tr(`Originalseite ${entry.page}`, `Özgün PDF sayfası ${entry.page}`);
+          preview.alt = entry.ranges ? tr(`Arabischer Originalvers ${entry.verse}`, `${entry.verse} ayetinin Arapça aslı`, `Original Arabic verse ${entry.verse}`)
+            : tr(`Originalseite ${entry.page}`, `Özgün PDF sayfası ${entry.page}`, `Original page ${entry.page}`);
           frame.append(preview);
 
           const zoom = document.createElement('button');
@@ -926,7 +938,7 @@
   }
 
   function progress(source) {
-    notice = [`Durchsuche „${source.title}“ …`, `“${source.title}” taranıyor …`];
+    notice = [`Durchsuche „${source.title}“ …`, `“${source.title}” taranıyor …`, `Searching “${source.title}” …`];
     renderNotice();
   }
 
@@ -944,22 +956,15 @@
     if (!last?.evidence.length) return null;
     if (intent?.kind === 'exception' || intent?.kind === 'source') return last;
     const normalized = question.normalize('NFKD').toLowerCase().replace(/\p{M}/gu,'').replaceAll('ı','i').trim();
-    const referring = /^(?:(?:und|aber|peki)\s+)?(?:warum|wieso|gibt es ausnahmen|was bedeutet (?:das|dies)|wie ist das gemeint|kannst du das (?:einfacher|genauer) erklaren|wo steht (?:das|es)|welche quelle|neden|niye|istisnasi var mi|bu ne demek|bunu acikla|(?:bunu )?(?:daha )?basit anlat|hocam[,]? anlamadim|hangi ayet|nerede yaziyor|kaynagi ne)\s*[?.!]*$/u;
+    const referring = /^(?:(?:und|aber|peki|and|but)\s+)?(?:warum|wieso|gibt es ausnahmen|was bedeutet (?:das|dies)|wie ist das gemeint|kannst du das (?:einfacher|genauer) erklaren|wo steht (?:das|es)|welche quelle|neden|niye|istisnasi var mi|bu ne demek|bunu acikla|(?:bunu )?(?:daha )?basit anlat|hocam[,]? anlamadim|hangi ayet|nerede yaziyor|kaynagi ne|why|are there exceptions|what does (?:that|this) mean|(?:can you )?explain (?:it|that|this) (?:more simply|in more detail)|where does it say that|what is the source|which verse)\s*[?.!]*$/u;
     return referring.test(normalized) ? last : null;
   }
 
   function requestsSource(question) {
-    return /^(?:(?:und|peki)\s+)?(?:wo steht (?:das|es)|welche quelle|hangi ayet|nerede yazıyor|kaynağı ne)\s*[?.!]*$/iu.test(question.trim());
+    return /^(?:(?:und|peki|and)\s+)?(?:wo steht (?:das|es)|welche quelle|hangi ayet|nerede yazıyor|kaynağı ne|where does it say that|what is the source|which verse)\s*[?.!]*$/iu.test(question.trim());
   }
 
-  function answerLanguage(question) {
-    if (/\b(?:auf deutsch|almanca)\b/iu.test(question)) return 'de';
-    if (/\b(?:auf türkisch|türkçe)\b/iu.test(question)) return 'tr';
-    if ((question.match(/\p{Script=Arabic}/gu)?.length ?? 0) >= 5) return 'ar';
-    if (/\b(?:ist|sind|warum|wo steht|welche|schwein(?:efleisch)?|kannst|darf|darfst)\b/iu.test(question)) return 'de';
-    if (/[çğıöşüİ]/u.test(question) || /\b(?:domuz|haram mi|nedir|neden|nedeni|nasil|peki|hangi|ne demek)\b/iu.test(question)) return 'tr';
-    return lang;
-  }
+  const answerLanguage = question => MenbaLanguage.detect(question,responseLanguage.value,lang);
 
   const isQuran = source => source.quran || cachedPages.get(sourceKey(source))?.quran === true;
 
@@ -1033,6 +1038,7 @@
   async function run(retryTurn = null, preparation = null) {
     const text = (retryTurn?.question ?? preparation?.topic ?? question.value).trim();
     if (!allowed() || request || loadingPreferences || !text) return;
+    const language = retryTurn?.language ?? answerLanguage(text);
     const follow = !retryTurn && !preparation && queuedFollowup?.text === text ? queuedFollowup : null;
     const last = retryTurn || editingQuestion ? null : (follow?.turn ?? turns.at(-1));
     const draft = retryTurn?.explanation?.draft ?? preparation?.draft ?? null;
@@ -1073,7 +1079,7 @@
     const {sources,quran,quranOnly,hadith} = plan;
     if (!sources.length) {
       sourceSummary.parentElement.open = true;
-      if (plan.book) notice = [`Wähle „${plan.book}“ unter Quellen, um dieses Buch zu durchsuchen.`,`Bu kitabı aramak için Kaynaklar bölümünden “${plan.book}” seç.`];
+      if (plan.book) notice = [`Wähle „${plan.book}“ unter Quellen, um dieses Buch zu durchsuchen.`,`Bu kitabı aramak için Kaynaklar bölümünden “${plan.book}” seç.`, `Select “${plan.book}” under Sources to search this book.`];
       else if (quranOnly) notice = quranSourceHelp();
       else if (hadith) notice = ['Wähle unter Quellen eine Hadis-Sammlung aus.', 'Kaynaklar bölümünde bir Hadis derlemesi seç.'];
       else notice = ['Wähle zuerst eine Quelle.', 'Lütfen önce kaynak seçin.'];
@@ -1086,7 +1092,7 @@
       return;
     }
     const followKind = follow?.kind ?? retryTurn?.followKind;
-    const turn = {question:text,retrievalQuestion,sources,evidence:[],notice:null,warning:[],answer:null,intent,mode,task,explanation,followKind,usedCloud:useCloud};
+    const turn = {question:text,retrievalQuestion,sources,evidence:[],notice:null,warning:[],answer:null,intent,mode,task,explanation,followKind,language,usedCloud:useCloud};
     const work = {controller:new AbortController(), sources, task:null, turn, force:retryTurn?.needsReload === true};
     request = work;
     turns.push(turn);
@@ -1110,7 +1116,7 @@
         ...entry,document:byId.get(entry.sourceId)?.fileName || byId.get(entry.sourceId)?.file?.name,
         sharedVersion:sharedVersions.get(entry.sourceId)
       }));
-      if (!draft && !followKind && explanation.mode !== 'guided') turn.answer = MenbaQuestionChecks.localAnswer(retrievalQuestion,intent,turn.evidence,answerLanguage(text));
+      if (!draft && !followKind && explanation.mode !== 'guided') turn.answer = MenbaQuestionChecks.localAnswer(retrievalQuestion,intent,turn.evidence,language);
       if (mode !== 'chat' && !draft) {
         turn.learning = MenbaLearning.prepare(mode,task,turn.evidence);
         if (turn.learning?.quiz) turn.answer = null;
@@ -1124,7 +1130,7 @@
           endpoint:cloud.dataset.endpoint,consent:true,
           question:text,explanation,
           previousQuestion:previous?.retrievalQuestion,
-          evidence:turn.evidence,language:answerLanguage(text),signal:work.controller.signal,
+          evidence:turn.evidence,language,signal:work.controller.signal,
           onFailure:reason=>{modelFailure=reason;}
         });
         if (request !== work || !allowed()) return;
@@ -1147,8 +1153,9 @@
       }
       if (!turn.answer && previous && requestsSource(text) && turn.evidence.length) {
         turn.answer = {
-          text: answerLanguage(text) === 'tr' ? 'Bu konunun kaynakları aşağıda, sayfa numaralarıyla birlikte yer alıyor.'
-            : 'Die Fundstellen dazu stehen unten mit Buch und Seitenzahl.',
+          text: ({tr:'Bu konunun kaynakları aşağıda, sayfa numaralarıyla birlikte yer alıyor.',
+            en:'The sources are listed below with book titles and page numbers.',ar:'تظهر المصادر أدناه مع عناوين الكتب وأرقام الصفحات.'})[language]
+            ?? 'Die Fundstellen dazu stehen unten mit Buch und Seitenzahl.',
           citations: turn.evidence.map((_,index) => index+1)
         };
       }
@@ -1176,20 +1183,20 @@
       }
       if (unavailable.length) {
         const labels = unavailable.join(', ');
-        turn.warning.push([`Nicht durchsuchbar: ${labels}.`, `Aranamadı: ${labels}.`]);
+        turn.warning.push([`Nicht durchsuchbar: ${labels}.`, `Aranamadı: ${labels}.`, `Could not search: ${labels}.`]);
         turn.needsReload = true;
       }
       if (inaccessible.length) {
         const labels = inaccessible.join(', ');
-        turn.warning.push([`Datei nicht erreichbar oder Zugriff verweigert: ${labels}.`,`Dosyaya ulaşılamadı veya erişim reddedildi: ${labels}.`]);
+        turn.warning.push([`Datei nicht erreichbar oder Zugriff verweigert: ${labels}.`,`Dosyaya ulaşılamadı veya erişim reddedildi: ${labels}.`, `File unavailable or access denied: ${labels}.`]);
       }
       if (scans.length) {
         const labels = scans.join(', ');
-        turn.warning.push([`Seiten ohne lesbaren Text: ${labels}. Nutze die Texterkennung unter Quellen.`, `Okunabilir metni olmayan sayfalar: ${labels}. Kaynaklar menüsündeki metin tanımayı kullan.`]);
+        turn.warning.push([`Seiten ohne lesbaren Text: ${labels}. Nutze die Texterkennung unter Quellen.`, `Okunabilir metni olmayan sayfalar: ${labels}. Kaynaklar menüsündeki metin tanımayı kullan.`, `Pages without readable text: ${labels}. Use OCR under Sources.`]);
       }
       if (failedScans.length) {
         const labels = failedScans.join(', ');
-        turn.warning.push([`OCR konnte nicht alle geprüften Seiten lesen: ${labels}.`,`Metin tanıma denenen sayfaların tümünü okuyamadı: ${labels}.`]);
+        turn.warning.push([`OCR konnte nicht alle geprüften Seiten lesen: ${labels}.`,`Metin tanıma denenen sayfaların tümünü okuyamadı: ${labels}.`, `OCR could not read every checked page: ${labels}.`]);
       }
       const [first] = turn.evidence;
       if ((!turn.answer || turn.answer.kind === 'excerpt') && !turn.learning?.quiz && first?.quran && first.ranges) {
@@ -1259,14 +1266,14 @@
         while (end < totalPages && end-start < 4 && !finished(end+1)) end++;
       }
       if (end > totalPages) {
-        notice = [`Die PDF hat ${pdf.numPages} Seiten. Passe den Bereich an.`, `PDF ${pdf.numPages} sayfa. Aralığı değiştir.`];
+        notice = [`Die PDF hat ${pdf.numPages} Seiten. Passe den Bereich an.`, `PDF ${pdf.numPages} sayfa. Aralığı değiştir.`, `The PDF has ${pdf.numPages} pages. Adjust the range.`];
         return;
       }
       const settings = {
         start,end,language,signal:work.controller.signal,
         onProgress({page}) {
           if (request !== work) return;
-          notice = [`Texterkennung auf Seite ${page} …`, `${page}. sayfada metin tanınıyor …`];
+          notice = [`Texterkennung auf Seite ${page} …`, `${page}. sayfada metin tanınıyor …`, `Recognizing text on page ${page} …`];
           renderNotice();
         }
       };
@@ -1289,7 +1296,7 @@
         await useIndex(source,{ocr:recognized});
         if (request !== work || !allowed()) return;
         const missed = rows.length-recognized.length;
-        notice = missed ? [`${recognized.length} von ${rows.length} Seiten erkannt. ${missed} ohne lesbaren Text.`, `${rows.length} sayfanın ${recognized.length} tanesi okundu. ${missed} sayfada okunabilir metin yok.`]
+        notice = missed ? [`${recognized.length} von ${rows.length} Seiten erkannt. ${missed} ohne lesbaren Text.`, `${rows.length} sayfanın ${recognized.length} tanesi okundu. ${missed} sayfada okunabilir metin yok.`, `Recognized text on ${recognized.length} of ${rows.length} pages. ${missed} had no readable text.`]
           : ['Erkannter Text ist für die nächste Frage verfügbar. Prüfe Zitate am Original.', 'Tanınan metin sonraki soruda kullanılabilir. Alıntıları özgün sayfadan kontrol et.'];
         if (!selected.has(source.id)) notice = [
           'Wähle das erkannte Dokument unter Quellen aus, um es zu durchsuchen. '+notice[0],
@@ -1433,7 +1440,7 @@
     const candidates = MenbaQuestionChecks.candidates(snapshot.pages,lang,6);
     const questions = [...MenbaQuestionChecks.standardQuestions.map(text=>({text})),...candidates]
       .map(candidate=>MenbaQuestionChecks.test(candidate,snapshot,configuration));
-    const multilingual = ['de','tr','ar'].map(language=>{
+    const multilingual = ['de','tr','en','ar'].map(language=>{
       const [candidate] = MenbaQuestionChecks.candidates(snapshot.pages,language,1);
       return candidate ? MenbaQuestionChecks.test(candidate,snapshot,{...configuration,language}).status : 'skip';
     });
@@ -1541,6 +1548,10 @@
   });
   explanationDepth.addEventListener('change',()=>{
     explanationState.depth = explanationDepth.value;
+    consent.checked = false;
+  });
+  responseLanguage.addEventListener('change',()=>{
+    try { localStorage.setItem('menba-answer-language',responseLanguage.value); } catch {}
     consent.checked = false;
   });
   $('menbaSohbetSources').addEventListener('click',showSources);
