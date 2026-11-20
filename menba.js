@@ -484,7 +484,7 @@
         reveal.append(summary,paragraph(quiz.answer),quote);
         passage.append(paragraph(quiz.prompt),reveal,cite);
       } else passage.append(quote,cite);
-      if (entry.quran && !quiz) {
+      if ((entry.quran || entry.ocr && entry.sourceId !== photoId) && !quiz) {
         if (entry.preview) {
           const frame = document.createElement('div');
           frame.className = 'menba-original-frame';
@@ -826,8 +826,9 @@
     consent.checked = false;
     const mode = learningMode.value;
     const task = learningTask.value;
-    const intent = MenbaAnswers.inspect(text,last?.answer ? last.intent : null);
-    const previous = contextFor(text,intent,last);
+    const directIntent = MenbaAnswers.inspect(text);
+    const intent = directIntent ?? MenbaAnswers.inspect(text,last?.answer ? last.intent : null);
+    const previous = directIntent ? null : contextFor(text,intent,last);
     const retrievalQuestion = previous?.retrievalQuestion ?? text;
     const picked = pickableSources();
     const plan = MenbaQuestionChecks.plan(retrievalQuestion,pickableSources(),intent,isQuran,hadisId);

@@ -100,6 +100,7 @@
     ['abdest', 'wudu', 'wudhu', 'wuzu', 'Gebetswaschung', 'rituelle Waschung', 'وضوء'],
     ['gusul', 'ghusl', 'غسل'],
     ['namaz', 'gebet', 'ritualgebet', 'pflichtgebet', 'salah', 'salat', 'صلاة'],
+    ['salavat', 'salat u selam', 'salat ve selam', 'salatu selam', 'salatus selam', 'الصلاة والسلام'],
     ['oruc', 'fasten', 'sawm', 'صوم', 'صيام'],
     ['zekat', 'zakat', 'pflichtabgabe', 'زكاة'],
     ['domuz', 'schwein', 'schweinefleisch', 'domuz eti', 'خنزير', 'لحم الخنزير'],
@@ -257,6 +258,47 @@
     return [...new Set([...tokens(question.slice(0, 1000))].map(({word}) => word))];
   }
 
+  const prayerPartWords = {
+    duties: /^(?:farz(?:i|lar\p{L}{0,5})|pflichtbestandteil(?:e|en)?|gebetspflicht(?:en)?|(?:ال)?(?:فرايض|فروض))$/u,
+    conditions: /^(?:sart(?:i|lar\p{L}{0,5})|voraussetzung(?:en)?|bedingung(?:en)?|(?:ال)?شروط)$/u,
+    pillars: /^(?:rukun(?:leri|ler|u)?|saeulen?|saulen?|(?:ال)?اركان)$/u
+  };
+  const partQualifiers = /^(?:des|vom|beim|im|icin|icindeki|disindaki|icinde|disinda|onceki|esnasindaki|temel|toplam|iki|uc|dort|bes|alti|yedi|sekiz|dokuz|on|\d+)$/u;
+  const partSeparator = /^[\s'’:,\u2010\u2011-]*$/u;
+
+  function prayerPartsQuestion(question) {
+    const terms = queryTerms(question);
+    if (!terms.includes('namaz') && !terms.some(term=>/^gebetspflicht(?:en)?$/u.test(term))) return [];
+    return Object.keys(prayerPartWords).filter(kind=>terms.some(term=>prayerPartWords[kind].test(term)));
+  }
+
+  function prayerPartsPassage(text, kinds) {
+    if (/^\s*(?:icindekiler|inhaltsverzeichnis|فهرس)(?:\s|$)/u.test(normalize(text))) return null;
+    const words = [...tokens(text)];
+    for (const [index, first] of words.entries()) {
+      if (first.word !== 'namaz' && !kinds.some(kind=>prayerPartWords[kind].test(first.word))) continue;
+      const related = word => first.word === 'namaz'
+        ? kinds.some(kind=>prayerPartWords[kind].test(word)) : word === 'namaz';
+      for (let next = index + 1; next < Math.min(words.length, index + 6); next++) {
+        const last = words[next];
+        if (!partSeparator.test(text.slice(words[next - 1].end, last.start))) break;
+        const after = text.slice(last.end, last.end + 330);
+        const counted = kinds.includes('duties') && first.word === 'namaz' && next > index + 1
+          && last.word === 'farz' && /^\s+vardir\b/u.test(normalize(after));
+        if (!related(last.word) && !counted) {
+          if (!partQualifiers.test(last.word)) break;
+          continue;
+        }
+        if (/^[\t .·…]*\d+[\t ]*(?:\r?\n|$)/u.test(after)) break;
+        const passage = text.slice(first.start, first.start + maxPassageLength).trim();
+        // A heading alone does not establish what the duties are.
+        if ((after.match(tokenPattern)?.length ?? 0) >= 2) return passage;
+        break;
+      }
+    }
+    return null;
+  }
+
   function inspectHadith(question) {
     const terms = queryTerms(question);
     if (!terms.some(word => hadithWord.test(word))) return null;
@@ -277,6 +319,7 @@
     const questionWords = queryTerms(question).filter(word=>significant(word) && !/^\d+$/u.test(word));
     const mainTerms = questionWords.filter(word => !hadithWord.test(word));
     const terms = (mainTerms.length ? mainTerms : questionWords).slice(0, 16);
+    const prayerParts = prayerPartsQuestion(question);
     const requestedBook = /„([^“]{2,160})“|«([^»]{2,160})»|“([^”]{2,160})”/u.exec(question);
     const bookTitle = requestedBook?.slice(1).find(Boolean);
     const identifyingBook = requestedBook && (/\b(?:in|aus|buch|buchtitel)\s*$/iu.test(question.slice(0,requestedBook.index))
@@ -292,6 +335,7 @@
       const exactBook = bookKey && normalize(sourceTitle).replace(/[^\p{L}\p{N}]+/gu,' ').trim() === bookKey;
       const named = exactBook || terms.some(term => titleTerms.has(term) && title.has(term));
       if (bookKey && !exactBook) continue;
+      if (prayerParts.length && terms.includes('ilmihal') && !title.has('ilmihal')) continue;
       available.push({page, title, named});
     }
     const namedSource = available.some(({named}) => named);
@@ -311,6 +355,11 @@
     const candidates = [];
     for (const {page, title, named} of available) {
       if (namedSource && !named) continue;
+      if (prayerParts.length) {
+        const text = prayerPartsPassage(page.text, prayerParts);
+        if (text) candidates.push({sourceId:page.sourceId,source:page.source,page:page.page,text,score:title.has('ilmihal') ? 1 : 0});
+        continue;
+      }
       // A named source narrows the search but is never evidence for a passage.
       const remaining = terms.filter(term => !title.has(term) || (!titleTerms.has(term) && !bookKey));
       const bodyTerms = remaining.length ? remaining : terms;
@@ -344,5 +393,5 @@
     return [...original.values()].slice(0,16);
   }
 
-  globalThis.MenbaSearch = Object.freeze({find,inspectHadith,isHadithSource,keywords});
+  globalThis.MenbaSearch = Object.freeze({find,inspectHadith,isHadithSource,keywords,prayerPartsQuestion});
 })();
