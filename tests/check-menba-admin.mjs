@@ -38,7 +38,8 @@ assert.equal((await (await quota('status')).json()).used,0);
 assert.equal((await quota('limit',{limit:500})).status,200);
 assert.equal(reportedCost({prompt_tokens:1000,completion_tokens:100}),11.8183);
 
-globalThis.fetch = async (url,{headers}) => {
+globalThis.fetch = async (url,{headers,redirect}) => {
+  assert.equal(redirect,'manual');
   const token = headers.Authorization?.replace(/^Bearer /u,'');
   if (![studentToken,ownerToken].includes(token)) return new Response(null,{status:401});
   if (url.pathname.endsWith('/library_menba_access')) {
