@@ -66,6 +66,7 @@
 
   const pickableSources = () => options.filter(source => selected.has(source.id));
   function sourcesChanged() {
+    consent.checked = false;
     document.dispatchEvent(new Event('menba-source-change'));
   }
 
@@ -552,32 +553,42 @@
     }));
   }
 
-  function clearSharedText(source, work) {
-    cachedPages.delete(source.id);
-    recognizedPages.delete(source.id);
-    attemptedOcr.delete(source.id);
+  function clearSourceText(source, work) {
+    const key = sourceKey(source);
+    cachedPages.delete(key);
+    recognizedPages.delete(key);
+    attemptedOcr.delete(key);
+    loadedIndexes.delete(key);
     sharedVersions.delete(source.id);
-    sourcesChanged();
     turns = turns.filter(turn => turn === work.turn || !turn.sources.some(item => item.id === source.id));
     if (work.turn?.evidence.some(entry => entry.sourceId === source.id)) {
       work.turn.answer = null;
+      work.turn.learning = null;
       work.turn.evidence = work.turn.evidence.filter(entry => entry.sourceId !== source.id);
       if (!work.turn.evidence.length) {
         work.turn.notice = ['Die PDF-Freigabe hat sich geändert. Stelle die Frage erneut.', 'PDF erişimi değişti. Soruyu yeniden sor.'];
       }
     }
+    sourcesChanged();
   }
 
-  async function authorizeShared(source, work) {
+  async function authorizeSource(source, work) {
     const {signal} = work.controller;
     try {
-      const grant = await MenbaSharedSources.signedUrl(source, {accountId:owner, signal});
-      if (sharedVersions.has(source.id) && sharedVersions.get(source.id) !== grant.path) clearSharedText(source, work);
-      sharedVersions.set(source.id, grant.path);
-      return grant;
+      if (source.shareId) {
+        const grant = await MenbaSharedSources.signedUrl(source, {accountId:owner, signal});
+        if (sharedVersions.has(source.id) && sharedVersions.get(source.id) !== grant.path) clearSourceText(source, work);
+        sharedVersions.set(source.id, grant.path);
+        return grant;
+      }
+      const {data, error} = await db.storage.from(STORAGE_BUCKET).createSignedUrl(source.path, 60);
+      signal.throwIfAborted();
+      if (error || typeof data?.signedUrl !== 'string' || !data.signedUrl) throw Error('PDF access denied');
+      return {url:data.signedUrl};
     } catch (error) {
-      if (request === work && allowed() && !signal.aborted) clearSharedText(source, work);
-      throw error;
+      if (request !== work || !allowed() || signal.aborted) throw error;
+      clearSourceText(source, work);
+      throw Object.assign(new Error('PDF access unavailable',{cause:error}),{stage:'sign'});
     }
   }
 
@@ -586,12 +597,9 @@
     let bytes;
     if (source.file) bytes = await source.file.arrayBuffer();
     else {
-      const {data, error} = source.shareId
-        ? {data:{signedUrl:(grant ?? await authorizeShared(source, work)).url}}
-        : await db.storage.from(STORAGE_BUCKET).createSignedUrl(source.path, 60);
+      const {url} = grant ?? await authorizeSource(source, work);
       signal.throwIfAborted();
-      if (error || !data?.signedUrl) throw Object.assign(new Error('PDF access denied'),{stage:'sign'});
-      const response = await fetch(data.signedUrl, {signal, referrerPolicy:'no-referrer'}).catch(error=>{
+      const response = await fetch(url, {signal, referrerPolicy:'no-referrer'}).catch(error=>{
         signal.throwIfAborted();
         throw Object.assign(new Error('PDF download failed',{cause:error}),{stage:'download'});
       });
@@ -656,7 +664,7 @@
   async function originalImage(entry,source,work) {
     const {signal} = work.controller;
     try {
-      const grant = source.shareId ? await authorizeShared(source,work) : null;
+      const grant = source.shareId ? await authorizeSource(source,work) : null;
       if (grant && grant.path !== entry.sharedVersion) throw Error('Shared PDF version changed');
       const pdf = await openPdf(source,work,grant);
       const page = await pdf.getPage(entry.page);
@@ -771,7 +779,7 @@
       const key = sourceKey(source);
       let grant;
       try {
-        if (source.shareId) grant = await authorizeShared(source,work);
+        if (source.shareId || source.path) grant = await authorizeSource(source,work);
         await useIndex(source);
         if (request !== work || !allowed()) return;
         let extracted = cachedPages.get(key);
@@ -802,7 +810,7 @@
       } catch (error) {
         if (request !== work) return;
         work.report?.(source,'error',error?.stage ?? 'extract');
-        const ocr = !source.shareId || grant ? recognizedPages.get(key) : null;
+        const ocr = source.file || grant ? recognizedPages.get(key) : null;
         if (ocr?.size && (!quranOnly || isQuran(source))) {
           foundQuran ||= isQuran(source);
           if (isQuran(source)) quranSources.add(source.id);
@@ -1172,7 +1180,7 @@
     selected.clear();
     if (!clear) for (const source of options) selected.add(source.id);
     notice = null;
-    selectionNotice = null;
+    preferencesChanged();
     render();
   });
   saveSources.addEventListener('click', () => void saveSelection());
