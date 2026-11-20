@@ -2,12 +2,12 @@
 
 MENBA beantwortet Fachfragen anhand ausdrücklich ausgewählter und zugänglicher Quellen. Buch, PDF-Seite und gegebenenfalls Ayet gehören zum Beleg. Wenn der Beleg fehlt, bleibt die Frage offen. Externe Modellaufrufe brauchen eine aktive Zustimmung pro Frage. Das Original bleibt die Grundlage für die Prüfung von OCR und Übersetzungen.
 
-Der Stand in diesem Zweig ist **Beta 0.1.0 · Phase 1**. Die Bezeichnung gehört zu diesem Release-Kandidaten. Grundlage ist der veröffentlichte Stand nach der Korrektur für „Namazın farzları“. [Ausgangsstand auf GitHub](https://github.com/talhakazan02-design/kzn-sd-dar-al-ilm/commit/ff6e8f3595ce41048b6c266d9cfa5fab2c84e228)
+Der Stand in diesem Zweig ist **Beta 0.2.0 · Phase 2**. Dieser Release-Kandidat baut auf der zur Prüfung vorliegenden Phase 1 auf. [Phase-1-Entwurf auf GitHub](https://github.com/talhakazan02-design/kzn-sd-dar-al-ilm/pull/25)
 
 | Phase | Stand | Nächster Entwicklungsschritt |
 | --- | --- | --- |
 | 1 · Stabilität und Fehlerbehebung | Bestandsaufnahme, Reparaturen und Tests im separaten Zweig | Freigabe des geprüften Stands. Offene Scan- und Leistungsfragen stehen im Diagnosebericht. |
-| 2 · Benutzeroberfläche | Chat, einklappbare Quellen und mobiles Layout vorhanden | Chat-Bedienung, Quellenaktionen und Fehlermeldungen auf Smartphone und Desktop vereinfachen. Start nach Freigabe. |
+| 2 · Benutzeroberfläche | Freigegeben und im Review-Zweig umgesetzt. Einklappbare Quellen und Vorlagen, Chat mit Eingabe am Ende, neue Unterhaltung, Bearbeiten, Kopieren und Wiederholen. | Darstellung und Ablauf im Review prüfen. Danach Phase 3 zur Freigabe vorlegen. |
 | 3 · Fragevorlagen | Bearbeitbare Vorlagen und geprüfte Vorschläge vorhanden | Verständlichkeit und Abdeckung anhand verarbeiteter Kursbücher prüfen. |
 | 4 · Mehrsprachige Suche | Türkische, deutsche und arabische Begriffe in der lokalen Volltextsuche | Echte mehrsprachige Aufgaben erfassen, Suche und Antwortsprache daran prüfen. Semantische Suche nach belegtem Bedarf bewerten. |
 | 5 · Lernfunktionen | Erste Erklärungen, Auszüge und lokale Übungen | Zusammenfassungen, Beispiele und Aufgaben mit überprüfbaren Nachweisen ausbauen. |
@@ -26,4 +26,4 @@ Der Stand in diesem Zweig ist **Beta 0.1.0 · Phase 1**. Die Bezeichnung gehört
 
 Die bestehende Aufteilung ist in der [Bestandsaufnahme](MENBA-DIAGNOSE.md#bestandsaufnahme-phase-1) beschrieben. Neue Logik für Speicherung, Berechtigungen, Suche oder Modellzugriff kommt in die jeweils zuständige Komponente. `menba.js` verbindet den Ablauf mit der Oberfläche. Eine Umstellung erfolgt schrittweise, mit einzeln nachprüfbaren Änderungen.
 
-Bei jeder späteren MENBA-Änderung diese Phasenübersicht und den [Änderungsverlauf](MENBA_CHANGELOG.md) mit Teststand und bekannten Einschränkungen aktualisieren. Ergebnisse aus Testläufen sollen die geprüfte Version, Quelle und Nachweisart nennen. Der Abschluss von Phase 1 endet mit dem geprüften Pull Request. Phase 2 beginnt nach Freigabe durch den Projektinhaber.
+Bei jeder späteren MENBA-Änderung diese Phasenübersicht und den [Änderungsverlauf](MENBA_CHANGELOG.md) mit Teststand und bekannten Einschränkungen aktualisieren. Ergebnisse aus Testläufen sollen die geprüfte Version, Quelle und Nachweisart nennen. Weitere Phasen beginnen nach Freigabe durch den Projektinhaber.

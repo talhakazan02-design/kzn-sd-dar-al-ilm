@@ -1,5 +1,22 @@
 # MENBA AI – Änderungsverlauf
 
+## Beta 0.2.0 · Phase 2 · Release-Kandidat
+
+### Neu · Yenilikler
+
+- Neue Unterhaltung aus der Chat-Kopfzeile beginnen. Die Quellenauswahl bleibt dabei verfügbar.
+- Eine frühere Frage in der Eingabe bearbeiten, eine Antwort samt Belegen kopieren und einen Suchlauf erneut versuchen. Quizlösungen erscheinen weiterhin beim Aufklappen der jeweiligen Übung.
+
+### Verbesserungen · İyileştirmeler
+
+- Quellen und Fragevorlagen liegen auf breiten Bildschirmen neben dem Verlauf und auf schmalen Bildschirmen darüber. Der Verlauf hat einen eigenen Scrollbereich, die Frageeingabe und die Senden-Schaltfläche stehen am Ende.
+- Jede Fundstelle zeigt Buch und Seite im sichtbaren Titel. Auszüge können einzeln aufgeklappt werden. Wenn der Auszug selbst die Antwort ist, erscheint er sofort.
+- Die Zustimmung zur Cloud-Antwort erklärt auch den Kontext bei Rückfragen. Direktes Wiederholen startet lokal. Für eine neue Cloud-Antwort lässt sich die Frage bearbeiten und die Zustimmung erneut setzen.
+
+### Geprüft
+
+- Browserprüfung mit 390, 768 und 1.440 Pixeln Breite, deutscher und türkischer Oberfläche, Quellen, Vorlagen, Bearbeiten, Kopieren und Neustart. Quellenzugriff und Cloud-Zustimmung aus Phase 1 sind im selben Test enthalten.
+
 ## Beta 0.1.0 · Phase 1 · Release-Kandidat
 
 ### Neu · Yenilikler
