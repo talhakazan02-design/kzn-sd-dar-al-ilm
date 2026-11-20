@@ -5,6 +5,15 @@ require('../menba-answers.js');
 require('../menba-question-checks.js');
 
 const checks = globalThis.MenbaQuestionChecks;
+assert.equal(checks.ocrSamplePage(24,new Set([24]),null),3);
+assert.equal(checks.ocrSamplePage(64,new Set([1,3]),null),4);
+assert.equal(checks.ocrSamplePage(3,new Set([2]),null),1);
+assert.equal(checks.ocrSamplePage(1,new Set(),null),1);
+assert.equal(checks.ocrSamplePage(2,new Set([1,2]),null),null);
+assert.equal(checks.ocrSamplePage(24,new Set([24]),9),9);
+assert.equal(checks.ocrSamplePage(24,new Set([24]),24),null);
+assert.equal(checks.ocrSamplePage(24,new Set(),25),null);
+assert.deepEqual(checks.candidates([{sourceId:'e',page:24,text:'Bandrol uygulamasına tabidir. ISBN: 1234.'}],'tr'),[]);
 const emsile = {sourceId:'e',source:'Emsile',page:4,text:'Emsile, Arapça fiil çekimlerini örneklerle gösterir. Masdar konusuna giriş.'};
 const maksud = {sourceId:'m',source:'Maksud',page:8,text:'Arapçada fiil çekimleri bu bölümde öğretilir.'};
 const distinct = {sourceId:'s',source:'Seçilmemiş kitap',page:1,text:'Saklı bilgi: astronomi.'};

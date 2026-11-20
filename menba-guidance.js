@@ -23,6 +23,9 @@
   const suggested = $('menbaSuggestedQuestions');
   const center = $('menbaTestCenter');
   const sourcePicker = $('menbaTestSource');
+  const ocrOption = $('menbaTestOcr');
+  const ocrPage = $('menbaTestPage');
+  const ocrLanguage = $('menbaTestLanguage');
   const report = $('menbaTestReport');
   const status = $('menbaTestStatus');
   const run = $('menbaTestRun');
@@ -136,12 +139,18 @@
     center.hidden = !isOwner();
     const old = sourcePicker.value;
     const sources = isOwner() ? tests.selectedSources() : [];
-    sourcePicker.replaceChildren(new Option(tr('Quelle auswählen','Kaynak seç'),''),...sources.map(row=>new Option(row.title,row.id)));
+    const duplicateTitles = new Set(sources.filter((row,index)=>sources.findIndex(other=>other.title === row.title) !== index).map(row=>row.title));
+    const options = sources.map(({id,title,shared})=>{
+      const library = shared ? tr('Gemeinsame Bibliothek','Ortak Kütüphane') : tr('Meine Bücher','Kitaplarım');
+      return new Option(duplicateTitles.has(title) ? `${title} · ${library}` : title,id);
+    });
+    sourcePicker.replaceChildren(new Option(tr('Quelle auswählen','Kaynak seç'),''),...options);
     if (sources.some(row=>row.id === old)) sourcePicker.value = old;
     else if (sources.length === 1) sourcePicker.value = sources[0].id;
     cancel.hidden = !labRun;
     const busy = Boolean(labRun);
     sourcePicker.disabled = busy || !sources.length;
+    ocrOption.disabled = ocrPage.disabled = ocrLanguage.disabled = sourcePicker.disabled;
     run.disabled = reprocess.disabled = busy || menbaBusy || !sourcePicker.value;
     if (!busy && !sources.length && isOwner()) {
       status.textContent = tr('Wähle zuerst Quellen im MENBA-Bereich.','Önce MENBA bölümünde kaynak seç.');
@@ -157,7 +166,11 @@
     const active = questions.filter(row=>row.status === 'pass');
     const extract = record.extract;
     const available = record.download || publicText && pages || localFile && !record.error;
-    const reading = extract?.readable ? extract.failed ? 'review' : 'pass' : record.error ? 'fail' : 'review';
+    const reading = record.error ? 'fail' : extract?.readable && extract.readable === extract.total && !extract.failed ? 'pass' : 'review';
+    const ocrDetail = ocr.reason === 'indexed' ? tr(`Seite ${ocr.page} ist bereits durchsuchbar.`,`Sayfa ${ocr.page} zaten aranabilir.`)
+      : ocr.reason === 'range' ? tr(`Wähle eine Seite von 1 bis ${ocr.total}.`,`1 ile ${ocr.total} arasında bir sayfa seç.`)
+        : ocr.page ? tr(`Seite ${ocr.page} · mit Original vergleichen.`,`Sayfa ${ocr.page} · özgün sayfayla karşılaştır.`)
+          : tr('Keine OCR-Probe in diesem Lauf.','Bu testte OCR örneği kullanılmadı.');
     const errors = {
       sign:tr('Storage hat keinen gültigen Zugriff erteilt.','Depolama erişimi verilemedi.'),
       download:tr('Der PDF-Download ist fehlgeschlagen.','PDF indirilemedi.'),
@@ -170,7 +183,7 @@
       [tr('Dokumentverfügbarkeit','Belge erişimi'),available?'pass':'fail',storageDetail],
       [tr('PDF-Text / Index','PDF metni / dizin'),localFile && !extract?.readable && ocr.state === 'pass' ? 'review' : reading,
         extract ? tr(`${extract.readable}/${extract.total} Seiten mit Textebene · ${extract.failed} Lesefehler.`,`${extract.total} sayfanın ${extract.readable} tanesinde metin · ${extract.failed} okuma hatası.`) : storageDetail],
-      [tr('OCR','OCR'),ocr.state,ocr.page ? tr(`Seite ${ocr.page} · mit Original vergleichen.`,`Sayfa ${ocr.page} · özgün sayfayla karşılaştır.`) : tr('Keine OCR-Probe in diesem Lauf.','Bu testte OCR örneği kullanılmadı.')],
+      [tr('OCR','OCR'),ocr.state,ocrDetail],
       [tr('Lokale Speicherung','Yerel kayıt'),stored === true?'pass':privateIndex?(extract?'fail':'skip'):'skip',
         stored === true ? tr('Index erneut aus dem Browser-Speicher gelesen.','Dizin tarayıcı deposundan yeniden okundu.')
           : tr('Kein dauerhaft gespeicherter Index in diesem Lauf bestätigt. Gemeinsame Quellen werden sitzungsbezogen geprüft.','Bu testte kalıcı dizin doğrulanmadı. Ortak kaynaklar oturumda denetlenir.')],
@@ -228,6 +241,9 @@
 
   async function diagnose(forceOcr = false) {
     if (!isOwner() || labRun || !sourcePicker.value) return;
+    const useOcr = forceOcr || ocrOption.checked || Boolean(ocrPage.value);
+    if (useOcr && !ocrPage.reportValidity()) return;
+    const requestedPage = ocrPage.value ? ocrPage.valueAsNumber : null;
     const session = accessRequest;
     const selected = sourcePicker.value;
     const active = new AbortController();
@@ -238,7 +254,7 @@
     const current = () => accessRequest === session && isOwner() && labRun === active;
     try {
       const next = await tests.diagnoseSource(selected,{
-        signal:active.signal,useOcr:forceOcr || $('menbaTestOcr').checked,language:$('menbaTestLanguage').value,
+        signal:active.signal,useOcr,ocrPage:requestedPage,language:ocrLanguage.value,
         onProgress(stage,values) {
           if (!current()) return;
           if (stage === 'page') status.textContent = tr(`PDF-Seite ${values.number}/${values.total} wird gelesen …`,`PDF sayfası okunuyor: ${values.number}/${values.total} …`);
@@ -267,7 +283,7 @@
   });
   suggest.addEventListener('click',()=>void showSuggestions());
   center.addEventListener('toggle',syncCenter);
-  sourcePicker.addEventListener('change',()=>{ clearReport(); syncCenter(); });
+  sourcePicker.addEventListener('change',()=>{ ocrPage.value = ''; clearReport(); syncCenter(); });
   run.addEventListener('click',()=>void diagnose());
   reprocess.addEventListener('click',()=>void diagnose(true));
   cancel.addEventListener('click',()=>labRun?.abort());
@@ -282,6 +298,7 @@
     labRun?.abort();
     clearSuggestions();
     clearReport();
+    ocrPage.value = '';
     choice.value = '';
     renderFields();
     syncCenter();
