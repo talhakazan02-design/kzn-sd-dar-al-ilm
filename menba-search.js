@@ -55,6 +55,7 @@
     adim adimlara bolum bolumu bolumunu bolumunde ozet ozetle ozetler hazirla
     hazirlar olustur olusturur ornegi ornekler ornekleri Almanca Turkce anlayamadim anlamadim
     soruluk dayali misin musun hazirlar hazirlayabilir verebilir tekrar
+    about according actually all also an and answer are as at be become been book books by can could does do did explain explains explaining explanation example examples find for from get give gives has have here how i in is it its just look may me mean means meaning must my of on or our out perform performed please question quotes quote reference references say says several should show shows some source sources specify summarize summary tell text than that the their them then there these they this those through to topic under up use verse verses was were what when where whether which who why will with would you your english german turkish arabic passage passages chapter section
     ما ماذا من لمن بم عن عند بعد مع قبل على الى في هذا هذه ذلك تلك هو هي هما
     هم هن كان كانت يكون تكون هل متى اين كيف لماذا كم يا او كل بين الذي التي
     الذين نحن انت انتم انا ان انه وان فان بان فإن ولم لن لا لكي لكن ثم اذا
@@ -96,23 +97,23 @@
     ['sarf', 'tasrif', 'صرف', 'تصريف'],
     ['nahiv', 'nahw', 'نحو'],
     ['masdar', 'mastar', 'مصدر'],
-    ['fiil', 'fiili', 'fiiller', 'fiillerin', 'çekimli fiil', 'Verben', 'Verb', 'الأفعال', 'فعل', 'أفعال'],
-    ['abdest', 'wudu', 'wudhu', 'wuzu', 'Gebetswaschung', 'rituelle Waschung', 'وضوء'],
+    ['fiil', 'fiili', 'fiiller', 'fiillerin', 'çekimli fiil', 'Verben', 'Verb', 'verbs', 'الأفعال', 'فعل', 'أفعال'],
+    ['abdest', 'wudu', 'wudhu', 'wuzu', 'ablution', 'ablutions', 'Gebetswaschung', 'rituelle Waschung', 'وضوء'],
     ['gusul', 'ghusl', 'غسل'],
-    ['namaz', 'gebet', 'ritualgebet', 'pflichtgebet', 'salah', 'salat', 'صلاة'],
+    ['namaz', 'gebet', 'ritualgebet', 'pflichtgebet', 'salah', 'salat', 'prayer', 'prayers', 'صلاة'],
     ['salavat', 'salat u selam', 'salat ve selam', 'salatu selam', 'salatus selam', 'الصلاة والسلام'],
-    ['oruc', 'fasten', 'sawm', 'صوم', 'صيام'],
-    ['zekat', 'zakat', 'pflichtabgabe', 'زكاة'],
-    ['domuz', 'schwein', 'schweinefleisch', 'domuz eti', 'خنزير', 'لحم الخنزير'],
-    ['haram', 'haramdır', 'verboten', 'Verbot', 'yasak', 'حرام', 'محرم', 'حرمت'],
-    ['yemek', 'essen', 'verzehr', 'verzehren', 'yeme', 'أكل'],
+    ['oruc', 'fasten', 'fasting', 'sawm', 'صوم', 'صيام'],
+    ['zekat', 'zakat', 'pflichtabgabe', 'obligatory alms', 'زكاة'],
+    ['domuz', 'schwein', 'schweinefleisch', 'pork', 'domuz eti', 'خنزير', 'لحم الخنزير'],
+    ['haram', 'haramdır', 'verboten', 'Verbot', 'yasak', 'forbidden', 'prohibited', 'unlawful', 'حرام', 'محرم', 'حرمت'],
+    ['yemek', 'essen', 'verzehr', 'verzehren', 'yeme', 'eat', 'eating', 'أكل'],
     ['sehadet', 'Glaubensbekenntnis', 'kelime-i şehadet', 'الشهادة'],
     ['hac', 'hacc', 'hadsch', 'pilgerfahrt', 'حج'],
     ['istigfar', 'um Vergebung bitten', 'istiğfar', 'استغفار'],
-    ['sabir', 'sabr', 'geduld', 'geduldig', 'صبر'],
-    ['gunah', 'sünde', 'sünden', 'sündigen', 'ذنب', 'ذنوب'],
-    ['tovbe', 'reue', 'bereuen', 'توبة'],
-    ['merhamet', 'barmherzigkeit', 'erbarmen', 'rahmet', 'رحمة'],
+    ['sabir', 'sabr', 'geduld', 'geduldig', 'patience', 'صبر'],
+    ['gunah', 'sünde', 'sünden', 'sündigen', 'sin', 'sins', 'ذنب', 'ذنوب'],
+    ['tovbe', 'reue', 'bereuen', 'repentance', 'repent', 'توبة'],
+    ['merhamet', 'barmherzigkeit', 'erbarmen', 'rahmet', 'mercy', 'رحمة'],
     ['allah', 'gott', 'ٱللَّه'],
     ['anne', 'ana', 'mutter', 'أم'],
     ['baba', 'vater', 'أب'],
@@ -259,9 +260,9 @@
   }
 
   const prayerPartWords = {
-    duties: /^(?:farz(?:i|lar\p{L}{0,5})|pflichtbestandteil(?:e|en)?|gebetspflicht(?:en)?|(?:ال)?(?:فرايض|فروض))$/u,
-    conditions: /^(?:sart(?:i|lar\p{L}{0,5})|voraussetzung(?:en)?|bedingung(?:en)?|(?:ال)?شروط)$/u,
-    pillars: /^(?:rukun(?:leri|ler|u)?|saeulen?|saulen?|(?:ال)?اركان)$/u
+    duties: /^(?:farz(?:i|lar\p{L}{0,5})|pflichtbestandteil(?:e|en)?|gebetspflicht(?:en)?|duties|obligations?|(?:ال)?(?:فرايض|فروض))$/u,
+    conditions: /^(?:sart(?:i|lar\p{L}{0,5})|voraussetzung(?:en)?|bedingung(?:en)?|conditions?|prerequisites?|(?:ال)?شروط)$/u,
+    pillars: /^(?:rukun(?:leri|ler|u)?|saeulen?|saulen?|pillars?|(?:ال)?اركان)$/u
   };
   const partQualifiers = /^(?:des|vom|beim|im|icin|icindeki|disindaki|icinde|disinda|onceki|esnasindaki|temel|toplam|iki|uc|dort|bes|alti|yedi|sekiz|dokuz|on|\d+)$/u;
   const partSeparator = /^[\s'’:,\u2010\u2011-]*$/u;
@@ -303,7 +304,7 @@
     const terms = queryTerms(question);
     if (!terms.some(word => hadithWord.test(word))) return null;
     const topical = terms.some(word => significant(word) && !hadithWord.test(word));
-    const definition = /^(?:was (?:ist|sind|bedeutet)|(?:hadis|hadith) ne(?:dir| demek)|ما(?: هو| معني))(?=$|[\p{Z}\p{P}])/u.test(normalize(question.trim()));
+    const definition = /^(?:was (?:ist|sind|bedeutet)|what (?:is|are|does)|(?:hadis|hadith) ne(?:dir| demek)|ما(?: هو| معني))(?=$|[\p{Z}\p{P}])/u.test(normalize(question.trim()));
     return {sample:!topical && !definition};
   }
 
@@ -321,8 +322,8 @@
     if (!quoted) return null;
     const before = question.slice(0,quoted.index);
     const after = question.slice(quoted.index+quoted[0].length);
-    if (!/\b(?:in|aus|buch|buchtitel|kitap)\s*$/iu.test(before)
-        && !/(?:^\s*(?:kitab\p{L}*|buch\b)|^\s*كتاب)/iu.test(after)
+    if (!/\b(?:in|from|aus|book|buch|buchtitel|kitap)\s*$/iu.test(before)
+        && !/(?:^\s*(?:kitab\p{L}*|buch\b|book\b)|^\s*كتاب)/iu.test(after)
         && !/(?:^|\s)كتاب\s*$/u.test(before)) return null;
     const title = quoted.slice(1).find(Boolean).trim();
     const key = bookKey(title);
@@ -382,10 +383,10 @@
       available.push({page, title, named});
     }
     const namedSource = available.some(({named}) => named);
-    if (/\b(?:inhalt(?:sverzeichnis)?|icindekiler|hangi konular|ilk konusunu)\b|فهرس/u.test(normalize(question))) {
+    if (/\b(?:inhalt(?:sverzeichnis)?|icindekiler|hangi konular|ilk konusunu|contents|what topics|first topic)\b|فهرس/u.test(normalize(question))) {
       const scoped = available.filter(entry=>!namedSource || entry.named).map(({page})=>page);
       if (new Set(scoped.map(page=>page.sourceId)).size === 1) {
-        const heading = /(?:^|\n)\s*(?:[iİ][cç]indekiler|inhaltsverzeichnis|(?:ال)?فهرس)(?:\s|$)/iu;
+        const heading = /(?:^|\n)\s*(?:[iİ][cç]indekiler|inhaltsverzeichnis|(?:table of )?contents|(?:ال)?فهرس)(?:\s|$)/iu;
         const contents = scoped.find(page=>heading.test(page.text));
         const match = contents?.text.match(heading);
         if (match) {

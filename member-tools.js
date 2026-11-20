@@ -138,7 +138,7 @@
     pages.hidden = state.error || pageCount <= 1;
     previous.disabled = state.loading || state.busy || state.page === 0;
     next.disabled = state.loading || state.busy || state.page + 1 >= pageCount;
-    pageLabel.textContent = tr(`Seite ${state.page + 1} von ${pageCount}`, `Sayfa ${state.page + 1} / ${pageCount}`);
+    pageLabel.textContent = tr(`Seite ${state.page + 1} von ${pageCount}`, `Sayfa ${state.page + 1} / ${pageCount}`, `Page ${state.page + 1} of ${pageCount}`);
     renderItems(active);
   }
 

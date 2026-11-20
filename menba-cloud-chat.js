@@ -36,7 +36,7 @@
     return {
       question:current,
       previousQuestion:normalize(previousQuestion).slice(0, maxPreviousLength).trimEnd(),
-      language:language === 'tr' || language === 'ar' ? language : 'de',
+      language:['tr','en','ar'].includes(language) ? language : 'de',
       excerpts,
       ...explanation,
     };

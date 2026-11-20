@@ -120,6 +120,24 @@ supported = false;
 assert.equal((await request('/menba/answer',ownerToken,{...ask,mode:'guided',step:2,previousQuestion:'Wann beginnt die Lesestunde?'})).status,204);
 assert.match(inference[4].options.messages[0].content,/only step 2/u);
 assert.equal(calls,6);
+supported = true;
+const turkishExcerpt = 'Domuz eti yemek haramdır ve bu hüküm ilgili bölümde açıklanır.';
+const englishReply = await worker.fetch(new Request('https://worker.example/menba/answer',{
+  method:'POST',headers:{Origin:host,'Content-Type':'application/json',Authorization:`Bearer ${ownerToken}`},
+  body:JSON.stringify({language:'en',question:'Is eating pork haram?',excerpts:[{number:1,text:turkishExcerpt}]})
+}),{...env,AI:{async run(_,options){
+  const prompt = options.messages[0].content;
+  assert.match(prompt,/English/u);
+  const data=JSON.parse(options.messages[1].content);
+  assert.equal(data.excerpts[0].text,turkishExcerpt);
+  return {response:JSON.stringify(data.answer ? {supported:true} : {
+    text:'The passage prohibits eating pork.',citations:[{number:1,quote:turkishExcerpt}]
+  }),usage:{prompt_tokens:300,completion_tokens:100}};
+}}});
+assert.equal(englishReply.status,200);
+assert.deepEqual(await englishReply.json(),{
+  mode:'menba',text:'The passage prohibits eating pork.',citations:[{number:1,quote:turkishExcerpt}]
+});
 
 const styles = globalThis.MenbaExplanations;
 let conversation = styles.state();

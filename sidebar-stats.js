@@ -14,7 +14,7 @@
   const approvedUser = () => accessState === 'approved' ? currentUser?.id ?? null : null;
 
   function render() {
-    const format = new Intl.NumberFormat(lang === 'tr' ? 'tr-TR' : 'de-DE');
+    const format = new Intl.NumberFormat(libraryLocale());
     ownValue.textContent = own === null ? '—' : format.format(own);
     sharedValue.textContent = shared === null ? '—' : format.format(shared);
   }

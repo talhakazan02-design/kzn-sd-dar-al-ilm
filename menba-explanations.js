@@ -21,9 +21,9 @@
     const input = text.normalize('NFKD').toLowerCase().replace(/\p{M}/gu,'').replaceAll('ı','i').replace(/[^\p{L}\s]/gu,' ').replace(/\s+/gu,' ').trim();
     if (/^(?:(?:hocam|uzgunum|sorry|hayir|maalesef|leider|ben|ich) )?(?:(?:yine|hala|hic|pek|tam|bunu|konuyu) ){0,3}(?:anlamadim|anlamiyorum|anlayamadim)(?: hocam)?$/u.test(input)
       || /^(?:ich )?(?:verstehe|versteh|habe|hab)(?: (?:es|das|immer|noch|leider)){0,5} nicht(?: ganz)?(?: verstanden)?$/u.test(input)
-      || /^(?:kannst du (?:es|das)(?: mir)? (?:anders|einfacher) erklaren|(?:bunu )?(?:daha )?(?:basit|farkli) (?:anlat|anlatir misin)|daha kolay aciklar misin)$/u.test(input)) return 'confused';
-    if (/^(?:(?:evet|simdi|tamam|hocam) )*(?:anladim|anliyorum)(?: hocam)?$|^(?:(?:ja|jetzt|ich|habe|hab|es|das) ){0,6}verstanden$|^jetzt verstehe ich (?:es|das)$/u.test(input)) return 'understood';
-    if (/^(?:nachster schritt|weiter zum nachsten schritt|sonraki adim|bir sonraki adim)$/u.test(input)) return 'next';
+      || /^(?:kannst du (?:es|das)(?: mir)? (?:anders|einfacher) erklaren|(?:bunu )?(?:daha )?(?:basit|farkli) (?:anlat|anlatir misin)|daha kolay aciklar misin|i (?:still )?(?:don t|do not|didn t|did not) (?:understand|get it)|(?:can|could) you explain it (?:differently|more simply))$/u.test(input)) return 'confused';
+    if (/^(?:(?:evet|simdi|tamam|hocam) )*(?:anladim|anliyorum)(?: hocam)?$|^(?:(?:ja|jetzt|ich|habe|hab|es|das) ){0,6}verstanden$|^jetzt verstehe ich (?:es|das)$|^(?:understood|i understand(?: now)?|i get it(?: now)?)$/u.test(input)) return 'understood';
+    if (/^(?:nachster schritt|weiter zum nachsten schritt|sonraki adim|bir sonraki adim|next step)$/u.test(input)) return 'next';
     return null;
   }
 

@@ -1036,7 +1036,7 @@ main::before,main:before{display:none!important;content:none!important}
   header { left: 238px !important; min-height: 57px !important; height: 57px !important; padding: 7px 22px !important; }
   header .brand h1 { font-size: 19px !important; }
   header .brand small { font-size: 11px !important; }
-  header button, header #langBtn, header #passwordBtn, header #loginBtn { font-size: 14px !important; padding: 9px 14px !important; min-height: 36px !important; border: 1px solid #c49a57 !important; border-radius: 8px !important; }
+  header button, header #passwordBtn, header #loginBtn { font-size: 14px !important; padding: 9px 14px !important; min-height: 36px !important; border: 1px solid #c49a57 !important; border-radius: 8px !important; }
   main { margin-left: 238px !important; }
   body::before { left: 238px !important; width: calc(100% - 238px) !important; right: 0 !important; background-position: center center !important; }
 }
@@ -1297,6 +1297,15 @@ body>header{z-index:21}
 body>header{position:sticky!important;top:0;left:auto!important;right:auto!important;width:auto!important;display:grid!important;grid-template-columns:max-content minmax(0,1fr) minmax(120px,max-content);grid-template-areas:"brand hadis actions";height:auto!important;min-height:76px!important;align-items:center;gap:clamp(10px,1.5vw,22px);padding:7px 16px!important}
 body>header>.brand{grid-area:brand}
 body>header>.header-actions{grid-area:actions;display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:5px;max-width:245px;min-width:0}
+.library-languages{display:inline-flex;gap:2px;flex:none;border:1px solid #a7804d;border-radius:8px;padding:2px;background:#1c150f}
+body>header .library-languages button{min-width:30px;min-height:32px!important;padding:3px 5px!important;border:1px solid transparent!important;border-radius:5px!important;font:600 .8rem system-ui,sans-serif!important;color:#f5dbb4!important;background:transparent!important}
+body>header .library-languages button[aria-pressed="true"]{color:#251609!important;background:#e8bb78!important;border-color:#f4d49d!important}
+body>header .library-languages button:focus-visible{outline:2px solid #f4d49d;outline-offset:1px}
+.library-file-control{position:relative;display:flex;align-items:center;gap:.5rem;min-width:0;max-width:100%;font:inherit}
+.library-file-control>.library-file-input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0}
+.library-file-control:focus-within{outline:2px solid #e8bb78;outline-offset:2px;border-radius:5px}
+.library-file-button{flex:none;border:1px solid #a98049;border-radius:5px;padding:.35rem .5rem;background:#322116;color:#f5e8d5}
+.library-file-name{min-width:0;overflow-wrap:anywhere}
 body>main{margin-top:0!important}
 .header-hadis{grid-area:hadis;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;border-inline:1px solid #b98e5559;padding-inline:clamp(8px,1.4vw,18px)}
 .header-hadis [hidden]{display:none!important}
@@ -1438,9 +1447,10 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
   </div>
   <p id="publicHadisStatus" role="status">Hadis wird geladen …</p>
 </section>
- <div class="header-actions"><button type="button" id="sidebarToggle" aria-controls="librarySidebar" aria-expanded="false" hidden><span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><span class="sidebar-label" data-de="Menü" data-tr="Menü">Menü</span></button><button id="langBtn">TR / DE</button> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button type="button" id="passwordAdminNav" class="hidden" aria-expanded="false" aria-controls="passwordApprovalPanel">Passwort-Hilfe</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
+ <div class="header-actions"><button type="button" id="sidebarToggle" aria-controls="librarySidebar" aria-expanded="false" hidden><span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><span class="sidebar-label" data-de="Menü" data-tr="Menü">Menü</span></button><div id="libraryLanguages" class="library-languages" role="group" aria-label="Sprache"><button type="button" data-library-lang="de" lang="de" aria-label="Deutsch" aria-pressed="true">DE</button><button type="button" data-library-lang="tr" lang="tr" aria-label="Türkçe" aria-pressed="false">TR</button><button type="button" data-library-lang="en" lang="en" aria-label="English" aria-pressed="false">EN</button></div> <button id="passwordBtn" class="hidden">Passwort ändern</button> <button type="button" id="passwordAdminNav" class="hidden" aria-expanded="false" aria-controls="passwordApprovalPanel">Passwort-Hilfe</button> <button id="loginBtn" disabled>Anmeldestatus …</button></div>
 </header>
-<script src="hadis-header.js"></script>
+<script src="english.js?v=1"></script>
+<script src="hadis-header.js?v=english"></script>
 <main>
 <div class="centered-guest-logo"><img src="darul-ilm-logo-transparent.png" alt="Darül İlm" width="180" height="180"></div>
  <section id="accessPanel" class="panel" style="padding:25px;max-width:650px;margin:30px auto"><h2 id="accessTitle">Mitgliedszugang</h2><p id="accessText">Anmeldestatus wird überprüft …</p><form id="loginForm" class="hidden"><div class="field"><label for="loginEmail">E-Mail-Adresse</label><input type="email" id="loginEmail" autocomplete="username" required placeholder="name@beispiel.de"></div><div class="field"><label for="loginPassword">Passwort</label><input type="password" id="loginPassword" autocomplete="current-password" minlength="8" required placeholder="Passwort eingeben"></div><div class="actions"><button class="primary" type="submit" id="sendLink">Mit Passwort anmelden</button><button type="button" id="magicLinkBtn">Einmaligen E-Mail-Link anfordern</button><button type="button" id="forgotPasswordBtn">Passwort vergessen?</button></div></form><form id="passwordForm" class="hidden"><h3>Passwort festlegen / ändern</h3><p>Nur für dein aktuell angemeldetes Konto.</p><div class="field"><label for="newPassword">Neues Passwort (mindestens 12 Zeichen)</label><input id="newPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="field"><label for="confirmPassword">Passwort wiederholen</label><input id="confirmPassword" type="password" minlength="12" autocomplete="new-password" required></div><div class="actions"><button class="primary" type="submit" id="savePassword">Passwort speichern</button></div></form><p id="loginFeedback" role="status" aria-live="polite"></p></section>
@@ -1763,6 +1773,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
             <option value="mixed" selected data-de="Arabisch und Türkisch" data-tr="Arapça ve Türkçe">Arabisch und Türkisch</option>
             <option value="multilingual" data-de="Arabisch, Deutsch und Türkisch" data-tr="Arapça, Almanca ve Türkçe">Arabisch, Deutsch und Türkisch</option>
             <option value="german" data-de="Deutsch" data-tr="Almanca">Deutsch</option>
+            <option value="english" data-de="Englisch" data-tr="İngilizce">Englisch</option>
             <option value="turkish" data-de="Türkisch (lateinische Schrift)" data-tr="Türkçe (Latin alfabesi)">Türkisch (lateinische Schrift)</option>
           </select>
         </label>
@@ -1874,6 +1885,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
       <div class="menba-learning-options">
         <label><span data-de="Arbeitsmodus" data-tr="Çalışma modu">Arbeitsmodus</span><select id="menbaMode" data-hoca-roles="true"><option value="chat">Chat</option><option value="talebe">Talebe Modu</option></select></label>
         <label><span data-de="Erklärstil" data-tr="Anlatım biçimi">Erklärstil</span><select id="menbaExplanationMode" aria-describedby="menbaExplanationHint"></select></label>
+        <label><span data-de="Antwortsprache" data-tr="Yanıt dili">Antwortsprache</span><select id="menbaAnswerLanguage"><option value="" data-de="Sprache der Frage" data-tr="Sorunun dili">Sprache der Frage</option><option value="de" data-de="Deutsch" data-tr="Almanca">Deutsch</option><option value="tr" data-de="Türkisch" data-tr="Türkçe">Türkisch</option><option value="en" data-de="Englisch" data-tr="İngilizce">Englisch</option></select></label>
         <label id="menbaExplanationDepthField" hidden><span>İlmî Derinlik</span><select id="menbaExplanationDepth" aria-describedby="menbaExplanationHint"></select></label>
         <label id="menbaTaskField" hidden><span data-de="Aufgabe" data-tr="Görev">Aufgabe</span><select id="menbaTask"></select></label>
         <button type="button" id="menbaUseTopic" hidden data-de="Letztes Thema übernehmen" data-tr="Son konuyu kullan">Letztes Thema übernehmen</button>
@@ -1966,13 +1978,15 @@ let booksLoaded=false;
 let trashMode=false, editingBookId=null;
 let booksError='';
 const $=id=>document.getElementById(id);
-function tr(de,tu){return lang==='de'?de:tu}
+const libraryLocales={de:'de-DE',tr:'tr-TR',en:'en-GB'};
+const libraryLocale=()=>libraryLocales[lang];
+function tr(de,tu,en){return lang==='tr' ? tu : lang==='en' ? en ?? localize(de) : de}
 function render(){
   if(document.getElementById("kznDashboard")) updateKznDashboard();
  $('total').textContent=books.filter(b=>!b.deleted_at).length;$('home').textContent=books.filter(b=>b.location==='Zuhause').length;$('course').textContent=books.filter(b=>b.location==='Im Kurs').length;$('loan').textContent=books.filter(b=>b.loaned).length;
  const q=$('search').value.toLowerCase(),cat=$('category').value;
  let shown=books.filter(b=>(trashMode?(Boolean(b.deleted_at)&&Date.now()-new Date(b.deleted_at).getTime()<7*86400000):!b.deleted_at)&&(trashMode||portal==='mine'?b.visibility==='private'&&b.owner_id===currentUser?.id:portal==='shared'?b.visibility==='shared':true)&&(view==='all'||(view==='home'&&b.location==='Zuhause')||(view==='course'&&b.location==='Im Kurs')||(view==='loans'&&b.loaned)||(view==='wishlist'&&b.wish))&&(!cat||b.category===cat)&&(!q||(b.title+' '+b.author+' '+b.category).toLowerCase().includes(q)));
- $('books').innerHTML=shown.map(b=>`<article class="book"><div class="cover">${b.cover_url?`<img src="${esc(b.cover_url)}" alt="${localize('Buchcover')}">`:'▤'}</div><div class="bookbody"><h3>${esc(b.title)}</h3><p>${esc(b.author||tr('Autor unbekannt','Yazarı bilinmiyor'))}</p><span class="tag">${esc(categoryLabel(b.category))}</span>${!trashMode&&b.file_path?` <button type="button" class="open-pdf" data-book-id="${esc(b.id)}">${localize("PDF öffnen")}</button>`:''}${b.visibility==='private'&&b.owner_id===currentUser?.id?(trashMode?` <button type="button" class="restore-book" data-book-id="${esc(b.id)}">${localize("↩ Wiederherstellen")}</button> <small>${tr('Bis','Son tarih')} ${new Date(new Date(b.deleted_at).getTime()+7*86400000).toLocaleDateString(lang==='tr'?'tr-TR':'de-DE')}</small>`:` <button type="button" class="edit-book" data-book-id="${esc(b.id)}">${localize("✎ Bearbeiten")}</button> <button type="button" class="trash-book" data-book-id="${esc(b.id)}">${localize("🗑 Löschen")}</button>`):''}</div></article>`).join('');
+ $('books').innerHTML=shown.map(b=>`<article class="book"><div class="cover">${b.cover_url?`<img src="${esc(b.cover_url)}" alt="${localize('Buchcover')}">`:'▤'}</div><div class="bookbody"><h3>${esc(b.title)}</h3><p>${esc(b.author||tr('Autor unbekannt','Yazarı bilinmiyor'))}</p><span class="tag">${esc(categoryLabel(b.category))}</span>${!trashMode&&b.file_path?` <button type="button" class="open-pdf" data-book-id="${esc(b.id)}">${localize("PDF öffnen")}</button>`:''}${b.visibility==='private'&&b.owner_id===currentUser?.id?(trashMode?` <button type="button" class="restore-book" data-book-id="${esc(b.id)}">${localize("↩ Wiederherstellen")}</button> <small>${tr('Bis','Son tarih')} ${new Date(new Date(b.deleted_at).getTime()+7*86400000).toLocaleDateString(libraryLocale())}</small>`:` <button type="button" class="edit-book" data-book-id="${esc(b.id)}">${localize("✎ Bearbeiten")}</button> <button type="button" class="trash-book" data-book-id="${esc(b.id)}">${localize("🗑 Löschen")}</button>`):''}</div></article>`).join('');
  $('empty').style.display=shown.length?'none':'block';
  $('empty').textContent=booksError || localize(booksLoaded ? (trashMode?'Der Papierkorb ist leer.':'Noch keine Bücher in deiner persönlichen Online-Bibliothek.') : 'Bücher werden geladen …');
 }
@@ -1986,7 +2000,7 @@ function updateKznDashboard(){
   $('dashRecent').innerHTML = active.length
     ? active.slice(0,4).map(b=>'<div class="kzn-recent-item">'+
         (b.cover_url?'<img alt="" src="'+esc(b.cover_url)+'">':'<div class="kzn-recent-placeholder">▤</div>')+
-        '<strong title="'+esc(b.title)+'">'+esc(b.title)+'</strong><small>'+esc(b.author||'Autor unbekannt')+'</small></div>').join('')
+        '<strong title="'+esc(b.title)+'">'+esc(b.title)+'</strong><small>'+esc(b.author||localize('Autor unbekannt'))+'</small></div>').join('')
     : '<p class="kzn-muted">'+localize(booksLoaded?'Noch keine Bücher vorhanden.':'Deine Bücher werden geladen …')+'</p>';
 }
 $('dashboardSearch').addEventListener('input',e=>{
@@ -2045,7 +2059,7 @@ async function makeAutoCoverFile(title,author,category,i){
    await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url});
    const canvas=document.createElement('canvas');canvas.width=420;canvas.height=600;
    canvas.getContext('2d').drawImage(img,0,0);
-   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Cover konnte nicht erstellt werden.')),'image/png'));
+   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error(localize('Cover konnte nicht erstellt werden.'))),'image/png'));
    return new File([blob],'automatisches-cover.png',{type:'image/png'});
  }finally{URL.revokeObjectURL(url)}
 }
@@ -2100,7 +2114,7 @@ async function loadBooks(){
   if(!isCurrent())return;
   if(error){
     console.error('Bücher konnten nicht geladen werden:',error);
-    booksError='Online-Bücher konnten nicht geladen werden. Bitte Datenbankrechte prüfen. ('+error.message+')';
+    booksError=localize('Online-Bücher konnten nicht geladen werden. Bitte Datenbankrechte prüfen. (')+error.message+')';
     books=[];
   }else{
     const loaded=(data||[]).filter(b=>b.owner_id===userId||b.visibility==='shared').map(b=>({...b,loaned:false,wish:false,cover_url:null}));
@@ -2118,8 +2132,8 @@ function validateUpload(file,kind){
   if(!file || !file.size) return null;
   const allowed=kind==='pdf'?['application/pdf']:['image/jpeg','image/png','image/webp'];
   const max=kind==='pdf'?PDF_MAX_BYTES:5*1024*1024;
-  if(!allowed.includes(file.type)) throw new Error(kind==='pdf'?'Nur PDF-Dateien sind erlaubt.':'Nur JPG, PNG und WebP sind erlaubt.');
-  if(file.size>max) throw new Error(kind==='pdf'?'PDF ist größer als 50 MB.':'Cover ist größer als 5 MB.');
+  if(!allowed.includes(file.type)) throw new Error(kind==='pdf'?localize('Nur PDF-Dateien sind erlaubt.'):localize('Nur JPG, PNG und WebP sind erlaubt.'));
+  if(file.size>max) throw new Error(kind==='pdf'?'PDF ist größer als 50 MB.':localize('Cover ist größer als 5 MB.'));
   return file;
 }
 async function uploadPrivateFile(file,path){
@@ -2163,14 +2177,14 @@ async function handleBookAction(event){
   }
   if(action.classList.contains('trash-book') || action.classList.contains('restore-book')){
     const restore=action.classList.contains('restore-book');
-    if(restore&&(!selected.deleted_at||Date.now()-new Date(selected.deleted_at).getTime()>=7*86400000)){alert('Die Wiederherstellungsfrist ist abgelaufen.');return;}
-    if(!restore&&!confirm('Buch „'+selected.title+'“ in den Papierkorb verschieben? Nach 7 Tagen soll es endgültig gelöscht werden.'))return;
+    if(restore&&(!selected.deleted_at||Date.now()-new Date(selected.deleted_at).getTime()>=7*86400000)){alert(localize('Die Wiederherstellungsfrist ist abgelaufen.'));return;}
+    if(!restore&&!confirm(localize('Buch „')+selected.title+localize('“ in den Papierkorb verschieben? Nach 7 Tagen soll es endgültig gelöscht werden.')))return;
     action.disabled=true;
     try{
       const {error}=await db.from('books').update({deleted_at:restore?null:new Date().toISOString()}).eq('id',selected.id).eq('owner_id',currentUser.id).eq('visibility','private').select('id').single();
       if(error)throw error;
       await loadBooks();
-    }catch(error){alert('Aktion fehlgeschlagen: '+error.message)}finally{action.disabled=false}
+    }catch(error){alert(localize('Aktion fehlgeschlagen: ')+error.message)}finally{action.disabled=false}
     return;
   }
 }
@@ -2260,35 +2274,55 @@ $('bookForm').onsubmit=async e=>{
     }
     e.target.reset();$('formPanel').style.display='none';
     await loadBooks();
-    alert('Buch und ausgewählte Dateien wurden in Supabase gespeichert.');
+    alert(localize('Buch und ausgewählte Dateien wurden in Supabase gespeichert.'));
   }catch(error){
     console.error('Speichern fehlgeschlagen:',error);
     if(newBookId){
       if(uploaded.length)await db.storage.from(STORAGE_BUCKET).remove(uploaded);
       await db.from('books').delete().eq('id',newBookId).eq('owner_id',currentUser.id);
     }
-    alert('Speichern fehlgeschlagen: '+error.message+'\nPrüfe, ob das SQL-Sicherheitsskript ausgeführt wurde.');
+    alert(localize('Speichern fehlgeschlagen: ')+error.message+'\nPrüfe, ob das SQL-Sicherheitsskript ausgeführt wurde.');
   }finally{submit.disabled=false;}
 };
 
 const turkish={"Nicht angegeben":"Belirtilmedi","Mitgliedszugang":"Üye girişi","Anmeldestatus wird überprüft …":"Oturum durumu kontrol ediliyor …","E-Mail-Adresse":"E-posta adresi","Passwort":"Şifre","Passwort eingeben":"Şifreyi girin","Mit Passwort anmelden":"Şifreyle giriş yap","Einmaligen E-Mail-Link anfordern":"Tek kullanımlık e-posta bağlantısı iste","Passwort vergessen?":"Şifrenizi mi unuttunuz?","Passwort festlegen / ändern":"Şifre belirle / değiştir","Nur für dein aktuell angemeldetes Konto.":"Yalnızca oturum açtığın hesap için.","Neues Passwort (mindestens 12 Zeichen)":"Yeni şifre (en az 12 karakter)","Passwort wiederholen":"Şifreyi tekrarla","Passwort speichern":"Şifreyi kaydet","Passwort ändern":"Şifreyi değiştir","Passwortverwaltung":"Şifre yönetimi","Genehmigung ausstehend":"Onay bekleniyor","Kein Zugang":"Erişim yok","Zugriff konnte nicht geprüft werden":"Erişim doğrulanamadı","Zugang wird geprüft":"Erişim kontrol ediliyor","Einen Moment bitte …":"Lütfen bekleyin …","Dein Konto ist vorhanden. Bitte warte auf die Freigabe durch den Administrator.":"Hesabın mevcut. Lütfen yönetici onayını bekle.","Deine Mitgliedschaft ist nicht freigegeben. Wende dich an den Administrator.":"Üyeliğin onaylanmadı. Yöneticiyle iletişime geç.","Die Mitgliederdaten konnten nicht sicher überprüft werden. Bitte versuche es später erneut.":"Üyelik bilgileri doğrulanamadı. Lütfen daha sonra tekrar dene.","Mit E-Mail und Passwort anmelden. Wenn du noch kein Passwort hast, kannst du den bisherigen E-Mail-Link verwenden (sofern das Versandlimit es erlaubt). Neue Registrierungen werden später freigeschaltet.":"E-posta adresin ve şifrenle giriş yap. Şifren yoksa gönderim sınırı izin verdiğinde e-posta bağlantısını kullanabilirsin. Yeni kayıtlar daha sonra açılacak.","Für dieses Konto liegt noch keine freigegebene Mitgliedschaft vor.":"Bu hesabın üyeliği henüz onaylanmadı.","Neues Passwort festlegen":"Yeni şifre belirle","Der E-Mail-Link wurde geöffnet. Bitte wähle jetzt ein neues Passwort für dieses Konto.":"E-posta bağlantısı açıldı. Bu hesap için yeni bir şifre belirle.","Bitte beide Passwortfelder ausfüllen und speichern.":"Her iki şifre alanını doldur ve kaydet.","Bibliothek":"Kütüphane","Meine Bücher":"Kitaplarım","Gemeinsame Bibliothek":"Ortak kütüphane","Kategorien":"Kategoriler","Hauptbereiche":"Ana bölümler","Deine Bibliothek im Überblick":"Kütüphanene genel bakış","Deine persönlichen Bücher in Supabase":"Supabase'deki kişisel kitapların","Freigegebene Bücher und PDFs":"Paylaşıma onaylanan kitaplar ve PDF dosyaları","Bücher nach Themen entdecken":"Konulara göre kitapları keşfet","Bücher, Autoren und Themen durchsuchen …":"Kitap, yazar ve konu ara …","Bibliothek durchsuchen":"Kütüphanede ara","Bibliotheksübersicht":"Kütüphaneye genel bakış","＋ Buch hinzufügen":"＋ Kitap ekle","Bücher insgesamt":"Toplam kitap","Mitglieder":"Üyeler","Aktive Ausleihen":"Aktif ödünçler","Wunschliste":"İstek listesi","Kategorien entdecken":"Kategorileri keşfet","Meine Kategorien verwalten":"Kategorilerimi yönet","⚙ Kategorien verwalten":"⚙ Kategorileri yönet","Neue Hinzufügungen":"Son eklenenler","Alle Bücher ansehen ›":"Tüm kitapları gör ›","Dein Wissensassistent für die digitale Bibliothek.":"Dijital kütüphanenin bilgi asistanı.","MENBA AI öffnen ›":"MENBA AI'ı aç ›","Der KI-Assistent ist noch in Entwicklung.":"Yapay zekâ asistanı geliştirme aşamasında.","Noch keine verknüpften Ausleihdaten verfügbar.":"Henüz ödünç kayıtları yok.","Noch keine verknüpfte Wunschliste verfügbar.":"Henüz bir istek listesi yok.","Titel, Autor oder Thema suchen …":"Kitap, yazar veya konu ara …","Alle Themen":"Tüm konular","Koranwissenschaften":"Kur’an ilimleri","Hadith":"Hadis","Geschichte":"Tarih","Sprache":"Dil","Sonstiges":"Diğer","Islam":"İslam","Zuhause":"Evde","Im Kurs":"Kursta","Neues Buch eintragen":"Yeni kitap ekle","Buch bearbeiten":"Kitabı düzenle","Wähle eine neue PDF- oder Coverdatei aus, um die bisherige Datei zu ersetzen.":"Mevcut dosyayı değiştirmek için yeni bir PDF veya kapak seç.","Titel *":"Kitap adı *","Autor":"Yazar","Thema / Kategorie":"Konu / kategori","Standort":"Konum","Sammlung":"Koleksiyon","Persönlich":"Kişisel","Gemeinsam (Admin-Freigabe folgt)":"Ortak (yönetici onayı gerekli)","Buchcover (JPG, PNG oder WebP, max. 5 MB)":"Kitap kapağı (JPG, PNG veya WebP, en fazla 5 MB)","PDF-Datei (max. 50 MB)":"PDF dosyası (en fazla 50 MB)","Notizen":"Notlar","Abbrechen":"İptal","Buch speichern":"Kitabı kaydet","Kategorien verwalten":"Kategorileri yönet","✕ Schließen":"✕ Kapat","Persönliche Kategorien gelten nur für dein Konto. Gemeinsame Kategorien darf nur der Admin bearbeiten. Beim Löschen bleiben Bücher erhalten.":"Kişisel kategoriler yalnızca hesabında görünür. Ortak kategorileri yalnızca yönetici düzenleyebilir. Kategori silindiğinde kitaplar korunur.","Meine Kategorien":"Kategorilerim","Gemeinsame Kategorien (Admin)":"Ortak kategoriler (yönetici)","Kategorie hinzufügen":"Kategori ekle","Kategorie bearbeiten":"Kategoriyi düzenle","Name":"Ad","z. B. Tecvid":"Örn. Tecvid","Zuordnung vorhandener Bücher":"Mevcut kitapları eşleştir","Eigener Kategoriename":"Özel kategori adı","Bild (JPG, PNG, WebP; max. 5 MB)":"Görsel (JPG, PNG, WebP, en fazla 5 MB)","Kategorie anzeigen":"Kategoriyi göster","Speichern":"Kaydet","✕ Übersicht schließen":"✕ Görünümü kapat","Bearbeiten":"Düzenle","Ein/Aus":"Göster/Gizle","Löschen":"Sil","Noch keine Kategorien vorhanden.":"Henüz kategori yok.","Noch keine Bücher vorhanden.":"Henüz kitap yok.","Deine Bücher werden geladen …":"Kitapların yükleniyor …","Bücher werden geladen …":"Kitaplar yükleniyor …","Der Papierkorb ist leer.":"Çöp kutusu boş.","Noch keine Bücher in deiner persönlichen Online-Bibliothek.":"Bu kitaplıkta henüz kitap yok.","← Zur Bibliothek":"← Kütüphaneye dön","🗑 Papierkorb (7 Tage)":"🗑 Çöp kutusu (7 gün)","PDF öffnen":"PDF'yi aç","✎ Bearbeiten":"✎ Düzenle","🗑 Löschen":"🗑 Sil","↩ Wiederherstellen":"↩ Geri yükle","Buchcover":"Kitap kapağı","Abmelden":"Çıkış yap","Admin · Abmelden":"Yönetici · Çıkış yap","Wähle eine Kategorie direkt hier oben aus.":"Yukarıdan bir kategori seç.","Deine Bücher direkt oben anzeigen":"Kitapların yukarıda gösteriliyor","Bücher aus dieser Kategorie":"Bu kategorideki kitaplar","Dein Wissensassistent":"Bilgi asistanın","Kein Cover vorhanden? Wähle eine automatisch gestaltete Buchcover-Vorlage.":"Kapağın yok mu? Hazır bir kapak şablonu seç.","Die Vorschläge sind dekorative Platzhalter – keine behaupteten Originalcover. Ein hochgeladenes echtes Cover hat Vorrang.":"Şablonlar dekoratif kapaklardır. Yüklediğin gerçek kapak önceliklidir.","Ausgewähltes Cover automatisch speichern, wenn kein eigenes hochgeladen wurde":"Kapak yüklenmezse seçilen şablonu kaydet","Hier entsteht unser KI-Assistent. In einer späteren Entwicklungsphase beantwortet er Fragen ausschließlich anhand der Bücher, für die du eine Berechtigung hast, und nennt Buch, Ausgabe und Seitenzahl als Quelle.":"Yapay zekâ asistanımız geliştiriliyor. Daha sonra yalnızca erişim iznin olan kitaplara dayanarak yanıt verecek ve kaynak olarak kitap, baskı ve sayfa numarasını belirtecek.","In Entwicklung · Noch keine KI-Anfragen möglich":"Geliştirme aşamasında · Henüz soru sorulamıyor"};
-function localize(text){return lang==='tr' && Object.hasOwn(turkish,text)?turkish[text]:text}
+function localize(text){
+ const catalog=lang==='tr'?turkish:lang==='en'?libraryEnglish:null;
+ return catalog&&Object.hasOwn(catalog,text)?catalog[text]:text;
+}
 function categoryLabel(value){return localize(value||'Alle Themen')}
 const staticTranslations=[];
+const fileTranslations=[];
+function prepareFileLanguage(){
+ for(const input of document.querySelectorAll('input[type="file"]')){
+  const control=document.createElement('span'), button=document.createElement('span'), name=document.createElement('span');
+  control.className='library-file-control';button.className='library-file-button';name.className='library-file-name';input.classList.add('library-file-input');
+  button.setAttribute('aria-hidden','true');name.setAttribute('aria-hidden','true');
+  input.before(control);control.append(button,name,input);
+  const update=()=>{
+   button.textContent=tr('Datei auswählen','Dosya seç');
+   name.textContent=input.files[0]?.name||tr('Keine Datei ausgewählt','Dosya seçilmedi');
+  };
+  const afterChange=()=>queueMicrotask(update);
+  input.addEventListener('change',afterChange);
+  input.form?.addEventListener('reset',afterChange);
+  fileTranslations.push(update);
+ }
+}
 function prepareLanguage(){
  for(const section of ['header','main','#catEditorOverlay']){
   const root=document.querySelector(section);
   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
   while(walker.nextNode()){
    const node=walker.currentNode, key=node.nodeValue.trim();
-   if(!Object.hasOwn(turkish,key)||node.parentElement.closest('[data-de]'))continue;
+   if(!(Object.hasOwn(turkish,key)||Object.hasOwn(libraryEnglish,key))||node.parentElement.closest('[data-de],script,style,#libraryLanguages'))continue;
    if(node.parentElement.matches('option:not([value])'))node.parentElement.value=key;
    staticTranslations.push([node,key]);
   }
   for(const element of root.querySelectorAll('[placeholder],[aria-label],[title]')){
    for(const attr of ['placeholder','aria-label','title']){
     const key=element.getAttribute(attr);
-    if(Object.hasOwn(turkish,key))staticTranslations.push([element,key,attr]);
+    if(!element.closest('#libraryLanguages')&&(Object.hasOwn(turkish,key)||Object.hasOwn(libraryEnglish,key)))staticTranslations.push([element,key,attr]);
    }
   }
  }
@@ -2300,17 +2334,22 @@ function updatePortalLanguage(){
  for(const card of document.querySelectorAll('[data-portal]')){
   const name=card.dataset.portal;
   card.querySelector('strong').textContent=localize(labels[name]);
-  if(name!=='menba')card.querySelector('small').textContent=lang==='tr'?labels[name]:portalInfo[name][0];
+  const subtitle=card.querySelector('small');
+  if(name!=='menba')subtitle.textContent=lang==='tr'?labels[name]:localize(portalInfo[name][0]);
+  else subtitle.textContent=localize(portalInfo[name][1]);
  }
 }
 function applyLanguage(){
  document.documentElement.lang=lang;
- $('langBtn').textContent=lang==='de'?'Türkçe':'Deutsch';
+ document.title=localize('KZN · SD — دار العلم · Design-Reparatur');
+ $('libraryLanguages').setAttribute('aria-label',tr('Sprache','Dil'));
+ for(const button of $('libraryLanguages').querySelectorAll('button'))button.setAttribute('aria-pressed',String(button.dataset.libraryLang===lang));
  for(const [element,key,attr] of staticTranslations){
   if(attr)element.setAttribute(attr,localize(key));
   else element.nodeValue=localize(key);
  }
- document.querySelectorAll('[data-de]').forEach(el=>el.textContent=el.dataset[lang]);
+ document.querySelectorAll('[data-de]').forEach(el=>el.textContent=tr(el.dataset.de,el.dataset.tr));
+ fileTranslations.forEach(update=>update());
  $('dashboardAdd').textContent=$('addBtn').textContent=localize('＋ Buch hinzufügen');
  $('trashToggle').textContent=localize(trashMode?'← Zur Bibliothek':'🗑 Papierkorb (7 Tage)');
  $('formTitle').textContent=localize(editingBookId?'Buch bearbeiten':'Neues Buch eintragen');
@@ -2321,8 +2360,11 @@ function applyLanguage(){
  document.dispatchEvent(new Event('library-language'));
 }
 prepareLanguage();
-$('langBtn').onclick=()=>{
- lang=lang==='de'?'tr':'de';
+prepareFileLanguage();
+$('libraryLanguages').onclick=event=>{
+ const value=event.target.closest('[data-library-lang]')?.dataset.libraryLang;
+ if(!Object.hasOwn(libraryLocales,value)||value===lang)return;
+ lang=value;
  try{localStorage.setItem('library-language',lang)}catch{}
  applyLanguage();
 };
@@ -2339,7 +2381,7 @@ function showRecoveryScreen(){
  $('passwordForm').classList.remove('hidden');
  $('accessTitle').textContent=localize('Neues Passwort festlegen');
  $('accessText').textContent=localize('Der E-Mail-Link wurde geöffnet. Bitte wähle jetzt ein neues Passwort für dieses Konto.');
- $('loginFeedback').textContent='Bitte beide Passwortfelder ausfüllen und speichern.';
+ $('loginFeedback').textContent=localize('Bitte beide Passwortfelder ausfüllen und speichern.');
 }
 
 function showAccess(state, message = '') {
@@ -2434,7 +2476,7 @@ $('loginForm').onsubmit = async (event) => {
   const password = $('loginPassword').value;
   const btn = $('sendLink');
   btn.disabled = true;
-  $('loginFeedback').textContent = 'Anmeldung wird geprüft …';
+  $('loginFeedback').textContent = localize('Anmeldung wird geprüft …');
   try {
     const {error} = await db.auth.signInWithPassword({email, password});
     if(error) throw error;
@@ -2442,21 +2484,21 @@ $('loginForm').onsubmit = async (event) => {
     await refreshAccess();
   } catch(error) {
     console.error('Passwortanmeldung fehlgeschlagen:',error);
-    $('loginFeedback').textContent = 'Anmeldung fehlgeschlagen. Bitte E-Mail und Passwort prüfen. Falls noch kein Passwort eingerichtet wurde, den E-Mail-Link verwenden.';
+    $('loginFeedback').textContent = localize('Anmeldung fehlgeschlagen. Bitte E-Mail und Passwort prüfen. Falls noch kein Passwort eingerichtet wurde, den E-Mail-Link verwenden.');
   } finally { btn.disabled = false; }
 };
 $('magicLinkBtn').onclick = async () => {
   const email = $('loginEmail').value.trim();
   if(!$('loginEmail').reportValidity()) return;
   const btn=$('magicLinkBtn'); btn.disabled=true;
-  $('loginFeedback').textContent='Anmeldelink wird angefordert …';
+  $('loginFeedback').textContent=localize('Anmeldelink wird angefordert …');
   try {
     const {error}=await db.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:window.location.origin+window.location.pathname}});
     if(error) throw error;
-    $('loginFeedback').textContent='Falls die Adresse registriert ist und das Versandlimit es erlaubt, erhältst du einen Anmeldelink.';
+    $('loginFeedback').textContent=localize('Falls die Adresse registriert ist und das Versandlimit es erlaubt, erhältst du einen Anmeldelink.');
   } catch(error) {
     console.error('E-Mail-Link fehlgeschlagen:',error);
-    $('loginFeedback').textContent='E-Mail-Link konnte nicht versendet werden. Möglicherweise ist das E-Mail-Limit erreicht.';
+    $('loginFeedback').textContent=localize('E-Mail-Link konnte nicht versendet werden. Möglicherweise ist das E-Mail-Limit erreicht.');
   } finally {btn.disabled=false;}
 };
 $('passwordBtn').onclick=()=>{
@@ -2464,15 +2506,15 @@ $('passwordBtn').onclick=()=>{
   const opened=!$('passwordForm').classList.contains('hidden');
   $('accessPanel').classList.toggle('hidden', !opened);
   $('accessTitle').textContent=opened?'Passwortverwaltung':'Mitgliedszugang';
-  $('accessText').textContent=opened?'Dein neues Passwort wird sicher über Supabase gespeichert.':'';
+  $('accessText').textContent=opened?localize('Dein neues Passwort wird sicher über Supabase gespeichert.'):'';
   if(opened) $('newPassword').focus();
 };
 $('passwordForm').onsubmit=async event=>{
   event.preventDefault();
   const {data:activeSession}=await db.auth.getSession();
-  if(!activeSession?.session){$('loginFeedback').textContent='Reset-Link ungültig oder abgelaufen. Bitte eine neue Reset-E-Mail anfordern.';return;}
+  if(!activeSession?.session){$('loginFeedback').textContent=localize('Reset-Link ungültig oder abgelaufen. Bitte eine neue Reset-E-Mail anfordern.');return;}
   const password=$('newPassword').value;
-  if(password.length<12 || password!==$('confirmPassword').value){alert('Passwörter müssen übereinstimmen und mindestens 12 Zeichen lang sein.');return;}
+  if(password.length<12 || password!==$('confirmPassword').value){alert(localize('Passwörter müssen übereinstimmen und mindestens 12 Zeichen lang sein.'));return;}
   const btn=$('savePassword'); btn.disabled=true;
   try {
     const {error}=await db.auth.updateUser({password});
@@ -2482,17 +2524,17 @@ $('passwordForm').onsubmit=async event=>{
     $('passwordForm').classList.add('hidden');
     $('accessPanel').classList.add('hidden');
     await refreshAccess();
-    alert('Passwort erfolgreich gespeichert. Du kannst dich künftig mit E-Mail und Passwort anmelden.');
+    alert(localize('Passwort erfolgreich gespeichert. Du kannst dich künftig mit E-Mail und Passwort anmelden.'));
   } catch(error) {
     console.error('Passwortänderung fehlgeschlagen:',error);
-    alert('Passwort konnte nicht gespeichert werden: '+error.message);
+    alert(localize('Passwort konnte nicht gespeichert werden: ')+error.message);
   } finally {btn.disabled=false;}
 };
 $('loginBtn').onclick = async () => {
   if (!currentUser) { showAccess('guest'); $('loginEmail').focus(); return; }
   $('loginBtn').disabled = true;
   const {error} = await db.auth.signOut();
-  if (error) { alert('Abmelden fehlgeschlagen: ' + error.message); $('loginBtn').disabled = false; return; }
+  if (error) { alert(localize('Abmelden fehlgeschlagen: ') + error.message); $('loginBtn').disabled = false; return; }
   currentUser = null;
   showAccess('guest');
 };
@@ -2500,7 +2542,7 @@ $('loginBtn').onclick = async () => {
 // Sidebar controls delegate to the existing portal/view handlers.
 document.querySelectorAll('[data-side-portal]').forEach(b=>b.addEventListener('click',()=>{switchPortal(b.dataset.sidePortal);document.querySelectorAll('[data-side-portal]').forEach(x=>x.classList.toggle('active',x===b));}));
 document.querySelectorAll('[data-side-view]').forEach(b=>b.addEventListener('click',()=>{switchPortal('library');const target=document.querySelector('[data-view="'+b.dataset.sideView+'"]');if(target)target.click();}));
-document.querySelectorAll('[data-side-placeholder]').forEach(b=>b.addEventListener('click',()=>alert(b.dataset.sidePlaceholder+' wird in einer späteren Version ergänzt.')));
+document.querySelectorAll('[data-side-placeholder]').forEach(b=>b.addEventListener('click',()=>alert(b.dataset.sidePlaceholder+localize(' wird in einer späteren Version ergänzt.'))));
 
 db.auth.onAuthStateChange(() => { setTimeout(refreshAccess, 0); });
 refreshAccess();
@@ -2514,8 +2556,8 @@ $('forgotPasswordBtn').addEventListener('click',async()=>{
  try{
   const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});
   if(error)throw error;
-  $('loginFeedback').textContent='Wenn die E-Mail-Adresse registriert ist, erhältst du einen Link zum Zurücksetzen deines Passworts. Bitte auch den Spam-Ordner prüfen.';
- }catch(e){$('loginFeedback').textContent='Die Reset-Mail konnte nicht angefordert werden: '+e.message}
+  $('loginFeedback').textContent=localize('Wenn die E-Mail-Adresse registriert ist, erhältst du einen Link zum Zurücksetzen deines Passworts. Bitte auch den Spam-Ordner prüfen.');
+ }catch(e){$('loginFeedback').textContent=localize('Die Reset-Mail konnte nicht angefordert werden: ')+e.message}
  finally{btn.disabled=false}
 });
 // Admin-assisted reset: email is entered by admin; no access to or disclosure of password.
@@ -2545,11 +2587,11 @@ $('memberRequestReset').addEventListener('click',async()=>{
  const button=$('memberRequestReset');button.disabled=true;
  const feedback=$('resetApprovalFeedback');
  try{
-  if(!currentUser)throw Error('Bitte zuerst anmelden.');
+  if(!currentUser)throw Error(localize('Bitte zuerst anmelden.'));
   const {error}=await db.from('password_reset_requests').insert({user_id:currentUser.id});
   if(error)throw error;
-  feedback.textContent='Deine Anfrage wurde gespeichert. Der Admin kann sie jetzt freigeben.';
- }catch(e){feedback.textContent='Anfrage nicht gespeichert: '+e.message}
+  feedback.textContent=localize('Deine Anfrage wurde gespeichert. Der Admin kann sie jetzt freigeben.');
+ }catch(e){feedback.textContent=localize('Anfrage nicht gespeichert: ')+e.message}
  finally{button.disabled=false}
 });
 async function loadResetRequests(){
@@ -2559,13 +2601,13 @@ async function loadResetRequests(){
  const {data,error}=await db.from('password_reset_requests')
    .select('id,email,created_at,status').eq('status','pending').order('created_at',{ascending:true}).limit(50);
  if(currentUser?.id!==owner||request!==accessRequest||!passwordResetIsAdmin)return;
- if(error){feedback.textContent='Anfragen konnten nicht geladen werden: '+error.message;return}
+ if(error){feedback.textContent=localize('Anfragen konnten nicht geladen werden: ')+error.message;return}
  list.replaceChildren();
  if(!data.length){list.textContent=tr('Keine offenen Anfragen.','Açık talep yok.');return}
  data.forEach(r=>{
   const row=document.createElement('div');row.className='password-reset-row';
   const info=document.createElement('span');
-  info.textContent=r.email+' · '+new Date(r.created_at).toLocaleString(lang === 'tr' ? 'tr-TR' : 'de-DE');
+  info.textContent=r.email+' · '+new Date(r.created_at).toLocaleString(libraryLocale());
   const btn=document.createElement('button');btn.type='button';btn.textContent=tr('Freigeben & Reset-Mail senden','Onayla ve şifre yenileme e-postası gönder');
   btn.addEventListener('click',async()=>{
    if(!passwordResetIsAdmin||currentUser?.id!==owner||request!==accessRequest)return;
@@ -2575,14 +2617,14 @@ async function loadResetRequests(){
     const {data:updated,error:approvalError}=await db.from('password_reset_requests')
       .update({status:'approved',approved_at:new Date().toISOString()})
       .eq('id',r.id).eq('status','pending').select('id').single();
-    if(approvalError||!updated)throw approvalError||Error('Freigabe fehlgeschlagen');
+    if(approvalError||!updated)throw approvalError||Error(localize('Freigabe fehlgeschlagen'));
     if(!passwordResetIsAdmin||currentUser?.id!==owner||request!==accessRequest)return;
     const redirectTo=new URL(window.location.pathname,window.location.origin).href;
     const {error:mailError}=await db.auth.resetPasswordForEmail(r.email,{redirectTo});
     if(mailError)throw mailError;
-    feedback.textContent='Freigabe gespeichert. Supabase hat die Reset-E-Mail-Anfrage angenommen.';
+    feedback.textContent=localize('Freigabe gespeichert. Supabase hat die Reset-E-Mail-Anfrage angenommen.');
     await loadResetRequests();
-   }catch(e){feedback.textContent='Fehler: '+e.message+' (Eine bereits genehmigte Anfrage bitte nicht erneut versenden.)'}
+   }catch(e){feedback.textContent=localize('Fehler: ')+e.message+localize(' (Eine bereits genehmigte Anfrage bitte nicht erneut versenden.)')}
    finally{btn.disabled=false}
   });
   row.append(info,btn);list.append(row);
@@ -2738,7 +2780,7 @@ async function remove(c){
  if(editing===c.id)resetForm();
 }
 function resetForm(){editing=null;el('catEditorForm').reset();el('catFormTitle').dataset.editing='false';el('catFormTitle').textContent=localize('Kategorie hinzufügen');el('catVisible').checked=true}
-async function shrinkImage(file){if(!file)return null;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5e6)throw Error('Nur JPG, PNG oder WebP bis 5 MB.');const bmp=await createImageBitmap(file);const scale=Math.min(1,640/bmp.width,440/bmp.height);const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bmp.width*scale));canvas.height=Math.max(1,Math.round(bmp.height*scale));canvas.getContext('2d').drawImage(bmp,0,0,canvas.width,canvas.height);bmp.close();return canvas.toDataURL('image/jpeg',.78)}
+async function shrinkImage(file){if(!file)return null;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5e6)throw Error(localize('Nur JPG, PNG oder WebP bis 5 MB.'));const bmp=await createImageBitmap(file);const scale=Math.min(1,640/bmp.width,440/bmp.height);const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bmp.width*scale));canvas.height=Math.max(1,Math.round(bmp.height*scale));canvas.getContext('2d').drawImage(bmp,0,0,canvas.width,canvas.height);bmp.close();return canvas.toDataURL('image/jpeg',.78)}
 async function openEditor(){
  if(!currentUser||accessState!=='approved')return;
  el('catEditorOverlay').hidden=false;
@@ -2790,27 +2832,28 @@ document.addEventListener('library-language',()=>{drawEditor();refreshCards();})
 
 })();
 </script>
-<script>try{if(localStorage.getItem('library-language')==='tr')lang='tr'}catch{}applyLanguage();</script>
+<script>try{const preferred=localStorage.getItem('library-language');if(Object.hasOwn(libraryLocales,preferred))lang=preferred}catch{}applyLanguage();</script>
 <script src="hadis-reader.js?v=50mb"></script>
-<script src="member-tools.js"></script>
+<script src="member-tools.js?v=english"></script>
 <script src="admin-beta.js"></script>
-<script src="lending.js?v=sidebar20261119"></script>
+<script src="lending.js?v=english"></script>
 <script src="shared-library.js?v=sidebar20261119"></script>
-<script src="library-workspace.js?v=test-center"></script>
-<script src="sidebar-stats.js?v=20261119"></script>
-<script src="menba-search.js?v=hoca-talebe"></script>
-<script src="menba-ocr.js?v=source-repair"></script>
-<script src="menba-quran.js?v=chat-answer20261119"></script>
+<script src="library-workspace.js?v=english"></script>
+<script src="sidebar-stats.js?v=english"></script>
+<script src="menba-search.js?v=english"></script>
+<script src="menba-ocr.js?v=english"></script>
+<script src="menba-quran.js?v=english"></script>
 <script src="menba-quran-edition.js?v=quran20261119"></script>
 <script src="menba-shared-sources.js?v=source-repair"></script>
 <script src="menba-source-preferences.js?v=source-repair"></script>
-<script src="menba-answers.js?v=source-repair"></script>
+<script src="menba-answers.js?v=english"></script>
 <script src="menba-learning.js?v=learning-admin"></script>
-<script src="menba-explanations.js?v=hoca-talebe"></script>
-<script src="menba-cloud-chat.js?v=hoca-talebe"></script>
-<script src="menba-question-checks.js?v=hoca-talebe"></script>
-<script src="menba.js?v=hoca-talebe"></script>
-<script src="menba-guidance.js?v=answer-reliability"></script>
-<script src="menba-templates.js?v=template-library"></script>
-<script src="menba-admin.js?v=learning-admin"></script>
+<script src="menba-explanations.js?v=english"></script>
+<script src="menba-language.js?v=1"></script>
+<script src="menba-cloud-chat.js?v=english"></script>
+<script src="menba-question-checks.js?v=english"></script>
+<script src="menba.js?v=english"></script>
+<script src="menba-guidance.js?v=english"></script>
+<script src="menba-templates.js?v=english"></script>
+<script src="menba-admin.js?v=english"></script>
 </body></html>

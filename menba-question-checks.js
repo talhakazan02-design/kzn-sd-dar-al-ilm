@@ -5,16 +5,17 @@
     'Emsile nedir?', 'Emsile konusunu açıkla.', 'Emsile hakkında bilgi ver.',
     'Emsile kitabının ilk konusunu özetle.', 'Bu kitapta hangi konular anlatılıyor?',
     'Maksud kitabında fiiller nasıl açıklanıyor?', 'Was bedeutet Emsile?',
-    'Erkläre das Thema Emsile auf Deutsch.', 'ما موضوع كتاب الأمثلة؟'
+    'Erkläre das Thema Emsile auf Deutsch.', 'ما موضوع كتاب الأمثلة؟', 'What does Emsile explain?',
+    'How does Maksud explain verbs?'
   ];
   const supportedQuestions = [
-    ['2:173','Ist Schweinefleisch essen haram?','Domuz eti yemek haram mı?'],
-    ['2:183','Ist Fasten Pflicht?','Oruç tutmak farz mı?'],
-    ['2:43','Muss man das Gebet verrichten?','Namaz kılmak farz mı?']
+    ['2:173','Ist Schweinefleisch essen haram?','Domuz eti yemek haram mı?','Is eating pork haram?'],
+    ['2:183','Ist Fasten Pflicht?','Oruç tutmak farz mı?','Is fasting obligatory?'],
+    ['2:43','Muss man das Gebet verrichten?','Namaz kılmak farz mı?','Is prayer obligatory?']
   ];
 
   function lookup(text) {
-    const phrase = /^(?:Welche Textstelle erwähnt |Hangi metin bölümünde |في أي مقطع وردت كلمة )(.+?)(?: geçiyor)?[?؟]$/iu.exec(text)?.[1].trim();
+    const phrase = /^(?:Welche Textstelle erwähnt |Hangi metin bölümünde |Which passage mentions |في أي مقطع وردت كلمة )(.+?)(?: geçiyor)?[?؟]$/iu.exec(text)?.[1].trim();
     return phrase?.replace(/^(?:„([^“]+)“|«([^»]+)»|“([^”]+)”|"([^"]+)")$/u,(_,a,b,c,d)=>a??b??c??d);
   }
 
@@ -105,6 +106,7 @@
     const messages = {
       de:'Die gesuchte Stelle steht im folgenden Auszug.',
       tr:'Aradığın ifade aşağıdaki kaynak bölümünde yer alıyor.',
+      en:'The requested passage is shown in the excerpt below.',
       ar:'المقطع المطلوب موجود في الاقتباس أدناه.'
     };
     return {kind:'excerpt',text:messages[language] ?? messages.de,citations:[citation+1]};
@@ -115,10 +117,10 @@
     const seen = new Set();
     const samples = pages.filter(page=>!page.ocr && page.text.trim()).slice(0,70);
     if (language !== 'ar' && max > 1) {
-      for (const [reference,de,turkish] of supportedQuestions.slice(0,Math.min(max-1,3))) {
+      for (const [reference,de,turkish,english] of supportedQuestions.slice(0,Math.min(max-1,3))) {
         const page = samples.find(item=>item.verses?.some(verse=>verse.verse === reference));
         const verse = page?.verses.find(item=>item.verse === reference);
-        const text = language === 'tr' ? turkish : de;
+        const text = ({tr:turkish,en:english})[language] ?? de;
         const evidence = verse && {...verse,source:page.source,page:page.page};
         if (!evidence || !MenbaAnswers.compose(MenbaAnswers.inspect(text),[evidence],language)) continue;
         seen.add(reference);
@@ -129,13 +131,14 @@
       for (const verse of page.verses ?? []) {
         if (!/^\d{1,3}:\d{1,3}$/u.test(verse.verse) || !verse.text.trim() || seen.has(verse.verse)) continue;
         seen.add(verse.verse);
-        const name = language === 'tr' ? 'Kur’an' : language === 'ar' ? 'القرآن' : 'Koran';
+        const name = ({tr:'Kur’an',en:'Quran',ar:'القرآن'})[language] ?? 'Koran';
         questions.push({text:`${name} ${verse.verse}`,expected:{page:page.page,sourceId:page.sourceId,verse:verse.verse}});
         if (questions.length >= max) return questions;
       }
     }
     const prompt = language === 'tr' ? term=>`Hangi metin bölümünde ${term} geçiyor?`
       : language === 'ar' ? term=>`في أي مقطع وردت كلمة ${term}؟`
+      : language === 'en' ? term=>`Which passage mentions ${term}?`
         : term=>`Welche Textstelle erwähnt ${term}?`;
     const readable = [...samples,...pages.filter(page=>page.ocr && page.text.trim()).slice(0,20)];
     for (const page of readable) {

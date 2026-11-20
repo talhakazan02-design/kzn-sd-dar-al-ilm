@@ -48,7 +48,7 @@
       else button.removeAttribute('aria-current');
     }
     if (screen === 'topic') {
-      $('sectionTitle').textContent = topicTitle;
+      $('sectionTitle').textContent = categoryLabel(topicTitle);
       $('sectionDescription').textContent = tr('Bücher aus dieser Kategorie', 'Bu kategorideki kitaplar');
     }
   }
@@ -172,7 +172,7 @@
       openPortal('categories');
       return;
     }
-    topicTitle = $('category').selectedOptions[0].textContent;
+    topicTitle = $('category').value;
     show('topic');
   });
 

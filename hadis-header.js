@@ -12,9 +12,12 @@
   let selected = -1;
   let state = 'loading';
   let language = document.documentElement.lang;
-  try { if (localStorage.getItem('library-language') === 'tr') language = 'tr'; } catch {}
+  try {
+    const preferred = localStorage.getItem('library-language');
+    if (['de','tr','en'].includes(preferred)) language = preferred;
+  } catch {}
 
-  const text = (de, tr) => language === 'tr' ? tr : de;
+  const text = (de,tr) => language === 'tr' ? tr : language === 'en' ? libraryEnglish[de] ?? de : de;
 
   function updateLabels() {
     button.textContent = text('Weiterer Hadis', 'Başka bir hadis');
@@ -28,7 +31,9 @@
     if (selected >= 0) {
       const {number} = entries[selected];
       const page = number <= 22 ? 1 : 2;
-      source.textContent = `Haftanın Hadis-i Şerifleri · Hadis ${number} · ${text('Seite', 'Sayfa')} ${page}`;
+      source.textContent = language === 'en'
+        ? `${text('Haftanın Hadis-i Şerifleri')} · ${text('Hadis')} ${number} · ${text('Seite')} ${page}`
+        : `Haftanın Hadis-i Şerifleri · Hadis ${number} · ${text('Seite','Sayfa')} ${page}`;
     }
   }
 

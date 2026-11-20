@@ -8,6 +8,7 @@
     ['multilingual', 'ara+tur+deu'],
     ['arabic', 'ara'],
     ['german', 'deu'],
+    ['english', 'eng'],
     ['ottoman', 'ara+fas'],
     ['turkish', 'tur'],
   ]);

@@ -19,17 +19,18 @@
     lebensgefahr darum leben tod gefahr gezwungen krank krankheit reisen reise unterwegs
     bin sonst nichts anderes hat haben werde geben geht noch nicht untersagt
     nein ja nur keine kein verpflichtung
+    in what does is are it to can could may must we you i they the a an and or of if for from about say says tell show allowed permit permitted prohibited prohibition forbidden forbid forbids unlawful required require obligation obligatory compulsory duty religious muslims believers muslim eat eating eaten pray prayers fasting fast exception exceptions exempt emergency necessity necessary starving illness ill sick travel traveling travelling trip later which where english turkish german arabic
   `.trim().split(/\s+/u));
 
   const topics = {
-    pork: {query: 'domuz', subject: /\b(?:schwein(?:e|s|en)?(?:fleisch(?:es)?)?|domuz(?:u|un)?(?: et(?:i|ini|inin|inden|ine|le))?)\b/u},
-    prayer: {query: 'namaz', subject: /\b(?:namaz(?:i|in|la)?|ritualgebet(?:s|e)?|gebet(?:s|e)?|bet(?:en|et|e)|salat)\b/u},
-    fasting: {query: 'oruc', subject: /\b(?:oruc(?:u|un|la)?|oruc tutmak|fast(?:en|et|e))\b/u},
+    pork: {query: 'domuz', subject: /\b(?:schwein(?:e|s|en)?(?:fleisch(?:es)?)?|pork|domuz(?:u|un)?(?: et(?:i|ini|inin|inden|ine|le))?)\b/u},
+    prayer: {query: 'namaz', subject: /\b(?:namaz(?:i|in|la)?|ritualgebet(?:s|e)?|gebet(?:s|e)?|bet(?:en|et|e)|salat|salah|prayers?|pray)\b/u},
+    fasting: {query: 'oruc', subject: /\b(?:oruc(?:u|un|la)?|oruc tutmak|fast(?:en|et|e|ing)?)\b/u},
   };
-  const askForm = /\b(?:ist|sind|gilt|darf|durfen|muss|mussen|haram|helal|halal|caiz|mubah|yasak|farz|pflicht|geboten|verpflichtend|untersagt|verboten|erlaubt|sag(?:t|e|en)|midir|mudur|mi|mu|gerekiyor|gerekir|nedir|hukmu|diyor|der|gecer|geciyor)\b/u;
-  const exceptionForm = /\b(?:ausnahme(?:n)?|ausnahmsweise|notlage|lebensgefahr|leben und tod|gezwungen|not|nichts anderes|istisna(?:si|lar)?|zaruret|zor(?:da| durumda|unda)|mecbur(?:iyet)?|tehlike)\b/u;
-  const fastingExceptionForm = /\b(?:krank|krankheit|reise|reisen|unterwegs|hasta|hastalik|yolculukta|seferde|seyahatte|muaf)\b/u;
-  const sourceQuestion = /^(?:(?:und |aber )?(?:welche quelle(?: ist das)?|was ist (?:die|deine) quelle|welche stelle|wo steht das|wo im koran|welcher vers(?: sagt das)?|quelle)|(?:bunun )?(?:kaynagi(?: ne| nedir)?|kaynak|hangi ayet|bu nerede geciyor))$/u;
+  const askForm = /\b(?:ist|sind|gilt|darf|durfen|muss|mussen|haram|helal|halal|caiz|mubah|yasak|farz|pflicht|geboten|verpflichtend|untersagt|verboten|erlaubt|sag(?:t|e|en)|midir|mudur|mi|mu|gerekiyor|gerekir|nedir|hukmu|diyor|der|gecer|geciyor|is|are|must|can|may|allowed|permitted|forbidden|prohibited|unlawful|required|compulsory|obligatory|say|says)\b/u;
+  const exceptionForm = /\b(?:ausnahme(?:n)?|ausnahmsweise|notlage|lebensgefahr|leben und tod|gezwungen|in (?:der )?not|nichts anderes|istisna(?:si|lar)?|zaruret|zor(?:da| durumda|unda)|mecbur(?:iyet)?|tehlike|exceptions?|necessity|emergency|starving|exempt)\b|^not$/u;
+  const fastingExceptionForm = /\b(?:krank|krankheit|reise|reisen|unterwegs|hasta|hastalik|yolculukta|seferde|seyahatte|muaf|ill(?:ness)?|sick|travel(?:l?ing)?)\b/u;
+  const sourceQuestion = /^(?:(?:und |aber )?(?:welche quelle(?: ist das)?|was ist (?:die|deine) quelle|welche stelle|wo steht das|wo im koran|welcher vers(?: sagt das)?|quelle)|(?:bunun )?(?:kaynagi(?: ne| nedir)?|kaynak|hangi ayet|bu nerede geciyor)|what is the source|where (?:does it say that|is that written)|which verse(?: says that)?)$/u;
 
   function normalize(value) {
     return value.normalize('NFKD').toLowerCase().replace(/\p{M}/gu, '')
@@ -62,12 +63,13 @@
     return null;
   }
 
-  const sourceDoubt = /(?:\b(?:nicht|kein(?:e|en|er)?|behauptet|luge|frage|falsch|degil(?:dir)?|iddia|sormak|sanilir|yalan)\b|(?:^|[\p{Z}\p{P}])(?:هل\s|(?:ليس|لم|لا)\s+(?:حرام|محرم|يحرم|يمنع)))/u;
+  const sourceDoubt = /(?:\b(?:nicht|kein(?:e|en|er)?|behauptet|luge|frage|falsch|degil(?:dir)?|iddia|sormak|sanilir|yalan|not|never|false|claim(?:s|ed)?|denies)\b|(?:^|[\p{Z}\p{P}])(?:هل\s|(?:ليس|لم|لا)\s+(?:حرام|محرم|يحرم|يمنع)))/u;
   const porkText = /(?:\b(?:domuz et(?:i|ini|inden|inin)|schweinefleisch(?:es)?|fleisch (?:vom schwein|des schweins))\b|لحم\s+(?:ال)?خنزير)/u;
   const prohibitionText = /(?:\b(?:haramdir|haram ki(?:ldi|lindi|linmistir|lmistir)|yasak(?:ladi|landi|lanmistir)|verboten|untersagt|verwehrt|verbietet|verbot)\b|(?:حرمت\s+عليكم|حرم\s+عليكم))/u;
-  const prayerText = /(?:\b(?:namazi|namazlari) (?:dosdogru |geregi gibi )?kilin\b|\bverrichtet (?:das |die )?(?:ritualgebet|gebet(?:e)?)\b|اقيموا\s+الصلو?ا?ة)/u;
-  const fastingText = /(?:\b(?:oruc(?:u)?|fasten)\b|الصيام|تصوموا)/u;
-  const dutyText = /(?:\b(?:farz kilin(?:di|mistir)|yazildi|vorgeschrieben|auferlegt)\b|كتب\s+عليكم)/u;
+  const porkForbiddenEnglish = /\b(?:(?:pork|swine flesh|flesh of swine) (?:is|has been) (?:forbidden|prohibited|unlawful)|(?:forbids|prohibits) (?:eating )?pork|forbidden to you (?:is|are) (?:(?!(?:but|except|allowed)\b)\w+ ){0,20}(?:pork|swine flesh|flesh of swine))\b/u;
+  const prayerText = /(?:\b(?:namazi|namazlari) (?:dosdogru |geregi gibi )?kilin\b|\bverrichtet (?:das |die )?(?:ritualgebet|gebet(?:e)?)\b|\b(?:establish|perform) (?:the )?(?:regular )?prayers?\b|اقيموا\s+الصلو?ا?ة)/u;
+  const fastingText = /(?:\b(?:oruc(?:u)?|fasten|fasting)\b|الصيام|تصوموا)/u;
+  const dutyText = /(?:\b(?:farz kilin(?:di|mistir)|yazildi|vorgeschrieben|auferlegt|prescribed|required|obligatory)\b|كتب\s+عليكم)/u;
 
   function clauses(text) {
     const sentences = text.match(/[^.!?؛؟]+[.!?؛؟]?/gu) ?? [];
@@ -94,7 +96,7 @@
     const direct = clauses(text).filter(clause => !sourceDoubt.test(clause));
     switch (topic) {
       case 'pork': {
-        const ruling = direct.some(clause => closePair(clause, porkText, prohibitionText));
+        const ruling = direct.some(clause => closePair(clause,porkText,prohibitionText) || porkForbiddenEnglish.test(clause));
         const exception = ruling && inNeed.test(clean) && limitedNeed.test(clean) && notSin.test(clean);
         return {supported:kind === 'exception' ? exception : ruling, exception, rights:exception && otherRights.test(clean)};
       }
@@ -121,6 +123,16 @@
   }
 
   function response(topic, kind, proof, language, verse) {
+    if (language === 'en') {
+      if (kind === 'source') return verse ? 'The cited Quran verse below supports this answer.' : 'The book passage below supports this answer.';
+      if (topic === 'pork') {
+        if (kind === 'exception') return 'The passage gives an exception in cases of necessity, within the stated limit.' + (proof.rights ? ' The rights of others must also be respected.' : '');
+        return 'The passage prohibits eating pork.' + (proof.exception ? ' It also gives a limited exception in cases of necessity.' : '');
+      }
+      if (topic === 'prayer') return 'The passage instructs believers to perform prayer.';
+      if (kind === 'exception') return 'The passage says that people who are ill or traveling can make up missed fasts on other days.';
+      return 'The passage describes fasting as an obligation for believers.';
+    }
     const tr = language === 'tr';
     if (kind === 'source') return verse
       ? tr ? 'Dayanak, bu yanıta eklenen ayettir.' : 'Die Grundlage ist die unten angegebene Koranstelle.'
