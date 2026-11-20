@@ -22,7 +22,7 @@ async function supabase(env, token, name) {
   const url = new URL(`/rest/v1/rpc/${name}`,env.SUPABASE_URL);
   if (url.protocol !== 'https:') throw Error('Invalid auth service');
   const response = await fetch(url, {
-    method:'POST',redirect:'error',signal:AbortSignal.timeout(8000),
+    method:'POST',redirect:'manual',signal:AbortSignal.timeout(8000),
     headers:{apikey:env.SUPABASE_PUBLISHABLE_KEY,Authorization:token,'Content-Type':'application/json'},body:'{}',
   });
   if (response.status === 401 || response.status === 403) return null;
