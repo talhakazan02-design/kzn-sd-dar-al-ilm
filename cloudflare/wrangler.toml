@@ -1,0 +1,21 @@
+name = "kzn-menba-pilot"
+main = "menba-worker.mjs"
+compatibility_date = "2026-11-19"
+
+[ai]
+binding = "AI"
+
+[[durable_objects.bindings]]
+name = "MENBA_QUOTA"
+class_name = "MenbaQuota"
+
+[[migrations]]
+tag = "menba-quota-v1"
+new_sqlite_classes = ["MenbaQuota"]
+
+[vars]
+MENBA_ALLOWED_ORIGIN = "https://talhakazan02-design.github.io"
+SUPABASE_URL = "https://ndivrlvecgvdntmwemnr.supabase.co"
+
+[observability]
+enabled = false
