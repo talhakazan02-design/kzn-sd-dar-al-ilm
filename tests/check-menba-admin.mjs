@@ -43,7 +43,7 @@ globalThis.fetch = async (url,{headers,redirect}) => {
   const token = headers.Authorization?.replace(/^Bearer /u,'');
   if (![studentToken,ownerToken].includes(token)) return new Response(null,{status:401});
   if (url.pathname.endsWith('/library_menba_access')) {
-    return Response.json([{user_id:token === ownerToken ? owner : student,is_owner:token === ownerToken}]);
+    return Response.json([{user_id:token === ownerToken ? owner : student,is_owner:token === ownerToken,is_hoca:token === ownerToken}]);
   }
   if (url.pathname.endsWith('/library_beta_list_delegate_candidates') && token === ownerToken) {
     return Response.json([{user_id:student}]);
@@ -51,17 +51,20 @@ globalThis.fetch = async (url,{headers,redirect}) => {
   return new Response(null,{status:403});
 };
 let calls = 0;
+const inference = [];
+let supported = true;
 const evidence = 'Die Lesestunde beginnt am Freitag und alle Teilnehmer bringen das Buch mit.';
 const env = {
   MENBA_ALLOWED_ORIGIN:host,
   SUPABASE_URL:'https://database.example',
   SUPABASE_PUBLISHABLE_KEY:'synthetic-public-key',
   MENBA_QUOTA:{idFromName:()=>0,get:()=>({fetch:(url,init)=>metering.fetch(new Request(url,init))})},
-  AI:{async run(){
+  AI:{async run(model,options){
     calls++;
+    inference.push({model,options});
     const result = calls % 2
       ? {text:'Für die Lesestunde am Freitag braucht jeder das Buch.',citations:[{number:1,quote:evidence}]}
-      : {supported:true};
+      : {supported};
     return {response:JSON.stringify(result),usage:{prompt_tokens:300,completion_tokens:100}};
   }}
 };
@@ -75,6 +78,10 @@ assert.equal((await request('/menba/quota',studentToken,{account:student,limit:9
 assert.equal((await request('/menba/quota',ownerToken,{account:outsider,limit:1})).status,403);
 assert.equal((await request('/menba/answer',invalidToken,ask)).status,403);
 assert.equal((await request('/menba/answer',studentToken,ask,'https://wrong.example')).status,403);
+assert.equal((await request('/menba/answer',studentToken,{...ask,mode:'scholarly',depth:'deep'})).status,403);
+assert.equal((await request('/menba/answer',ownerToken,{...ask,mode:'unknown'})).status,400);
+assert.equal((await request('/menba/answer',ownerToken,{...ask,mode:['scholarly']})).status,400);
+assert.equal((await request('/menba/answer',ownerToken,{...ask,mode:'simple',draft:{minutes:15,audience:'youth'}})).status,400);
 assert.equal(calls,0);
 assert.equal((await request('/menba/quota',ownerToken,{account:student,limit:0})).status,200);
 assert.equal((await request('/menba/answer',studentToken,ask)).status,429);
@@ -92,6 +99,43 @@ database.set('usage',{day:usage.day,total:9999,members:{},holds:{}});
 assert(reservationCost(ask)>1);
 assert.equal((await request('/menba/answer',studentToken,ask)).status,429);
 assert.equal(calls,2);
+
+database.delete('usage');
+const deep = { ...ask,mode:'scholarly',depth:'deep',draft:{minutes:30,audience:'youth'},
+  excerpts:Array.from({length:6},(_,index)=>({number:index+1,text:`${evidence} Lesestunde ${index+1}.`}))};
+const lecture = await request('/menba/answer',ownerToken,deep);
+assert.equal(lecture.status,200);
+assert.equal((await lecture.json()).mode,'scholarly');
+assert.equal(calls,4);
+assert.equal(inference[2].model,'@cf/google/gemma-4-26b-a4b-it');
+assert.equal(inference[2].options.max_completion_tokens,2200);
+assert.equal(inference[3].options.max_completion_tokens,120);
+assert.match(inference[2].options.messages[0].content,/30-minute Sohbet for ages 12–17/u);
+assert.equal(JSON.parse(inference[2].options.messages[1].content).excerpts.length,6);
+assert(reservationCost(deep,2200,6000)>reservationCost(ask));
+const deepStatus = await (await request('/menba/quota',ownerToken,{account:owner})).json();
+assert.deepEqual([deepStatus.used,deepStatus.total],[11,11]);
+assert.equal((await request('/menba/answer',ownerToken,{...deep,depth:'brief'})).status,400);
+supported = false;
+assert.equal((await request('/menba/answer',ownerToken,{...ask,mode:'guided',step:2,previousQuestion:'Wann beginnt die Lesestunde?'})).status,204);
+assert.match(inference[4].options.messages[0].content,/only step 2/u);
+assert.equal(calls,6);
+
+const styles = globalThis.MenbaExplanations;
+let conversation = styles.state();
+assert.equal(styles.activeMode('chat',conversation),'menba');
+assert.equal(styles.activeMode('hoca',conversation),'menba');
+assert.equal(styles.activeMode('talebe',conversation),'simple');
+for (const phrase of ['Hocam, anlamadım.','Yine anlamadım.','Hiç anlamıyorum.','Kannst du es anders erklären?','Ich verstehe es immer noch nicht.']) {
+  assert.equal(styles.signal(phrase),'confused',phrase);
+}
+assert.equal(styles.signal('Ich verstehe es nicht. Was sind die Voraussetzungen?'),null);
+conversation = styles.advance(styles.advance(conversation,'confused'),'confused');
+assert.equal(styles.activeMode('talebe',conversation),'guided');
+assert.equal(styles.advance(conversation,'next').step,2);
+assert.equal(styles.activeMode('talebe',styles.advance(conversation,'understood')),'simple');
+conversation.manual.talebe = 'simple';
+assert.equal(styles.activeMode('talebe',conversation),'simple');
 
 const page = [{text:evidence,source:'Testbuch',page:12}];
 const quiz = MenbaLearning.prepare('talebe','quiz',page);

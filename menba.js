@@ -21,11 +21,21 @@
   const quranFile = $('menbaQuranFile');
   const photoFile = $('menbaPhotoFile');
   const category = $('menbaCategory');
+  const sourceSearch = $('menbaSearchSources');
+  const selectedOnly = $('menbaSelectedOnly');
   const clearChat = $('menbaClearChat');
+  const history = $('menbaHistory');
+  const historyList = $('menbaHistoryList');
   const learningMode = $('menbaMode');
   const modeSummary = $('menbaModeSummary');
   const learningTask = $('menbaTask');
   const useTopic = $('menbaUseTopic');
+  const explanationMode = $('menbaExplanationMode');
+  const explanationDepth = $('menbaExplanationDepth');
+  const explanationHint = $('menbaExplanationHint');
+  const sohbet = $('menbaSohbet');
+  const sohbetForm = $('menbaSohbetForm');
+  const explanations = MenbaExplanations;
   const cloud = $('menbaCloudPilot');
   const consent = $('menbaCloudConsent');
   const pdfBase = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.5.438/';
@@ -61,6 +71,14 @@
   let hocaAllowed = false;
   let hocaRequest = 0;
   let nextDiagnosticAt = 0;
+  let explanationState = explanations.state();
+  let guidedNotice = false;
+  let queuedFollowup = null;
+
+  for (const select of [explanationDepth,sohbetForm.elements.depth]) {
+    select.replaceChildren(...Object.entries(explanations.depths).map(([value,label])=>new Option(label,value)));
+    select.value = 'balanced';
+  }
 
   function allowed() {
     return Boolean(owner && owner === currentUser?.id && accessState === 'approved');
@@ -69,6 +87,7 @@
   const pickableSources = () => options.filter(source => selected.has(source.id));
   function sourcesChanged() {
     consent.checked = false;
+    sohbetForm.elements.cloud.checked = false;
     document.dispatchEvent(new Event('menba-source-change'));
   }
 
@@ -294,7 +313,10 @@
     const categories = [...new Set(options.map(source => source.category).filter(Boolean))].sort();
     category.replaceChildren(new Option(tr('Alle Kategorien','Tüm kategoriler'),''),...categories.map(name=>new Option(categoryLabel(name),name)));
     if (categories.includes(priorCategory)) category.value = priorCategory;
-    const visibleSources = options.filter(source => !category.value || source.category === category.value);
+    const fold = text=>text.normalize('NFKD').toLowerCase().replace(/\p{M}/gu,'').replaceAll('ı','i');
+    const term = fold(sourceSearch.value.trim());
+    const visibleSources = options.filter(source=>(!category.value || source.category === category.value)
+      && (!selectedOnly.checked || selected.has(source.id)) && fold(`${source.title} ${source.fileName ?? ''}`).includes(term));
     const choices = canAsk ? visibleSources.map(source => {
       const label = document.createElement('label');
       label.className = 'menba-source-option';
@@ -313,14 +335,16 @@
       return label;
     }) : [];
     picker.replaceChildren(...choices);
+    if (canAsk && options.length && !choices.length) picker.append(paragraph(tr('Keine Quellen für diesen Filter.','Bu filtreye uyan kaynak yok.'),'menba-status'));
     quranFile.disabled = !canAsk || busy || savingPreferences;
     photoFile.disabled = quranFile.disabled;
     category.disabled = !canAsk || busy || !categories.length;
+    sourceSearch.disabled = selectedOnly.disabled = !canAsk || busy || !options.length;
     clearChat.hidden = !canAsk;
     clearChat.disabled = busy;
     empty.hidden = !canAsk || turns.length > 0;
-    renderLearning(canAsk,busy);
     cloud.hidden = !canAsk || !MenbaCloudChat.canUse(cloud.dataset.endpoint);
+    renderLearning(canAsk,busy);
     consent.disabled = busy;
     const scans = options.filter(source => source.id !== hadisId);
     const previous = ocrSource.value;
@@ -338,6 +362,22 @@
     const scrollTop = results.scrollTop;
     const atEnd = results.scrollHeight - results.clientHeight - scrollTop < 48;
     results.replaceChildren(...turns.map(renderTurn));
+    history.hidden = !canAsk || !turns.length;
+    if (!turns.length) history.open = false;
+    historyList.replaceChildren(...turns.map((turn,index)=>{
+      const entry = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dir = 'auto';
+      button.title = button.textContent = turn.question;
+      button.addEventListener('click',()=>{
+        const message = results.children[index];
+        message.scrollIntoView({block:'nearest'});
+        message.focus({preventScroll:true});
+      });
+      entry.append(button);
+      return entry;
+    }));
     results.scrollTop = atEnd ? results.scrollHeight : scrollTop;
     document.dispatchEvent(new CustomEvent('menba-busy',{detail:busy}));
   }
@@ -347,6 +387,26 @@
       learningMode.add(new Option('Hoca Modu','hoca'));
     }
     if (!hocaAllowed) learningMode.querySelector('[value="hoca"]')?.remove();
+    const area = learningMode.value;
+    const style = explanations.activeMode(area,explanationState);
+    const choices = explanations.choices(area);
+    explanationMode.replaceChildren(...choices.map(key=>new Option(explanations.modes[key],key)));
+    if (area === 'talebe') explanationMode.add(new Option(tr('Automatisch','Otomatik'),''),0);
+    explanationMode.value = area === 'talebe' && !explanationState.manual.talebe && style === 'simple' ? '' : style;
+    // The automatic choice remains identifiable when guidance takes over.
+    if (area === 'talebe' && !explanationState.manual.talebe && style === 'guided') {
+      explanationMode.options[0].textContent = `${tr('Automatisch','Otomatik')} · ${explanations.modes.guided}`;
+      explanationMode.value = '';
+    }
+    $('menbaExplanationDepthField').hidden = style !== 'scholarly';
+    explanationDepth.value = explanationState.depth;
+    explanationHint.textContent = style === 'guided' && guidedNotice ? tr('Für eine leichtere Erklärung wurde Rehberli Anlatım aktiviert.', 'Daha kolay anlaşılması için rehberli anlatıma geçildi.')
+      : ({menba:tr('Direkte und verständliche Erklärung.','Doğrudan ve anlaşılır açıklama.'),simple:tr('Sade Anlatım · Kurze Sätze und einfache Begriffe.','Sade Anlatım · Kısa cümleler ve anlaşılır kelimeler.'),
+        guided:tr('Ein Schritt nach dem anderen.','Adım adım açıklama.'),scholarly:tr('Die gewählte Tiefe bestimmt Umfang und Zahl der Auszüge.','Seçilen derinlik, yanıtın kapsamını ve alıntı sayısını belirler.')}[style]);
+    sohbet.hidden = !canAsk || area !== 'hoca' || !hocaAllowed;
+    if (sohbet.hidden) { sohbet.open = false; sohbetForm.elements.cloud.checked = false; }
+    $('menbaSohbetCloud').hidden = cloud.hidden;
+    for (const control of sohbetForm.elements) control.disabled = sohbet.hidden || busy;
     modeSummary.textContent = `${tr('Arbeitsmodus','Çalışma modu')} · ${learningMode.selectedOptions[0].textContent}`;
     $('menbaHocaNav').hidden = !canAsk || !hocaAllowed;
     for (const button of document.querySelectorAll('[data-menba-mode]')) {
@@ -370,12 +430,13 @@
           'Konuları tekrar et, alıştırmaları çöz ve MENBA ile kendini sına.')));
     }
     const picked = learningTask.value;
-    const activities = MenbaLearning.tasks[learningMode.value] ?? [];
+    const activities = area === 'hoca' ? [['','Freie Frage','Serbest soru'],...MenbaLearning.tasks.hoca] : MenbaLearning.tasks[area] ?? [];
     learningTask.replaceChildren(...activities.map(([key,de,turkish])=>new Option(tr(de,turkish),key)));
     if (activities.some(([key])=>key === picked)) learningTask.value = picked;
     $('menbaTaskField').hidden = !activities.length;
     useTopic.hidden = !activities.length || !turns.length;
-    for (const control of [learningMode,learningTask,useTopic]) control.disabled = !canAsk || busy;
+    for (const control of [learningMode,learningTask,useTopic,explanationDepth]) control.disabled = !canAsk || busy;
+    explanationMode.disabled = !canAsk || busy || choices.length < 2;
   }
 
   async function syncHoca() {
@@ -429,6 +490,36 @@
     sourceSummary.focus();
   }
 
+  function showOcr(source) {
+    if (!options.some(row=>row.id === source.id)) return;
+    sourceSummary.parentElement.open = true;
+    ocrTools.open = true;
+    ocrSource.value = source.id;
+    $('menbaOcrLanguage').value = /[iİı]lmihal/iu.test(source.title) ? 'turkish' : 'mixed';
+    updateOcrControls();
+    ocrSource.focus();
+  }
+
+  function openTemplates(index) {
+    const templates = $('menbaQuestionTemplates');
+    templates.open = true;
+    const choice = $('menbaTemplateChoice');
+    if (index !== undefined) {
+      choice.value = index;
+      choice.dispatchEvent(new Event('change'));
+      templates.querySelector('#menbaTemplateInputs input')?.focus();
+    } else templates.querySelector('summary').focus();
+  }
+
+  function followup(turn,kind,de,turkish) {
+    const text = tr(de,turkish);
+    queuedFollowup = {turn,kind,text};
+    editingQuestion = false;
+    consent.checked = false;
+    question.value = text;
+    question.focus();
+  }
+
   function citationText(entry,index) {
     const verse = entry.verse ? `${tr('Koran', 'Kur’an')} ${entry.verse} · ` : '';
     const pageLabel = entry.quran ? tr('PDF-Seite', 'PDF sayfası') : tr('Seite', 'Sayfa');
@@ -455,6 +546,7 @@
   function editQuestion(turn) {
     if (!allowed() || request) return;
     editingQuestion = true;
+    queuedFollowup = null;
     consent.checked = false;
     question.value = turn.question;
     question.focus();
@@ -464,6 +556,7 @@
   function renderTurn(turn) {
     const item = document.createElement('article');
     item.className = 'menba-turn';
+    item.tabIndex = -1;
     const prompt = document.createElement('div');
     prompt.className = 'menba-prompt';
     prompt.append(paragraph(turn.question,'menba-user'));
@@ -480,9 +573,9 @@
     heading.textContent = 'MENBA';
     reply.append(heading);
     if (turn.answer) {
-      const references = turn.answer.citations.map(number => `[${number}]`).join(' ');
-      reply.append(paragraph(`${turn.answer.text} ${references}`, 'menba-answer'));
+      for (const block of turn.answer.text.split(/\n\s*\n/u)) reply.append(paragraph(block,'menba-answer'));
     } else reply.append(paragraph(tr(...turn.notice)));
+    if (turn.explanation?.draft && turn.answer) reply.append(paragraph(tr('Prüfe den Sohbet-Entwurf vor der Verwendung.','Sohbet taslağını kullanmadan önce kontrol et.'),'menba-mode-message'));
     if (turn.warning.length) reply.append(paragraph(turn.warning.map(message => tr(...message)).join(' '),'menba-status'));
     if (turn.learning) {
       const study = document.createElement('section');
@@ -514,18 +607,44 @@
       mark.addEventListener('click',()=>{ turn.difficult = !turn.difficult; update(); });
       reply.append(mark);
     }
+    if (turn.explanation?.mode === 'guided' && turn.evidence.length && !turn.learning?.quiz) {
+      const step = turn.explanation.step;
+      const feedback = document.createElement('div');
+      feedback.className = 'menba-chat-actions';
+      feedback.append(paragraph(tr(`Schritt ${step} · Hast du diesen Schritt verstanden?`,`${step}. adım · Bu adımı anladın mı?`),'menba-mode-message'));
+      if (turn === turns.at(-1) && learningMode.value === 'talebe') {
+        const nextStep = step < 4 && (turn.answer || turn.guidedMore);
+        const next = helpButton(nextStep ? 'Verstanden, weiter' : 'Verstanden',nextStep ? 'Anladım, devam et' : 'Anladım',()=>{
+          question.value = nextStep ? tr('Nächster Schritt','Sonraki adım') : tr('Verstanden','Anladım');
+          consent.checked = false;
+          question.focus();
+        });
+        next.disabled = request !== null;
+        feedback.append(next);
+      }
+      reply.append(feedback);
+    }
+    const sources = document.createElement('div');
+    sources.className = 'menba-answer-sources';
+    if (turn.evidence.length) {
+      const label = document.createElement('h4');
+      label.textContent = tr('Quellen','Kaynaklar');
+      sources.append(label);
+    }
     turn.evidence.forEach((entry,index) => {
+      if (turn.answer && !turn.answer.citations.includes(index+1)) return;
       const passage = document.createElement('details');
       passage.className = 'menba-passage';
       passage.open = entry.expanded ?? (!turn.answer || turn.answer.kind === 'excerpt');
       passage.addEventListener('toggle',()=>{ entry.expanded = passage.open; });
       const quote = document.createElement('blockquote');
-      quote.append(...entry.text.split(/\r?\n/u).map(line => paragraph(line)));
+      quote.append(...(turn.answer?.quotes?.[index+1] ?? entry.text).split(/\r?\n/u).map(line => paragraph(line)));
       const cite = document.createElement('summary');
       cite.className = 'menba-citation';
       cite.dir = 'auto';
       cite.textContent = citationText(entry,index);
       passage.append(cite);
+      if (entry.document && entry.document !== entry.source) passage.append(paragraph(entry.document,'menba-document-name'));
       if (entry.meal) passage.append(paragraph(tr('Türkische Bedeutung aus der PDF', 'PDF’den Türkçe meal'), 'menba-meal-label'));
       const quiz = turn.learning?.quiz?.[index];
       if (quiz) {
@@ -535,7 +654,7 @@
         reveal.append(summary,paragraph(quiz.answer),quote);
         passage.append(paragraph(quiz.prompt),reveal);
       } else passage.append(quote);
-      if ((entry.quran || entry.ocr && entry.sourceId !== photoId) && !quiz) {
+      if (entry.sourceId !== hadisId && entry.sourceId !== photoId && !quiz) {
         if (entry.preview) {
           const frame = document.createElement('div');
           frame.className = 'menba-original-frame';
@@ -572,20 +691,18 @@
           passage.append(button);
         }
       }
-      reply.append(passage);
+      sources.append(passage);
     });
+    if (turn.evidence.length) reply.append(sources);
     const actions = document.createElement('div');
     actions.className = 'menba-chat-actions';
     if (!turn.evidence.length) {
       actions.append(
         helpButton('Quellen auswählen','Kaynak Seç',showSources),
-        helpButton('Beispielfragen','Örnek Sorular',()=>{
-          const templates = $('menbaQuestionTemplates');
-          templates.open = true;
-          templates.querySelector('summary').focus();
-        }),
+        helpButton('Beispielfragen','Örnek Sorular',()=>openTemplates()),
         helpButton('Andere Frage stellen','Başka Soru Dene',()=>question.focus())
       );
+      if (turn.ocrTarget) actions.append(helpButton('Texterkennung öffnen','Metin tanımayı aç',()=>showOcr(turn.ocrTarget)));
     }
     const repeat = turn.usedCloud
       ? helpButton('Lokal erneut versuchen','Cihazda yeniden dene',()=>void run(turn))
@@ -597,7 +714,23 @@
       feedback.setAttribute('role','status');
       const copy = helpButton('Antwort kopieren','Yanıtı kopyala',()=>void copyAnswer(turn,feedback));
       copy.disabled = request !== null;
-      actions.append(copy,feedback);
+      const showCitations = helpButton('Quellen anzeigen','Kaynakları göster',()=>{
+        for (const detail of sources.querySelectorAll('.menba-passage')) detail.open = true;
+        sources.querySelector('summary')?.focus();
+      });
+      actions.append(copy,showCitations,feedback);
+      if (!turn.explanation?.draft) {
+        const followups = [
+          ['simple','Einfacher erklären','Daha Basit Anlat','Kannst du es einfacher erklären?','Bunu daha basit anlatır mısın?'],
+          ['detail','Ausführlicher erklären','Daha Ayrıntılı Açıkla','Kannst du das ausführlicher erklären?','Bunu daha ayrıntılı açıklar mısın?'],
+          ['example','Ein Beispiel geben','Örnek Ver','Kannst du dazu ein Beispiel aus den Quellen geben?','Kaynaklardan bu konuyla ilgili bir örnek verir misin?']
+        ];
+        for (const [kind,de,turkish,questionDe,questionTr] of followups) {
+          const use = helpButton(de,turkish,()=>followup(turn,kind,questionDe,questionTr));
+          use.disabled = request !== null;
+          actions.append(use);
+        }
+      }
     }
     reply.append(actions);
     item.append(reply);
@@ -704,8 +837,7 @@
           page = await pdf.getPage(number);
           const {items} = await page.getTextContent();
           const verses = parsedEdition ? MenbaQuranEdition.parse(items,number) : [];
-          const text = parsedEdition ? verses.map(row => row.text).join('\n')
-            : items.map(item => ('str' in item ? item.str + (item.hasEOL ? '\n' : ' ') : '')).join('').trim();
+          const text = parsedEdition ? verses.map(row => row.text).join('\n') : MenbaSearch.pageText(items);
           if (/\p{L}/u.test(text)) pages.push({sourceId:source.id, source:source.title, page:number, text, verses});
         } catch {
           signal.throwIfAborted();
@@ -834,6 +966,7 @@
   async function collectSources(work,quranOnly = false) {
     const pages = [];
     const quranSources = new Set();
+    const scannedSources = [];
     const unavailable = [];
     const inaccessible = [];
     const scans = [];
@@ -872,6 +1005,7 @@
         if (failed) unavailable.push(source.title);
         if (extracted.totalPages && indexed.size < extracted.totalPages && !failed) {
           scans.push(indexed.size ? `${source.title} (${indexed.size}/${extracted.totalPages})` : source.title);
+          scannedSources.push(source);
           if (failedOcr.has(key)) failedScans.push(source.title);
         }
         addDocumentPages(pages,extracted,ocr);
@@ -893,22 +1027,47 @@
       }
     }
     if (request !== work || !allowed()) return;
-    return {pages,quranSources,unavailable,inaccessible,scans,failedScans,foundQuran};
+    return {pages,quranSources,unavailable,inaccessible,scans,failedScans,foundQuran,scannedSources};
   }
 
-  async function run(retryTurn = null) {
-    const text = (retryTurn?.question ?? question.value).trim();
+  async function run(retryTurn = null, preparation = null) {
+    const text = (retryTurn?.question ?? preparation?.topic ?? question.value).trim();
     if (!allowed() || request || loadingPreferences || !text) return;
-    const last = retryTurn || editingQuestion ? null : turns.at(-1);
-    const useCloud = !retryTurn && consent.checked && !cloud.hidden;
+    const follow = !retryTurn && !preparation && queuedFollowup?.text === text ? queuedFollowup : null;
+    const last = retryTurn || editingQuestion ? null : (follow?.turn ?? turns.at(-1));
+    const draft = retryTurn?.explanation?.draft ?? preparation?.draft ?? null;
+    if ((draft || retryTurn?.explanation?.mode === 'scholarly') && !hocaAllowed) return;
+    const useCloud = !retryTurn && (preparation?.cloud ?? consent.checked) && !cloud.hidden;
     consent.checked = false;
-    const mode = learningMode.value;
-    const task = learningTask.value;
+    sohbetForm.elements.cloud.checked = false;
+    const mode = retryTurn?.mode ?? learningMode.value;
+    const task = retryTurn?.task ?? learningTask.value;
     const picked = pickableSources();
+    const sameSources = previousSources => previousSources.length > 0 && previousSources.every(source=>picked.some(row=>row.id === source.id && sourceKey(row) === sourceKey(source)));
+    const learnerContext = mode === 'talebe' && last?.mode === 'talebe' && last.evidence.length && sameSources(last.sources);
+    const learnerSignal = learnerContext ? explanations.signal(text) : null;
+    const followStep = learnerSignal === 'next' && last.explanation?.mode === 'guided' && last.explanation.step < 4;
+    if (!retryTurn && mode === 'talebe' && !['quiz','review','exercise'].includes(task)) {
+      const before = explanations.activeMode(mode,explanationState);
+      if (learnerSignal === 'next' && !followStep) return;
+      explanationState = explanations.advance(explanationState,followStep ? 'next' : learnerSignal);
+      const after = explanations.activeMode(mode,explanationState);
+      guidedNotice = after === 'guided' && (guidedNotice || before !== 'guided');
+      if (learnerSignal === 'understood') {
+        notice = ['Gut, wir können mit deiner nächsten Frage weitermachen.','Güzel, sıradaki sorunla devam edebiliriz.'];
+        question.value = '';
+        render();
+        return;
+      }
+    }
+    const style = draft ? 'scholarly' : follow?.kind === 'simple' && mode !== 'talebe' ? 'simple' : explanations.activeMode(mode,explanationState);
+    const explanation = retryTurn?.explanation ?? {mode:style,depth:preparation?.depth ?? explanationState.depth,
+      step:style === 'guided' ? explanationState.step : 1,...(draft ? {draft} : {})};
     const reuseTopic = retryTurn?.sources.every(source=>picked.some(row=>row.id === source.id && sourceKey(row) === sourceKey(source)));
-    const directIntent = MenbaAnswers.inspect(text);
+    const directIntent = draft ? null : MenbaAnswers.inspect(text);
     const intent = reuseTopic ? retryTurn.intent : directIntent ?? MenbaAnswers.inspect(text,last?.answer ? last.intent : null);
-    const previous = directIntent ? null : contextFor(text,intent,last);
+    const followContext = follow || learnerSignal === 'confused' || followStep;
+    const previous = draft || directIntent ? null : followContext ? last : contextFor(text,intent,last);
     const retrievalQuestion = reuseTopic ? retryTurn.retrievalQuestion : previous?.retrievalQuestion ?? text;
     const plan = MenbaQuestionChecks.plan(retrievalQuestion,picked,intent,isQuran,hadisId);
     const {sources,quran,quranOnly,hadith} = plan;
@@ -926,41 +1085,50 @@
       renderNotice();
       return;
     }
-    const turn = {question:text, retrievalQuestion, sources, evidence:[], notice:null, warning:[], answer:null, intent, mode, usedCloud:useCloud};
+    const followKind = follow?.kind ?? retryTurn?.followKind;
+    const turn = {question:text,retrievalQuestion,sources,evidence:[],notice:null,warning:[],answer:null,intent,mode,task,explanation,followKind,usedCloud:useCloud};
     const work = {controller:new AbortController(), sources, task:null, turn, force:retryTurn?.needsReload === true};
     request = work;
     turns.push(turn);
-    if (!retryTurn) {
+    if (!retryTurn && !draft) {
       question.value = '';
       editingQuestion = false;
+      queuedFollowup = null;
     }
     render();
     results.scrollTop = results.scrollHeight;
     try {
       const snapshot = await collectSources(work,quranOnly);
       if (!snapshot) return;
-      const {unavailable,inaccessible,scans,failedScans,foundQuran} = snapshot;
-      const {evidence,quranRows} = MenbaQuestionChecks.rank(plan,snapshot,hadisId);
-      turn.evidence = evidence.map(entry=>({...entry,sharedVersion:sharedVersions.get(entry.sourceId)}));
-      turn.answer = MenbaQuestionChecks.localAnswer(retrievalQuestion,intent,turn.evidence,answerLanguage(text));
-      if (mode !== 'chat') {
+      const {unavailable,inaccessible,scans,failedScans,foundQuran,scannedSources} = snapshot;
+      turn.ocrTarget = MenbaSearch.prayerPartsQuestion(retrievalQuestion).length
+        ? scannedSources.find(source=>/[iİı]lmihal/iu.test(source.title)) ?? scannedSources[0] : scannedSources[0];
+      const scopeSize = explanations.profile(explanation.mode,explanation.depth).sources;
+      const {evidence,quranRows} = MenbaQuestionChecks.rank(plan,snapshot,hadisId,scopeSize);
+      const byId = new Map(sources.map(source=>[source.id,source]));
+      turn.evidence = evidence.slice(0,scopeSize).filter(entry=>MenbaQuestionChecks.checkCitation(entry,snapshot.pages)).map(entry=>({
+        ...entry,document:byId.get(entry.sourceId)?.fileName || byId.get(entry.sourceId)?.file?.name,
+        sharedVersion:sharedVersions.get(entry.sourceId)
+      }));
+      if (!draft && !followKind && explanation.mode !== 'guided') turn.answer = MenbaQuestionChecks.localAnswer(retrievalQuestion,intent,turn.evidence,answerLanguage(text));
+      if (mode !== 'chat' && !draft) {
         turn.learning = MenbaLearning.prepare(mode,task,turn.evidence);
         if (turn.learning?.quiz) turn.answer = null;
       }
       let modelFailure = null;
-      if (useCloud && !turn.answer && !turn.learning?.quiz && turn.evidence.some(entry=>!entry.ocr)
-          && (mode === 'chat' || mode === 'talebe' && ['explain','simple'].includes(task))) {
+      if (useCloud && (!turn.answer || explanation.mode !== 'menba' && turn.answer.kind !== 'excerpt') && !turn.learning?.quiz
+          && turn.evidence.some(entry=>!entry.ocr) && (mode !== 'talebe' || ['explain','simple'].includes(task))) {
         notice = ['Formulierte Antwort wird geprüft …','Yazılı yanıt doğrulanıyor …'];
         renderNotice();
-        turn.answer = await MenbaCloudChat.answer({
+        const generated = await MenbaCloudChat.answer({
           endpoint:cloud.dataset.endpoint,consent:true,
-          question:mode === 'talebe' && task === 'simple'
-            ? tr(`Erkläre einfach: ${text}`,`Basitçe açıkla: ${text}`).slice(0,500) : text,
+          question:text,explanation,
           previousQuestion:previous?.retrievalQuestion,
           evidence:turn.evidence,language:answerLanguage(text),signal:work.controller.signal,
           onFailure:reason=>{modelFailure=reason;}
         });
         if (request !== work || !allowed()) return;
+        if (generated) turn.answer = generated;
         if (modelFailure === 'limit') {
           turn.warning.push(['Das Tageslimit für KI-Antworten ist erreicht oder für dieses Konto zu niedrig.','Yapay zekâ yanıtları için günlük sınır doldu veya bu hesap için çok düşük.']);
         } else if (modelFailure === 'unverified') {
@@ -970,6 +1138,12 @@
         } else if (modelFailure) {
           turn.warning.push(['Die KI-Verbindung ist derzeit unterbrochen. Hier sind die lokalen Fundstellen.','Yapay zekâ bağlantısı şu anda kesik. Yerel kaynak bölümleri aşağıda.']);
         }
+      }
+      if (explanation.mode === 'guided' && !turn.answer && !turn.learning?.quiz && turn.evidence.length) {
+        const step = explanation.step;
+        turn.guidedMore = turn.evidence.length > step;
+        const passage = turn.evidence[step-1];
+        turn.evidence = passage ? [passage] : [];
       }
       if (!turn.answer && previous && requestsSource(text) && turn.evidence.length) {
         turn.answer = {
@@ -985,6 +1159,10 @@
           : ['Passende Stellen aus deinen Quellen', 'Kaynaklarındaki ilgili bölümler']
         : quranOnly && !foundQuran ? quranSourceHelp()
           : insufficient;
+      if (draft && !turn.answer && turn.evidence.length) {
+        turn.notice = useCloud ? ['Aus den gefundenen Stellen konnte kein belegter Sohbet-Entwurf erstellt werden.','Bulunan bölümlerden kaynaklı bir sohbet taslağı hazırlanamadı.']
+          : ['Hier sind passende Fundstellen. Aktiviere die Cloudfreigabe für einen ausformulierten Sohbet-Entwurf.','İlgili kaynaklar aşağıda. Yazılı bir sohbet taslağı için bulut onayını etkinleştir.'];
+      }
       if (!turn.evidence.length && unavailable.length && !snapshot.pages.length) {
         turn.notice = ['Beim Laden der Quellen ist ein technischer Fehler aufgetreten.', 'Kaynak araması sırasında teknik bir sorun oluştu.'];
       } else if (!turn.evidence.length && scans.length && !snapshot.pages.length) {
@@ -1335,12 +1513,50 @@
     void readScan();
   });
   category.addEventListener('change',render);
-  learningMode.addEventListener('change',()=>renderLearning(allowed(),Boolean(request)));
+  sourceSearch.addEventListener('input',render);
+  selectedOnly.addEventListener('change',render);
+  question.addEventListener('input',()=>{ queuedFollowup = null; });
+  const startActions = {ask:()=>question.focus(),examples:()=>openTemplates(),sources:showSources,
+    create:()=>{ $('menbaQuestionTemplates').open = true; $('menbaTemplateNew').click(); },
+    explain:()=>openTemplates('0'),summary:()=>openTemplates('3')};
+  for (const button of document.querySelectorAll('[data-menba-start]')) {
+    button.addEventListener('click',startActions[button.dataset.menbaStart]);
+  }
+  learningMode.addEventListener('change',()=>{
+    consent.checked = false;
+    render();
+  });
+  explanationMode.addEventListener('change',()=>{
+    const area = learningMode.value;
+    const picked = explanationMode.value;
+    if (explanations.choices(area).includes(picked)) explanationState.manual[area] = picked;
+    else delete explanationState.manual[area];
+    if (area === 'talebe') {
+      explanationState.misses = 0;
+      explanationState.step = 1;
+      guidedNotice = false;
+    }
+    consent.checked = false;
+    render();
+  });
+  explanationDepth.addEventListener('change',()=>{
+    explanationState.depth = explanationDepth.value;
+    consent.checked = false;
+  });
+  $('menbaSohbetSources').addEventListener('click',showSources);
+  sohbetForm.addEventListener('submit',event=>{
+    event.preventDefault();
+    if (sohbet.hidden || !hocaAllowed) return;
+    const data = new FormData(sohbetForm);
+    void run(null,{topic:data.get('topic'),depth:data.get('depth'),cloud:data.has('cloud'),
+      draft:{minutes:Number(data.get('minutes')),audience:data.get('audience')}});
+  });
   document.addEventListener('menba-select-mode',event=>{
     if (!allowed() || request || !['talebe','hoca'].includes(event.detail) || (event.detail === 'hoca' && !hocaAllowed)) return;
     learningMode.value = event.detail;
+    consent.checked = false;
     modeSummary.parentElement.open = true;
-    renderLearning(true,false);
+    render();
   });
   useTopic.addEventListener('click',()=>{
     question.value = turns.at(-1)?.retrievalQuestion ?? '';
@@ -1350,6 +1566,9 @@
   clearChat.addEventListener('click', () => {
     if (!allowed() || request) return;
     turns = [];
+    explanationState = explanations.state();
+    guidedNotice = false;
+    queuedFollowup = null;
     notice = null;
     consent.checked = false;
     editingQuestion = false;
@@ -1383,6 +1602,13 @@
       ++accountEpoch;
       ++hocaRequest;
       hocaAllowed = false;
+      explanationState = explanations.state();
+      guidedNotice = false;
+      queuedFollowup = null;
+      sourceSearch.value = '';
+      selectedOnly.checked = false;
+      sohbetForm.reset();
+      sohbetForm.elements.depth.value = 'balanced';
       nextDiagnosticAt = 0;
       learningMode.value = 'chat';
       sourcesChanged();

@@ -5,6 +5,9 @@ require('../menba-answers.js');
 require('../menba-question-checks.js');
 
 const checks = globalThis.MenbaQuestionChecks;
+const fragment = (str,left,width,hasEOL=false)=>({str,dir:'ltr',transform:[12,0,0,12,left,100],width,hasEOL});
+assert.equal(MenbaSearch.pageText([fragment('Na',10,13),fragment('mazın',23.2,30),fragment('farzları',56,38,true),fragment('İç',10,10)]),'Namazın farzları\nİç');
+assert.equal(MenbaSearch.pageText([{str:'الأمثلة',dir:'rtl'},{str:'العربية',dir:'rtl'}]),'الأمثلة العربية');
 assert.equal(checks.ocrSamplePage(24,new Set([24]),null),3);
 assert.equal(checks.ocrSamplePage(64,new Set([1,3]),null),4);
 assert.equal(checks.ocrSamplePage(3,new Set([2]),null),1);

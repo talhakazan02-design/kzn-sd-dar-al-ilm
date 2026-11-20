@@ -2,7 +2,7 @@
 
 MENBA beantwortet Fachfragen anhand ausdrücklich ausgewählter und zugänglicher Quellen. Buch, PDF-Seite und gegebenenfalls Ayet gehören zum Beleg. Wenn der Beleg fehlt, bleibt die Frage offen. Externe Modellaufrufe brauchen eine aktive Zustimmung pro Frage. Das Original bleibt die Grundlage für die Prüfung von OCR und Übersetzungen.
 
-**Beta 0.2.0** ist veröffentlicht. Der Vorlagenzweig bereitet **Beta 0.3.0** vor und baut auf den Suchkorrekturen aus Beta 0.2.1 auf. [Zuverlässigkeitsupdate zur Prüfung](https://github.com/talhakazan02-design/kzn-sd-dar-al-ilm/pull/27)
+**Beta 0.2.0** ist veröffentlicht. **Beta 0.4.0** bereitet den Chat mit Hoca- und Talebe-Erklärstilen vor. Die Änderungen bauen auf den Suchkorrekturen aus Beta 0.2.1 und der Vorlagenverwaltung aus Beta 0.3.0 auf. [Suchkorrekturen](https://github.com/talhakazan02-design/kzn-sd-dar-al-ilm/pull/27) · [Vorlagenverwaltung](https://github.com/talhakazan02-design/kzn-sd-dar-al-ilm/pull/28)
 
 ## Update für zuverlässige Antworten und eigene Vorlagen
 
@@ -10,9 +10,15 @@ MENBA beantwortet Fachfragen anhand ausdrücklich ausgewählter und zugängliche
 | --- | --- |
 | 1 · Zuverlässigkeit | Buchauswahl, exakte Fundstellen, Fehlerdiagnose und Tests mit echten Quellen. Ergebnisse im [Diagnosebericht](MENBA-DIAGNOSE.md#phase-1-des-neuen-auftrags-zur-antwortqualität). |
 | 2 · Vorlagenverwaltung | Eigene und zentrale Vorlagen, Platzhalter, Suche, Kategorien und Favoriten sind im Review-Zweig umgesetzt. Die Aktivierung braucht die geprüfte Supabase-Migration `MENBA-TEMPLATES.sql`. |
-| 3 · Oberfläche | Navigation für gespeicherte Vorlagen, Quellenpanel und weiterführende Antwortaktionen. Die Beta 0.2.0 liefert bereits den responsiven Chat als Grundlage. |
+| 3 · Oberfläche | Chatverlauf der laufenden Unterhaltung, gespeicherte Vorlagen, Quellenpanel mit Suche und Status, Startaktionen und Folgefragen sind im Review-Zweig umgesetzt. Die Quellenbereiche bleiben auf kleinen Bildschirmen einklappbar. |
 | 4 · Intelligente Vorschläge | Fragen aus echten Abschnitten ableiten und belegte Testergebnisse für einzelne Vorlagen erfassen. Der vorhandene manuelle Test öffnet bereits eine Frage im normalen Chat. |
 | 5 · Weiterentwicklung | Mehrsprachige Abdeckung, Indexierung und OCR für größere Bibliotheken, Laufzeiten und Verbrauchsmessung anhand realer Testfälle. |
+
+## Hoca- und Talebe-Erklärungen
+
+- **MENBA Anlatım** ist der Standard im Chat und im Hoca Modu. **Sade Anlatım** ist der Standard im Talebe Modu. Wiederholte Verständnissignale zur selben Frage wechseln bei automatischer Auswahl zu **Rehberli Anlatım**. Die manuelle Auswahl gilt für die laufende Unterhaltung.
+- **İlmî Anlatım** und **Sohbet Hazırla** setzen die serverseitig bestätigte Hoca-Rolle oder den Hauptadmin voraus. Die vier Vertiefungsstufen begrenzen Quellenzahl und Antwortumfang. Ausformulierte Antworten folgen der bestehenden Cloud-Zustimmung und der Belegprüfung.
+- Die Testfassung prüft die Suche und Zitate mit lokal bereitgestellten PDFs sowie die Modi, Rollen und Verbrauchsgrenzen mit simulierten Worker-Antworten. Ein authentifizierter Lauf mit dem veröffentlichten Modell gehört zur Freigabe des neuen Workers.
 
 ## Bisheriger Entwicklungsplan der Beta
 

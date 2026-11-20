@@ -360,7 +360,7 @@
     return exactPattern(phrase)?.test(text.normalize('NFC')) ?? false;
   }
 
-  function find(question, pages) {
+  function find(question, pages, limit = maxPassages) {
     if (typeof question !== 'string' || !Array.isArray(pages)) return [];
     const book = requestedBook(question);
     const body = book?.query ?? question;
@@ -421,7 +421,7 @@
       if (unique.has(key)) continue;
       unique.add(key);
       result.push(passage);
-      if (result.length === maxPassages) break;
+      if (result.length === limit) break;
     }
     return result;
   }
@@ -436,5 +436,26 @@
     return [...original.values()].slice(0,16);
   }
 
-  globalThis.MenbaSearch = Object.freeze({find,findExact,matchesExact,requestedBook,inspectHadith,isHadithSource,keywords,prayerPartsQuestion});
+  function pageText(items) {
+    let text = '';
+    let previous = null;
+    for (const item of items) {
+      if (typeof item.str !== 'string' || (!item.str && !item.hasEOL)) continue;
+      if (previous && !/\s$/u.test(text) && !/^\s/u.test(item.str)) {
+        const a = previous.transform;
+        const b = item.transform;
+        const gap = b?.[4] - (a?.[4] + previous.width);
+        const size = Math.min(Math.abs(a?.[3]),Math.abs(b?.[3]));
+        const adjacent = previous.dir === 'ltr' && item.dir === 'ltr' && size > 0
+          && Math.abs(a[5]-b[5]) < size*.1 && gap >= -size*.06 && gap < size*.08
+          && /\p{L}$/u.test(previous.str) && /^\p{Ll}/u.test(item.str);
+        if (!adjacent) text += ' ';
+      }
+      text += item.str + (item.hasEOL ? '\n' : '');
+      previous = item;
+    }
+    return text.trim();
+  }
+
+  globalThis.MenbaSearch = Object.freeze({find,findExact,matchesExact,requestedBook,inspectHadith,isHadithSource,keywords,prayerPartsQuestion,pageText});
 })();

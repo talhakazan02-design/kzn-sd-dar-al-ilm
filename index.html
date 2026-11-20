@@ -1376,7 +1376,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
 <link rel="stylesheet" href="lending.css">
 <link rel="stylesheet" href="admin-beta.css?v=learning-admin">
 <link rel="stylesheet" href="shared-library.css">
-<link rel="stylesheet" href="menba.css?v=template-library">
+<link rel="stylesheet" href="menba.css?v=hoca-talebe">
 <link rel="stylesheet" href="sidebar-modern.css?v=20261119">
 </head>
 <body>
@@ -1731,13 +1731,12 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
   <div class="menba-header">
     <div>
       <h2 id="menbaTitle">MENBA AI</h2>
-      <p class="menba-intro" data-de="Antworten aus deinen Quellen mit Buch und PDF-Seite." data-tr="Seçtiğin kaynaklardan kitap ve PDF sayfasıyla yanıtlar.">Antworten aus deinen Quellen mit Buch und PDF-Seite.</p>
+      <p class="menba-intro" data-de="Finde Antworten in den Quellen, die du auswählst." data-tr="Seçtiğiniz güvenilir kaynaklardan bilgi edinin.">Finde Antworten in den Quellen, die du auswählst.</p>
     </div>
-    <button id="menbaClearChat" class="menba-action" type="button" data-de="Neue Unterhaltung" data-tr="Yeni sohbet">Neue Unterhaltung</button>
   </div>
   <div id="menbaModeInfo" class="menba-mode-info" hidden></div>
   <div class="menba-layout">
-  <div class="menba-tools">
+  <aside class="menba-sources-panel" aria-labelledby="menbaSourcesSummary">
   <details class="menba-source-menu">
     <summary id="menbaSourcesSummary">Quellen</summary>
     <div class="menba-source-actions">
@@ -1745,6 +1744,8 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
       <button type="button" id="menbaSaveSources" data-de="Auswahl speichern" data-tr="Seçimi kaydet" disabled>Auswahl speichern</button>
     </div>
     <label class="menba-category"><span data-de="Quellen nach Kategorie filtern" data-tr="Kaynakları kategoriye göre filtrele">Quellen nach Kategorie filtern</span><select id="menbaCategory"></select></label>
+    <label class="menba-category"><span data-de="Quellen suchen" data-tr="Kaynak ara">Quellen suchen</span><input id="menbaSearchSources" type="search" dir="auto"></label>
+    <label class="menba-selected-only"><input id="menbaSelectedOnly" type="checkbox"><span data-de="Nur ausgewählte Quellen" data-tr="Yalnızca seçilen kaynaklar">Nur ausgewählte Quellen</span></label>
     <div id="menbaSources" class="menba-sources"></div>
     <p id="menbaSelectionStatus" class="menba-status" role="status"></p>
     <p id="menbaLocalSaveHint" class="menba-status" data-de="Beim Speichern bleibt die gewählte Geräte-PDF auf diesem Gerät." data-tr="Kaydedilen yerel Kur’an PDF’si bu cihazda kalır." hidden>Beim Speichern bleibt die gewählte Geräte-PDF auf diesem Gerät.</p>
@@ -1759,7 +1760,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
           <select id="menbaOcrLanguage">
             <option value="ottoman" data-de="Osmanische Schrift (Näherung)" data-tr="Osmanlı yazısı (yaklaşık)">Osmanische Schrift (Näherung)</option>
             <option value="arabic" data-de="Arabisch" data-tr="Arapça">Arabisch</option>
-            <option value="mixed" data-de="Arabisch und Türkisch" data-tr="Arapça ve Türkçe">Arabisch und Türkisch</option>
+            <option value="mixed" selected data-de="Arabisch und Türkisch" data-tr="Arapça ve Türkçe">Arabisch und Türkisch</option>
             <option value="multilingual" data-de="Arabisch, Deutsch und Türkisch" data-tr="Arapça, Almanca ve Türkçe">Arabisch, Deutsch und Türkisch</option>
             <option value="german" data-de="Deutsch" data-tr="Almanca">Deutsch</option>
             <option value="turkish" data-de="Türkisch (lateinische Schrift)" data-tr="Türkçe (Latin alfabesi)">Türkisch (lateinische Schrift)</option>
@@ -1774,6 +1775,13 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
         <button id="menbaOcrNext" type="button" data-de="Nächste unlesbare Seiten erkennen" data-tr="Sonraki okunamayan sayfaları tanı">Nächste unlesbare Seiten erkennen</button>
       </form>
     </details>
+  </details>
+  </aside>
+  <aside class="menba-tools" aria-label="MENBA">
+  <button id="menbaClearChat" class="menba-action" type="button" data-de="Neue Unterhaltung" data-tr="Yeni sohbet">Neue Unterhaltung</button>
+  <details id="menbaHistory" class="menba-source-menu" hidden>
+    <summary data-de="Chatverlauf" data-tr="Sohbet geçmişi">Chatverlauf</summary>
+    <ul id="menbaHistoryList" class="menba-history"></ul>
   </details>
   <details id="menbaQuestionTemplates" class="menba-source-menu menba-templates">
     <summary data-de="Fragevorlagen" data-tr="Soru şablonları">Fragevorlagen</summary>
@@ -1830,26 +1838,51 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
     <p id="menbaSuggestStatus" class="menba-status" role="status"></p>
     <ul id="menbaSuggestedQuestions" class="menba-suggestions"></ul>
   </details>
-  </div>
+  </aside>
   <div class="menba-conversation">
-  <p id="menbaEmpty" class="menba-empty" data-de="Wähle deine Quellen und stelle eine Frage." data-tr="Kaynaklarını seç ve bir soru sor.">Wähle deine Quellen und stelle eine Frage.</p>
+  <div id="menbaEmpty" class="menba-empty">
+    <p data-de="Wähle deine Quellen und stelle eine Frage." data-tr="Kaynaklarını seç ve bir soru sor.">Wähle deine Quellen und stelle eine Frage.</p>
+    <div class="menba-source-actions">
+      <button type="button" data-menba-start="ask" data-de="Frage stellen" data-tr="Soru Sor">Frage stellen</button>
+      <button type="button" data-menba-start="examples" data-de="Beispielfragen" data-tr="Örnek Sorular">Beispielfragen</button>
+      <button type="button" data-menba-start="create" data-de="Neue Vorlage erstellen" data-tr="Yeni Şablon Oluştur">Neue Vorlage erstellen</button>
+      <button type="button" data-menba-start="sources" data-de="Quellen auswählen" data-tr="Kaynak Seç">Quellen auswählen</button>
+      <button type="button" data-menba-start="explain" data-de="Thema erklären" data-tr="Konuyu Açıkla">Thema erklären</button>
+      <button type="button" data-menba-start="summary" data-de="Zusammenfassung vorbereiten" data-tr="Özet Hazırla">Zusammenfassung vorbereiten</button>
+    </div>
+  </div>
   <div id="menbaResults" class="menba-results" role="region" aria-label="MENBA Chat" tabindex="0"></div>
   <div class="menba-progress">
     <p id="menbaStatus" class="menba-status menba-answer-status" role="status"></p>
     <button id="menbaCancel" class="menba-action" type="button" hidden data-de="Abbrechen" data-tr="İptal">Abbrechen</button>
   </div>
+  <details id="menbaSohbet" class="menba-work-mode menba-sohbet" hidden>
+    <summary>Sohbet Hazırla</summary>
+    <form id="menbaSohbetForm" class="menba-learning-options">
+      <label class="menba-sohbet-topic"><span data-de="Thema" data-tr="Konu">Thema</span><input name="topic" dir="auto" maxlength="240" required></label>
+      <label><span data-de="Dauer" data-tr="Süre">Dauer</span><select name="minutes"><option value="5">5 min</option><option value="10">10 min</option><option value="15" selected>15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option></select></label>
+      <label><span data-de="Zielgruppe" data-tr="Hedef Kitle">Zielgruppe</span><select name="audience"><option value="mixed" data-de="Gemischt" data-tr="Karma">Gemischt</option><option value="youth" data-de="Jugendliche (12–17)" data-tr="Gençler (12–17)">Jugendliche (12–17)</option><option value="adults" data-de="Erwachsene" data-tr="Yetişkinler">Erwachsene</option></select></label>
+      <label><span>İlmî Derinlik</span><select name="depth"></select></label>
+      <button id="menbaSohbetSources" class="menba-action" type="button" data-de="Kaynaklar · Bücher auswählen" data-tr="Kaynaklar · Kitapları seç">Kaynaklar · Bücher auswählen</button>
+      <label id="menbaSohbetCloud" class="menba-cloud-consent menba-sohbet-topic" hidden><input name="cloud" type="checkbox"><span data-de="Thema, Zielgruppe, Dauer und die passenden Auszüge für diesen Entwurf an Cloudflare senden" data-tr="Konu, hedef kitle, süre ve uygun alıntıları bu taslak için Cloudflare’a gönder">Thema, Zielgruppe, Dauer und die passenden Auszüge für diesen Entwurf an Cloudflare senden</span></label>
+      <button type="submit" data-de="Sohbet-Entwurf erstellen" data-tr="Sohbet taslağı hazırla">Sohbet-Entwurf erstellen</button>
+    </form>
+  </details>
   <form id="menbaForm" class="menba-form">
     <details class="menba-work-mode">
       <summary id="menbaModeSummary" data-de="Arbeitsmodus" data-tr="Çalışma modu">Arbeitsmodus</summary>
       <div class="menba-learning-options">
         <label><span data-de="Arbeitsmodus" data-tr="Çalışma modu">Arbeitsmodus</span><select id="menbaMode" data-hoca-roles="true"><option value="chat">Chat</option><option value="talebe">Talebe Modu</option></select></label>
+        <label><span data-de="Erklärstil" data-tr="Anlatım biçimi">Erklärstil</span><select id="menbaExplanationMode" aria-describedby="menbaExplanationHint"></select></label>
+        <label id="menbaExplanationDepthField" hidden><span>İlmî Derinlik</span><select id="menbaExplanationDepth" aria-describedby="menbaExplanationHint"></select></label>
         <label id="menbaTaskField" hidden><span data-de="Aufgabe" data-tr="Görev">Aufgabe</span><select id="menbaTask"></select></label>
         <button type="button" id="menbaUseTopic" hidden data-de="Letztes Thema übernehmen" data-tr="Son konuyu kullan">Letztes Thema übernehmen</button>
+        <small id="menbaExplanationHint" class="menba-mode-message" role="status"></small>
       </div>
     </details>
     <label id="menbaCloudPilot" class="menba-cloud-consent" data-endpoint="https://kzn-menba-pilot.talhakazan02.workers.dev/menba/answer" hidden>
       <input type="checkbox" id="menbaCloudConsent">
-      <span><span data-de="Frage und bis zu drei Quellenauszüge für diese Antwort an Cloudflare senden" data-tr="Bu yanıt için soruyu ve en fazla üç kaynak alıntısını Cloudflare’a gönder">Frage und bis zu drei Quellenauszüge für diese Antwort an Cloudflare senden</span>
+      <span><span data-de="Frage und passende Quellenauszüge für diese Antwort an Cloudflare senden" data-tr="Bu yanıt için soruyu ve uygun kaynak alıntılarını Cloudflare’a gönder">Frage und passende Quellenauszüge für diese Antwort an Cloudflare senden</span>
         <small data-de="Bei Rückfragen kann auch die vorherige Frage mitgesendet werden." data-tr="Takip sorularında önceki soru da gönderilebilir.">Bei Rückfragen kann auch die vorherige Frage mitgesendet werden.</small></span>
     </label>
     <div class="menba-question-field">
@@ -2765,7 +2798,7 @@ document.addEventListener('library-language',()=>{drawEditor();refreshCards();})
 <script src="shared-library.js?v=sidebar20261119"></script>
 <script src="library-workspace.js?v=test-center"></script>
 <script src="sidebar-stats.js?v=20261119"></script>
-<script src="menba-search.js?v=answer-reliability"></script>
+<script src="menba-search.js?v=hoca-talebe"></script>
 <script src="menba-ocr.js?v=source-repair"></script>
 <script src="menba-quran.js?v=chat-answer20261119"></script>
 <script src="menba-quran-edition.js?v=quran20261119"></script>
@@ -2773,9 +2806,10 @@ document.addEventListener('library-language',()=>{drawEditor();refreshCards();})
 <script src="menba-source-preferences.js?v=source-repair"></script>
 <script src="menba-answers.js?v=source-repair"></script>
 <script src="menba-learning.js?v=learning-admin"></script>
-<script src="menba-cloud-chat.js?v=answer-reliability"></script>
-<script src="menba-question-checks.js?v=answer-reliability"></script>
-<script src="menba.js?v=answer-reliability"></script>
+<script src="menba-explanations.js?v=hoca-talebe"></script>
+<script src="menba-cloud-chat.js?v=hoca-talebe"></script>
+<script src="menba-question-checks.js?v=hoca-talebe"></script>
+<script src="menba.js?v=hoca-talebe"></script>
 <script src="menba-guidance.js?v=answer-reliability"></script>
 <script src="menba-templates.js?v=template-library"></script>
 <script src="menba-admin.js?v=learning-admin"></script>

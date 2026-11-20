@@ -60,7 +60,7 @@
     return results.concat(excerpts.filter(entry=>!found.has(entry.verse))).slice(0,3);
   }
 
-  function rank(plan,{pages,quranSources},hadisId) {
+  function rank(plan,{pages,quranSources},hadisId,limit) {
     const {quran,quranOnly,text,hadith,exact} = plan;
     const scope = new Set(plan.sources.map(source=>source.id));
     const eligible = pages.filter(page=>scope.has(page.sourceId) && (!quranOnly || quranSources.has(page.sourceId)));
@@ -68,8 +68,8 @@
     const quranRows = quran && !prayerParts.length ? findQuran(quran,eligible.filter(page=>quranSources.has(page.sourceId))) : [];
     const dietaryRows = !quranOnly && !quranRows.length && quran?.dietaryRuling
       ? MenbaQuran.findVerses(quran,eligible.filter(page=>!quranSources.has(page.sourceId))) : [];
-    const rows = exact ? MenbaSearch.findExact(text,eligible) : prayerParts.length ? MenbaSearch.find(text,eligible)
-      : quranOnly || quranRows.length ? quranRows : dietaryRows.length ? dietaryRows : MenbaSearch.find(text,eligible);
+    const rows = exact ? MenbaSearch.findExact(text,eligible) : prayerParts.length ? MenbaSearch.find(text,eligible,limit)
+      : quranOnly || quranRows.length ? quranRows : dietaryRows.length ? dietaryRows : MenbaSearch.find(text,eligible,limit);
     const samples = hadith?.sample ? eligible.filter(page=>page.sourceId === hadisId) : [];
     const ocr = new Set(eligible.filter(row=>row.ocr).map(row=>`${row.sourceId}:${row.page}`));
     const evidence = (samples.length ? [samples[Math.floor(Math.random()*samples.length)]] : rows).map(entry=>({
