@@ -14,6 +14,38 @@ const fixtureBooks = [
   {id:'text',owner_id:fixtureUser.id,title:'Bibliotheksordnung',visibility:'private',file_path:'test.pdf'},
   {id:'other',owner_id:fixtureUser.id,title:'Weitere Quelle',visibility:'private',file_path:'other.pdf'}
 ];
+const templateRows = JSON.parse(localStorage.getItem('fixture.templates') || '[]');
+const templateMarks = JSON.parse(localStorage.getItem('fixture.favorites') || '[]');
+function templateQuery(name) {
+  const templates = name === 'library_menba_templates';
+  const dataRows = templates ? templateRows : templateMarks;
+  let action = 'read', values = null, equals = null, singular = false;
+  return {
+    select(){return this}, order(){return this}, limit(){return this}, gt(){return this},
+    eq(key,value){equals = item=>item[key] === value; return this},
+    insert(row){action='insert'; values=row; return this},
+    update(row){action='update'; values=row; return this},
+    delete(){action='delete'; return this},
+    single(){singular=true; return this},
+    then(resolve,reject){
+      let data = dataRows.filter(equals ?? (()=>true));
+      if (action === 'insert') {
+        const row = templates ? {...values,id:crypto.randomUUID()} : {...values};
+        dataRows.push(row);
+        data = [row];
+      } else if (action === 'update') {
+        for (const row of data) Object.assign(row,values);
+      } else if (action === 'delete') {
+        for (const row of data) dataRows.splice(dataRows.indexOf(row),1);
+      }
+      if (action !== 'read') {
+        localStorage.setItem('fixture.templates',JSON.stringify(templateRows));
+        localStorage.setItem('fixture.favorites',JSON.stringify(templateMarks));
+      }
+      return Promise.resolve({data:singular ? data[0] : data,error:null}).then(resolve,reject);
+    }
+  };
+}
 const query = name => ({
   select(){return this}, eq(){return this}, is(){return this}, or(){return this},
   order(){return this}, maybeSingle(){return this}, limit(){return this}, range(){return this},
@@ -24,7 +56,7 @@ const query = name => ({
 });
 window.supabase = {createClient:()=>({
   auth:{getSession:async()=>({data:{session:{user:fixtureUser,access_token:'synthetic-fixture-session-token'}}}),getUser:async()=>({data:{user:fixtureUser}}),onAuthStateChange(){}},
-  from:query,
+  from:name=>name.startsWith('library_menba_template') ? templateQuery(name) : query(name),
   rpc:async name=>({data:name === 'library_beta_get_access' ? [{is_owner:true,capabilities:[]}] : [],error:null}),
   storage:{from:()=>({async createSignedUrl(file){
     if(file !== 'test.pdf') throw Error('Unexpected source was used');
@@ -148,12 +180,12 @@ async function check() {
     await page.locator('#menbaSourcesSummary').click();
     assert.equal(await sourceMenu.evaluate(element=>element.open),false);
     const templates = page.locator('#menbaQuestionTemplates');
-    await templates.locator('summary').click();
+    await templates.locator(':scope > summary').click();
     await templates.locator('#menbaTemplateChoice').selectOption('0');
-    await templates.locator('input').fill('Gebetswaschung');
+    await templates.getByRole('textbox',{name:'Thema',exact:true}).fill('Gebetswaschung');
     await templates.getByRole('button',{name:'Frage übernehmen'}).click();
     assert.match(await question.inputValue(),/Gebetswaschung/u);
-    await templates.locator('summary').click();
+    await templates.locator(':scope > summary').click();
 
     await consent.check();
     await ask();
@@ -222,10 +254,91 @@ async function check() {
     await report.getByText(/Vorhandenen Index wiederverwendet/u).waitFor();
     assert.equal(downloads,1,'Admin diagnosis must reuse the authorized index');
     assert.equal(cloudCalls,1,'An admin test stays local by default');
+
+    await page.locator('#betaAdminClose').click();
+    await templates.locator(':scope > summary').click();
+    await page.locator('#menbaTemplateNew').click();
+    const editor = page.locator('#menbaTemplateEditor');
+    const editorField = name=>editor.locator(`[name=${name}]`);
+    await editorField('title').fill('Exakte Buchstelle');
+    await editorField('category').fill('Recherche');
+    await editorField('description').fill('Nur in der gewählten Quelle suchen.');
+    const fill = page.locator('#menbaCustomTemplateUse');
+    await editorField('question').fill('Welche Textstelle erwähnt [ ]?');
+    await editor.getByRole('button',{name:'Vorlage testen'}).click();
+    await page.locator('#menbaTemplateStatus').getByText(/prüfe die Platzhalter/u).waitFor();
+    assert.equal(await fill.isVisible(),false);
+    await editorField('question').fill('[BEGRIFF] und [ BEGRIFF ]');
+    await editor.getByRole('button',{name:'Vorlage testen'}).click();
+    assert.equal(await fill.getByLabel('BEGRIFF').count(),1);
+    await fill.getByLabel('BEGRIFF').fill('Wasser');
+    assert.equal(await fill.locator('#menbaCustomTemplatePreview').textContent(),'Wasser und Wasser');
+    await fill.locator('#menbaCustomTemplateClose').click();
+    await editorField('question').fill('Welche Textstelle erwähnt „[BEGRIFF]“?');
+    await editor.getByRole('button',{name:'Vorlage testen'}).click();
+    await fill.getByLabel('BEGRIFF').fill('Donnerstag im Lesesaal');
+    await fill.getByRole('button',{name:'Testfrage im Chat stellen'}).click();
+    await latest.getByText(/gesuchte Stelle steht im folgenden Auszug/u).waitFor();
+    assert.equal(cloudCalls,1);
+    await editor.getByRole('button',{name:'Speichern'}).click();
+    const saved = page.locator('#menbaTemplateList');
+    const row = title=>saved.locator('li').filter({has:page.getByText(title,{exact:true})});
+    await row('Exakte Buchstelle').getByRole('button',{name:'Als Favorit markieren'}).click();
+    await row('Exakte Buchstelle').getByRole('button',{name:'Favorit entfernen'}).waitFor();
+
+    await row('Exakte Buchstelle').getByRole('button',{name:'Duplizieren'}).click();
+    assert.equal(await editorField('question').inputValue(),'Welche Textstelle erwähnt „[BEGRIFF]“?');
+    assert.equal(await editorField('is_central').isChecked(),false);
+    await editorField('title').fill('Gemeinsame Suchvorlage');
+    await editorField('category').fill('Gemeinsam');
+    await editorField('is_central').check();
+    await editor.getByRole('button',{name:'Speichern'}).click();
+    await row('Gemeinsame Suchvorlage').getByText('Gemeinsam · Zentral').waitFor();
+    await page.locator('#menbaTemplateCategory').selectOption('Gemeinsam');
+    assert.equal(await row('Exakte Buchstelle').count(),0);
+    await page.locator('#menbaTemplateCategory').selectOption('');
+    await page.locator('#menbaOnlyFavorites').check();
+    assert.equal(await row('Gemeinsame Suchvorlage').count(),0);
+    await page.locator('#menbaOnlyFavorites').uncheck();
+    await page.locator('#menbaTemplateSearch').fill('exakte');
+    assert.equal(await row('Gemeinsame Suchvorlage').count(),0);
+    await page.locator('#menbaTemplateSearch').fill('');
+
+    await row('Exakte Buchstelle').getByRole('button',{name:'Bearbeiten'}).click();
+    await editorField('title').fill('Eigene Fundstellensuche');
+    await editor.getByRole('button',{name:'Speichern'}).click();
+    await row('Eigene Fundstellensuche').getByRole('button',{name:'Verwenden'}).click();
+    await fill.getByLabel('BEGRIFF').fill('Donnerstag im Lesesaal');
+    const turnCount = await turns.count();
+    await fill.getByRole('button',{name:'In den Chat übernehmen'}).click();
+    assert.equal(await question.inputValue(),'Welche Textstelle erwähnt „Donnerstag im Lesesaal“?');
+    assert.equal(await turns.count(),turnCount);
+
+    page.once('dialog',dialog=>void dialog.dismiss());
+    await row('Gemeinsame Suchvorlage').getByRole('button',{name:'Löschen'}).click();
+    assert.equal(await row('Gemeinsame Suchvorlage').count(),1);
+    page.once('dialog',dialog=>void dialog.accept());
+    await row('Gemeinsame Suchvorlage').getByRole('button',{name:'Löschen'}).click();
+    await row('Gemeinsame Suchvorlage').waitFor({state:'detached'});
+    await page.reload();
+    await page.locator('#libraryArea .portal [data-portal=menba]').click();
+    await templates.locator(':scope > summary').click();
+    await page.locator('#menbaSavedTemplates > summary').click();
+    await row('Eigene Fundstellensuche').getByRole('button',{name:'Favorit entfernen'}).waitFor();
+    assert.equal(await row('Gemeinsame Suchvorlage').count(),0);
+    await page.setViewportSize({width:390,height:780});
+    assert(await templates.evaluate(element=>element.scrollWidth <= element.clientWidth+1));
+    await row('Eigene Fundstellensuche').getByRole('button',{name:'Verwenden'}).click();
+    await fill.getByLabel('BEGRIFF').fill('Donnerstag im Lesesaal');
+    assert(await fill.evaluate(element=>element.scrollWidth <= element.clientWidth+1));
+    await fill.getByRole('button',{name:'In den Chat übernehmen'}).click();
+    assert.equal(await question.inputValue(),'Welche Textstelle erwähnt „Donnerstag im Lesesaal“?');
+
     assert.deepEqual(errors,[]);
     console.log('PASS: source consent, fresh Storage grant, removed stale citations and reused authorized PDF index.');
     console.log('PASS: desktop and mobile conversation, templates, sources, editing, copying, local retry, new conversation and TR labels.');
     console.log('PASS: admin question trace checks the exact quote, citation, cache reuse and optional cloud transfer.');
+    console.log('PASS: create, test, edit, duplicate, save, favorite, find, filter, fill, confirm deletion and restore templates.');
   } finally {
     await browser.close();
   }

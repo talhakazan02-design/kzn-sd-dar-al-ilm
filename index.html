@@ -1376,7 +1376,7 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
 <link rel="stylesheet" href="lending.css">
 <link rel="stylesheet" href="admin-beta.css?v=learning-admin">
 <link rel="stylesheet" href="shared-library.css">
-<link rel="stylesheet" href="menba.css?v=phase-2-chat">
+<link rel="stylesheet" href="menba.css?v=template-library">
 <link rel="stylesheet" href="sidebar-modern.css?v=20261119">
 </head>
 <body>
@@ -1785,6 +1785,46 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
       <p id="menbaTemplatePreview" class="menba-status" aria-live="polite"></p>
       <button type="submit" data-de="Frage übernehmen" data-tr="Soruyu kullan">Frage übernehmen</button>
     </form>
+    <div class="menba-source-actions">
+      <button id="menbaTemplateNew" type="button" hidden data-de="+ Neue Vorlage erstellen" data-tr="+ Yeni Şablon Oluştur">+ Neue Vorlage erstellen</button>
+    </div>
+    <details id="menbaSavedTemplates" class="menba-saved-templates" hidden>
+      <summary data-de="Gespeicherte Vorlagen" data-tr="Kayıtlı şablonlar">Gespeicherte Vorlagen</summary>
+      <div class="menba-source-actions">
+        <button id="menbaTemplateReload" type="button" hidden data-de="Vorlagen neu laden" data-tr="Şablonları yeniden yükle">Vorlagen neu laden</button>
+      </div>
+      <p id="menbaTemplateStatus" class="menba-status" role="status"></p>
+      <div id="menbaTemplateFilters" hidden>
+        <label><span data-de="Vorlagen suchen" data-tr="Şablon ara">Vorlagen suchen</span><input id="menbaTemplateSearch" type="search" dir="auto"></label>
+        <label><span data-de="Kategorie" data-tr="Kategori">Kategorie</span><select id="menbaTemplateCategory"></select></label>
+        <label class="menba-template-check"><input id="menbaOnlyFavorites" type="checkbox"> <span data-de="Nur Favoriten" data-tr="Yalnızca favoriler">Nur Favoriten</span></label>
+      </div>
+      <ul id="menbaTemplateList" class="menba-template-list"></ul>
+      <form id="menbaTemplateEditor" hidden>
+        <h3 id="menbaTemplateEditorTitle"></h3>
+        <label><span data-de="Name der Vorlage" data-tr="Şablon adı">Name der Vorlage</span><input name="title" maxlength="80" dir="auto" required></label>
+        <label><span data-de="Kategorie" data-tr="Kategori">Kategorie</span><input name="category" list="menbaTemplateCategories" maxlength="64" dir="auto" required></label>
+        <datalist id="menbaTemplateCategories"></datalist>
+        <label><span data-de="Fragetext" data-tr="Soru metni">Fragetext</span><textarea name="question" maxlength="500" rows="3" dir="auto" aria-describedby="menbaTemplateHint" required></textarea></label>
+        <p id="menbaTemplateHint" class="menba-status" data-de="Schreibe Platzhalter wie [BUCH] und [THEMA] in eckige Klammern." data-tr="[KİTAP] ve [KONU] gibi yer tutucuları köşeli parantez içine yaz.">Schreibe Platzhalter wie [BUCH] und [THEMA] in eckige Klammern.</p>
+        <label><span data-de="Beschreibung (optional)" data-tr="Açıklama (isteğe bağlı)">Beschreibung (optional)</span><textarea name="description" maxlength="300" rows="2" dir="auto"></textarea></label>
+        <label id="menbaTemplateCentralField" class="menba-template-check" hidden><input name="is_central" type="checkbox"> <span data-de="Zentrale Vorlage für alle freigeschalteten Mitglieder" data-tr="Onaylı tüm üyeler için ortak şablon">Zentrale Vorlage für alle freigeschalteten Mitglieder</span></label>
+        <div class="menba-source-actions">
+          <button type="submit" value="save" data-de="Speichern" data-tr="Kaydet">Speichern</button>
+          <button type="submit" value="test" data-de="Vorlage testen" data-tr="Şablonu test et">Vorlage testen</button>
+          <button id="menbaTemplateCancel" type="button" data-de="Abbrechen" data-tr="İptal">Abbrechen</button>
+        </div>
+      </form>
+      <form id="menbaCustomTemplateUse" hidden>
+        <h3 id="menbaCustomTemplateTitle"></h3>
+        <div id="menbaCustomTemplateInputs"></div>
+        <p id="menbaCustomTemplatePreview" class="menba-status" aria-live="polite" dir="auto"></p>
+        <div class="menba-source-actions">
+          <button id="menbaCustomTemplateSubmit" type="submit"></button>
+          <button id="menbaCustomTemplateClose" type="button" data-de="Schließen" data-tr="Kapat">Schließen</button>
+        </div>
+      </form>
+    </details>
     <h3 data-de="Fragen aus meinen Quellen" data-tr="Kaynaklarımdan Önerilen Sorular">Fragen aus meinen Quellen</h3>
     <div class="menba-source-actions"><button id="menbaSuggest" type="button" data-de="Vorschläge prüfen" data-tr="Önerileri test et">Vorschläge prüfen</button></div>
     <p id="menbaSuggestStatus" class="menba-status" role="status"></p>
@@ -2737,5 +2777,6 @@ document.addEventListener('library-language',()=>{drawEditor();refreshCards();})
 <script src="menba-question-checks.js?v=answer-reliability"></script>
 <script src="menba.js?v=answer-reliability"></script>
 <script src="menba-guidance.js?v=answer-reliability"></script>
+<script src="menba-templates.js?v=template-library"></script>
 <script src="menba-admin.js?v=learning-admin"></script>
 </body></html>

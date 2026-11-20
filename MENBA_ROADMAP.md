@@ -2,16 +2,16 @@
 
 MENBA beantwortet Fachfragen anhand ausdrücklich ausgewählter und zugänglicher Quellen. Buch, PDF-Seite und gegebenenfalls Ayet gehören zum Beleg. Wenn der Beleg fehlt, bleibt die Frage offen. Externe Modellaufrufe brauchen eine aktive Zustimmung pro Frage. Das Original bleibt die Grundlage für die Prüfung von OCR und Übersetzungen.
 
-**Beta 0.2.0** ist veröffentlicht. Dieser Zweig bereitet **Beta 0.2.1** für den neuen Auftrag vor. [Veröffentlichte Ausgangsversion](https://github.com/talhakazan02-design/kzn-sd-dar-al-ilm/commit/416adc1f275bf5e7b487d54a2f8b2055b8b572e7)
+**Beta 0.2.0** ist veröffentlicht. Der Vorlagenzweig bereitet **Beta 0.3.0** vor und baut auf den Suchkorrekturen aus Beta 0.2.1 auf. [Zuverlässigkeitsupdate zur Prüfung](https://github.com/talhakazan02-design/kzn-sd-dar-al-ilm/pull/27)
 
 ## Update für zuverlässige Antworten und eigene Vorlagen
 
 | Phase | Umfang und Stand |
 | --- | --- |
 | 1 · Zuverlässigkeit | Buchauswahl, exakte Fundstellen, Fehlerdiagnose und Tests mit echten Quellen. Ergebnisse im [Diagnosebericht](MENBA-DIAGNOSE.md#phase-1-des-neuen-auftrags-zur-antwortqualität). |
-| 2 · Vorlagenverwaltung | Eigene und zentrale Vorlagen, Platzhalter, Suche, Kategorien und Favoriten. Umsetzung nach Freigabe. |
+| 2 · Vorlagenverwaltung | Eigene und zentrale Vorlagen, Platzhalter, Suche, Kategorien und Favoriten sind im Review-Zweig umgesetzt. Die Aktivierung braucht die geprüfte Supabase-Migration `MENBA-TEMPLATES.sql`. |
 | 3 · Oberfläche | Navigation für gespeicherte Vorlagen, Quellenpanel und weiterführende Antwortaktionen. Die Beta 0.2.0 liefert bereits den responsiven Chat als Grundlage. |
-| 4 · Intelligente Vorschläge | Fragen aus echten Abschnitten ableiten und Vorlagentests mit nachvollziehbaren Ergebnissen ermöglichen. |
+| 4 · Intelligente Vorschläge | Fragen aus echten Abschnitten ableiten und belegte Testergebnisse für einzelne Vorlagen erfassen. Der vorhandene manuelle Test öffnet bereits eine Frage im normalen Chat. |
 | 5 · Weiterentwicklung | Mehrsprachige Abdeckung, Indexierung und OCR für größere Bibliotheken, Laufzeiten und Verbrauchsmessung anhand realer Testfälle. |
 
 ## Bisheriger Entwicklungsplan der Beta

@@ -1,5 +1,20 @@
 # MENBA AI – Änderungsverlauf
 
+## Beta 0.3.0 · Phase 2 · Release-Kandidat
+
+### Neu · Yenilikler
+
+- Freigeschaltete Mitglieder können private Fragevorlagen anlegen, bearbeiten, duplizieren und nach Bestätigung löschen. Titel, Kategorie, Fragetext und eine optionale Beschreibung gehören zu jeder Vorlage.
+- `[BUCH]`, `[THEMA]` und andere Platzhalter erzeugen auffüllbare Felder. Wiederholte Platzhalter verwenden denselben Wert. Der ausgefüllte Text kann vor dem Senden im Chat bearbeitet werden.
+- Gespeicherte Vorlagen lassen sich nach Text, Kategorie und Favoriten filtern. Der Hauptadmin kann zentrale Vorlagen anlegen. Favoriten werden je Konto gespeichert.
+- „Vorlage testen“ führt eine ausgefüllte Frage mit der aktuellen Quellenauswahl lokal durch den bestehenden Chat. Das Ergebnis zeigt die regulären Fundstellen und den Antwortstatus. Ein dauerhafter Testnachweis pro Vorlage gehört zu Phase 4.
+
+### Supabase-Aktivierung
+
+`MENBA-TEMPLATES.sql` ergänzt zwei Tabellen und eigene Zugriffsregeln für Vorlagen und Favoriten. Die Regeln verwenden die bereits vorhandene Funktion `library_menba_access()`. Die Migration läuft in einer Transaktion und betrifft die neuen Tabellen. Zum Freischalten in der Live-Bibliothek braucht es die Migration im bestehenden Supabase-Projekt und die Veröffentlichung dieses Zweigs. Bis dahin zeigt der neue Bereich bei fehlendem Schema einen Einrichtungshinweis.
+
+`node tests/check-menba-admin-db.cjs` prüft die Supabase-Regeln mit PGlite. `node tests/check-menba-source-session.cjs` prüft die Vorlagenaktionen im Browser mit Testkonten. Beide Prüfungen verwenden isolierte Testdaten.
+
 ## Beta 0.2.1 · Phase 1 des Zuverlässigkeitsupdates · Release-Kandidat
 
 ### Behobene Fehler · Düzeltilen Hatalar
