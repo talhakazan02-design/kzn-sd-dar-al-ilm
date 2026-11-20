@@ -13,15 +13,27 @@
 
 MENBA liest eigene Bücher und freigegebene gemeinsame PDFs über das vorhandene Supabase-Storage. Die gemeinsame Freigabe wird vor jedem Suchlauf erneut geprüft. Der Dokumentindex liegt für eigene und ausdrücklich geöffnete lokale Dateien kontobezogen in IndexedDB. Gemeinsame PDFs werden sitzungsbezogen verarbeitet. Die Suche läuft im Browser mit Volltext, sprachübergreifenden Begriffen und den vorhandenen Koran-Ausgaben. Es gibt keinen Supabase-Volltextindex und keine Vektorsuche.
 
-MENBA Test Merkezi prüft die Hauptadmin-Rolle per Supabase vor jeder Diagnose. Ein Lauf verwendet jeweils eine ausdrücklich ausgewählte Quelle. Die OCR-Probe liest höchstens eine fehlende Seite. Die Tests verwenden die Produktionssuche und die lokale Antwortprüfung. Originaldateien bleiben erhalten. Ein verifizierter Teststatus gilt für die aktuelle Auswahl und den aktuellen Index.
+MENBA Test Merkezi prüft die Hauptadmin-Rolle per Supabase vor jeder Diagnose. Ein Lauf verwendet jeweils eine ausdrücklich ausgewählte Quelle. Die OCR-Probe liest eine fehlende Seite. Die Seitenzahl ist optional und MENBA bevorzugt automatisch eine Seite im Buchinneren. Die Tests verwenden die Produktionssuche und die lokale Antwortprüfung. Originaldateien bleiben erhalten. Ein verifizierter Teststatus gilt für die aktuelle Auswahl und den aktuellen Index.
 
 ## Prüfungen
 
 - `node tests/check-menba-question-checks.cjs` prüft Fragevarianten DE/TR/AR, ausgewählte Bücher, korrekte Seiten und Titel, wortgetreue Auszüge und die Kennzeichnung von OCR.
 - `node tests/check-menba-sources.cjs` prüft lokale Belege und den Zugriff auf freigegebene Quellen.
-- Browserprüfung mit der bereitgestellten `@kuran-kelime-meali.pdf`. Im Test Merkezi bestanden sechs von 15 Fragen vollständig, darunter Schweinefleisch (2:173, PDF-Seite 26), Fasten (2:183, Seite 28) und Gebet (2:43, Seite 7). Die übrigen Fragen des Durchlaufs waren allgemeine Beispiele zu anderen Quellen. Buch, Seite und Text wurden im Index abgeglichen.
-- Die bereitgestellte `Hadisi Serfler.pdf` ist lesbar, hat aber auf keiner der zwei Seiten eine PDF-Textebene. Die OCR erkannte Text auf Seite 1 und speicherte ihn im Browser. OCR-Resultate benötigen vor einem bestätigten Antworttest den Abgleich mit der Originalseite.
-- Die privaten Uploads des Hauptadmin-Kontos und produktive Supabase-Logs standen für diese Prüfung nicht zur Verfügung.
+- Browserprüfung mit der bereitgestellten `@kuran-kelime-meali.pdf`. Im Test Merkezi bestanden sechs von 15 Fragen vollständig. Buch, Seite und Text wurden im Index abgeglichen.
+- Die bereitgestellte `Hadisi Serfler.pdf` hat auf keiner der zwei Seiten eine PDF-Textebene. Die OCR erkannte Text auf beiden Seiten und speicherte ihn im Browser. Bei der erneuten Prüfung wurde zuerst ausdrücklich Seite 2 gewählt. Die automatische Folgeprobe fand anschließend Seite 1. OCR-Resultate benötigen vor einem bestätigten Antworttest den Abgleich mit der Originalseite.
+- Zwei private Uploads wurden als Hauptadmin in der Live-Bibliothek geprüft. Bei beiden bestätigte Supabase den erlaubten Dateizugriff. Emsile hat eine von 24 Seiten mit Textebene. Sie enthält Verlagsangaben. Drei von zwölf Fragen führten technisch zu dieser Seite. Alle inhaltlichen Emsile-Fragen blieben offen. Maksud hat auf 64 Seiten keine Textebene. Die OCR-Probe erkannte Text auf Seite 1. Keine der zwölf Fragen bestand vollständig. Der Browser meldete bei beiden PDFs null PDF-Lesefehler. Damit ist fehlender direkt durchsuchbarer Buchinhalt für diese Uploads konkret belegt.
+- Im jüngsten Stand werden erkannte Verlagsseiten bei automatisch vorgeschlagenen Fragen übersprungen. Teilweise indexierte PDFs erhalten im Testbericht den Status „Prüfung erforderlich“.
+
+### Geprüfte Fragen zur Koran-PDF
+
+| Frage | Ayet | PDF-Seite |
+| --- | --- | --- |
+| Ist Schweinefleisch essen haram? | 2:173 | 26 |
+| Ist Fasten Pflicht? | 2:183 | 28 |
+| Muss man das Gebet verrichten? | 2:43 | 7 |
+| Koran 1:1 | 1:1 | 1 |
+| Koran 1:2 | 1:2 | 1 |
+| Koran 1:3 | 1:3 | 1 |
 
 ## Beta-Umfang
 

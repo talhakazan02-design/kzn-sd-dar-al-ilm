@@ -1042,7 +1042,7 @@
       && allowed() && owner === account && accountEpoch === epoch;
   }
 
-  async function processForTest(sourceIds,{admin=false,useOcr=false,language='turkish',signal,onProgress} = {}) {
+  async function processForTest(sourceIds,{admin=false,useOcr=false,ocrPage=null,language='turkish',signal,onProgress} = {}) {
     if (!allowed() || request || loadingPreferences || signal?.aborted) throw Error('busy');
     if (admin && !await testOwner()) throw Error('access');
     if (!allowed() || request || signal?.aborted) throw Error('busy');
@@ -1074,9 +1074,10 @@
       let ocr = {state:'skip'};
       if (admin && useOcr && source.id !== hadisId && !record.error && pdfState?.totalPages) {
         const indexed = new Set([...pdfState.pages.map(page=>page.page),...(recognizedPages.get(key)?.keys() ?? [])]);
-        let page = 1;
-        while (page <= pdfState.totalPages && indexed.has(page)) page++;
-        if (page <= pdfState.totalPages) {
+        const total = pdfState.totalPages;
+        const page = MenbaQuestionChecks.ocrSamplePage(total,indexed,ocrPage);
+        if (ocrPage !== null && page === null) ocr = {state:'skip',reason:indexed.has(ocrPage) ? 'indexed' : 'range',page:ocrPage,total};
+        if (page !== null) {
           try {
             const pdf = source.image ? null : await openPdf(source,work);
             const settings = {start:page,end:page,language,signal:controller.signal,onProgress:()=>onProgress?.('ocr',{page})};
@@ -1147,7 +1148,7 @@
   }
 
   window.MenbaDiagnosticAccess = Object.freeze({
-    selectedSources:()=>allowed() ? pickableSources().map(({id,title})=>({id,title})) : [],
+    selectedSources:()=>allowed() ? pickableSources().map(({id,title,shareId})=>({id,title,shared:Boolean(shareId)})) : [],
     suggestQuestions,diagnoseSource
   });
 

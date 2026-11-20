@@ -15,6 +15,19 @@
 
   const lookup = text => /^(?:Welche Textstelle erwähnt |Hangi metin bölümünde |في أي مقطع وردت كلمة )(.+?)(?: geçiyor)?[?؟]$/iu.exec(text)?.[1];
 
+  function ocrSamplePage(total,indexed,requested) {
+    if (requested !== null) {
+      return Number.isSafeInteger(requested) && requested >= 1 && requested <= total && !indexed.has(requested) ? requested : null;
+    }
+    for (let page = total >= 4 ? 3 : 2; page < total; page++) {
+      if (!indexed.has(page)) return page;
+    }
+    for (let page = 1; page <= total; page++) {
+      if (!indexed.has(page)) return page;
+    }
+    return null;
+  }
+
   function plan(text,picked,intent,isQuran,hadisId) {
     const literal = lookup(text);
     if (literal) return {text:literal,sources:picked,quran:null,hadith:null,quranOnly:false};
@@ -59,6 +72,7 @@
   }
 
   const normalize = value => value.normalize('NFC').replace(/\s+/gu,' ').trim();
+  const publicationPage = value => /\b(?:isbn(?:-1[03])?\s*[:\d]|bandrol\s+uygulama|impressum|copyright\s*©)/iu.test(value);
 
   function checkCitation(row,rawPages) {
     if (!row || typeof row.text !== 'string' || !row.text.trim() || !Number.isSafeInteger(row.page) || row.page < 1) return false;
@@ -118,6 +132,7 @@
         : term=>`Welche Textstelle erwähnt ${term}?`;
     const readable = [...samples,...pages.filter(page=>page.ocr && page.text.trim()).slice(0,20)];
     for (const page of readable) {
+      if (publicationPage(page.text)) continue;
       for (const term of MenbaSearch.keywords(page.text).slice(0,3)) {
         if (seen.has(term.toLowerCase())) continue;
         seen.add(term.toLowerCase());
@@ -143,5 +158,5 @@
       citation:target ? {source:target.source,page:target.page,verse:target.verse} : null};
   }
 
-  globalThis.MenbaQuestionChecks = Object.freeze({standardQuestions,plan,rank,localAnswer,checkCitation,candidates,test});
+  globalThis.MenbaQuestionChecks = Object.freeze({standardQuestions,plan,rank,localAnswer,checkCitation,candidates,test,ocrSamplePage});
 })();
