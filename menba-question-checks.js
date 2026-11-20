@@ -13,7 +13,10 @@
     ['2:43','Muss man das Gebet verrichten?','Namaz kılmak farz mı?']
   ];
 
-  const lookup = text => /^(?:Welche Textstelle erwähnt |Hangi metin bölümünde |في أي مقطع وردت كلمة )(.+?)(?: geçiyor)?[?؟]$/iu.exec(text)?.[1];
+  function lookup(text) {
+    const phrase = /^(?:Welche Textstelle erwähnt |Hangi metin bölümünde |في أي مقطع وردت كلمة )(.+?)(?: geçiyor)?[?؟]$/iu.exec(text)?.[1].trim();
+    return phrase?.replace(/^(?:„([^“]+)“|«([^»]+)»|“([^”]+)”|"([^"]+)")$/u,(_,a,b,c,d)=>a??b??c??d);
+  }
 
   function ocrSamplePage(total,indexed,requested) {
     if (requested !== null) {
@@ -30,18 +33,20 @@
 
   function plan(text,picked,intent,isQuran,hadisId) {
     const literal = lookup(text);
-    if (literal) return {text:literal,sources:picked,quran:null,hadith:null,quranOnly:false};
-    const anyQuran = picked.some(isQuran);
-    const hadith = MenbaSearch.inspectHadith(text);
-    const onlyQuran = anyQuran && picked.every(source=>isQuran(source) || source.id === hadisId);
-    const inspected = !hadith && MenbaQuran.inspect(text,{inQuran:onlyQuran || (anyQuran && Boolean(intent))});
+    if (literal) return {text:literal,exact:true,sources:picked,quran:null,hadith:null,quranOnly:false};
+    const book = MenbaSearch.requestedBook(text);
+    let sources = book ? picked.filter(source=>book.matches(source.title)) : picked;
+    const anyQuran = sources.some(isQuran);
+    const hadith = book ? null : MenbaSearch.inspectHadith(text);
+    const onlyQuran = anyQuran && sources.every(source=>isQuran(source) || source.id === hadisId);
+    const inspected = !hadith && (!book || anyQuran)
+      && MenbaQuran.inspect(book?.query ?? text,{inQuran:onlyQuran || (anyQuran && Boolean(intent))});
     const quran = inspected && intent && !inspected.reference && !inspected.quranRequested && !inspected.dietaryRuling
       ? {...inspected,topic:intent.query} : inspected;
     const quranOnly = Boolean(quran && (quran.quranRequested || (onlyQuran && !quran.dietaryRuling)));
-    let sources = picked;
-    if (quranOnly) sources = anyQuran ? picked.filter(isQuran) : picked.filter(source=>source.id !== hadisId);
-    else if (hadith) sources = picked.filter(source=>source.hadith && !source.quran);
-    return {text,sources,quran,hadith,quranOnly};
+    if (quranOnly) sources = anyQuran ? sources.filter(isQuran) : sources.filter(source=>source.id !== hadisId);
+    else if (hadith) sources = sources.filter(source=>source.hadith && !source.quran);
+    return {text,sources,quran,hadith,quranOnly,book:book?.title};
   }
 
   function findQuran(query,pages) {
@@ -56,14 +61,14 @@
   }
 
   function rank(plan,{pages,quranSources},hadisId) {
-    const {quran,quranOnly,text,hadith} = plan;
+    const {quran,quranOnly,text,hadith,exact} = plan;
     const scope = new Set(plan.sources.map(source=>source.id));
     const eligible = pages.filter(page=>scope.has(page.sourceId) && (!quranOnly || quranSources.has(page.sourceId)));
     const prayerParts = MenbaSearch.prayerPartsQuestion(text);
     const quranRows = quran && !prayerParts.length ? findQuran(quran,eligible.filter(page=>quranSources.has(page.sourceId))) : [];
     const dietaryRows = !quranOnly && !quranRows.length && quran?.dietaryRuling
       ? MenbaQuran.findVerses(quran,eligible.filter(page=>!quranSources.has(page.sourceId))) : [];
-    const rows = prayerParts.length ? MenbaSearch.find(text,eligible)
+    const rows = exact ? MenbaSearch.findExact(text,eligible) : prayerParts.length ? MenbaSearch.find(text,eligible)
       : quranOnly || quranRows.length ? quranRows : dietaryRows.length ? dietaryRows : MenbaSearch.find(text,eligible);
     const samples = hadith?.sample ? eligible.filter(page=>page.sourceId === hadisId) : [];
     const ocr = new Set(eligible.filter(row=>row.ocr).map(row=>`${row.sourceId}:${row.page}`));
@@ -94,7 +99,7 @@
     const reference = MenbaQuran.inspect(text)?.reference;
     if (!searchTerm && !reference) return null;
     const citation = evidence.findIndex(entry=>!entry.ocr && (searchTerm
-      ? normalize(entry.text).toLowerCase().includes(normalize(searchTerm).toLowerCase())
+      ? MenbaSearch.matchesExact(entry.text,searchTerm)
       : entry.verse === `${reference.surah}:${reference.ayah}`));
     if (citation < 0) return null;
     const messages = {
@@ -145,11 +150,16 @@
     return questions;
   }
 
-  function test(candidate,snapshot,{hadisId,sources,isQuran,language}) {
-    const intent = MenbaAnswers.inspect(candidate.text);
-    const prepared = plan(candidate.text,sources,intent,isQuran,hadisId);
+  function evaluate(text,snapshot,{hadisId,sources,isQuran,language}) {
+    const intent = MenbaAnswers.inspect(text);
+    const prepared = plan(text,sources,intent,isQuran,hadisId);
     const {evidence} = rank(prepared,snapshot,hadisId);
-    const answer = localAnswer(candidate.text,intent,evidence,language);
+    const answer = localAnswer(text,intent,evidence,language);
+    return {prepared,evidence,answer};
+  }
+
+  function test(candidate,snapshot,configuration) {
+    const {evidence,answer} = evaluate(candidate.text,snapshot,configuration);
     const cited = answer?.citations.map(index=>evidence[index-1]) ?? [];
     const valid = cited.length > 0 && cited.every(row=>checkCitation(row,snapshot.pages));
     const target = candidate.expected && (valid ? cited : evidence).find(row=>
@@ -160,5 +170,5 @@
       citation:target ? {source:target.source,page:target.page,verse:target.verse} : null};
   }
 
-  globalThis.MenbaQuestionChecks = Object.freeze({standardQuestions,plan,rank,localAnswer,checkCitation,candidates,test,ocrSamplePage});
+  globalThis.MenbaQuestionChecks = Object.freeze({standardQuestions,plan,rank,localAnswer,checkCitation,candidates,test,evaluate,ocrSamplePage});
 })();

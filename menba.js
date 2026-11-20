@@ -37,6 +37,7 @@
   const cachedPages = new Map();
   const recognizedPages = new Map();
   const attemptedOcr = new Map();
+  const failedOcr = new Set();
   const sharedVersions = new Map();
   const sourceStates = new Map();
   const loadedIndexes = new Set();
@@ -98,6 +99,7 @@
     for (const key of cachedPages.keys()) if (!paths.has(key)) cachedPages.delete(key);
     for (const key of recognizedPages.keys()) if (!paths.has(key)) recognizedPages.delete(key);
     for (const key of attemptedOcr.keys()) if (!paths.has(key)) attemptedOcr.delete(key);
+    for (const key of failedOcr) if (!paths.has(key)) failedOcr.delete(key);
     for (const key of sourceStates.keys()) if (!paths.has(key)) sourceStates.delete(key);
     for (const key of loadedIndexes) if (!paths.has(key)) loadedIndexes.delete(key);
     for (const key of sharedVersions.keys()) if (!active.has(key)) sharedVersions.delete(key);
@@ -160,6 +162,7 @@
     const total = source.image ? 1 : pdf?.totalPages;
     if (ready && total && ready < total) return tr(`Teilweise bereit (${ready}/${total})`, `Kısmen hazır (${ready}/${total})`);
     if (ready) return tr('Bereit', 'Hazır');
+    if (failedOcr.has(key)) return tr('OCR fehlgeschlagen', 'Metin tanıma başarısız');
     if (state === 'unreadable' || pdf?.totalPages) return tr('Kein lesbarer Text', 'Metin tanınamadı');
     return tr('Noch nicht geladen', 'Henüz yüklenmedi');
   }
@@ -618,6 +621,7 @@
     cachedPages.delete(key);
     recognizedPages.delete(key);
     attemptedOcr.delete(key);
+    failedOcr.delete(key);
     loadedIndexes.delete(key);
     sharedVersions.delete(source.id);
     turns = turns.filter(turn => turn === work.turn || !turn.sources.some(item => item.id === source.id));
@@ -831,7 +835,9 @@
     const pages = [];
     const quranSources = new Set();
     const unavailable = [];
+    const inaccessible = [];
     const scans = [];
+    const failedScans = [];
     let foundQuran = work.sources.some(isQuran);
     for (const source of work.sources) {
       if (request !== work) return;
@@ -840,9 +846,11 @@
       let grant;
       try {
         if (source.shareId || source.path) grant = await authorizeSource(source,work);
+        work.report?.(source,'access',grant ? 'authorized' : 'local');
         await useIndex(source);
         if (request !== work || !allowed()) return;
         let extracted = cachedPages.get(key);
+        const reused = Boolean(extracted && !work.force);
         if (work.force || !extracted) {
           setSourceState(source,'working');
           extracted = source.id === hadisId ? {pages:await fetchHadis(work), quran:false}
@@ -851,12 +859,12 @@
           if (extracted) {
             cachedPages.set(key, extracted);
             sourcesChanged();
-            const persisted = await useIndex(source,{parsed:extracted});
-            work.report?.(source,'extract',{total:extracted.totalPages ?? extracted.pages.length,readable:extracted.pages.length,failed:extracted.failedPages?.length ?? 0,persisted:Boolean(persisted)});
+            await useIndex(source,{parsed:extracted});
           }
           if (request !== work || !allowed()) return;
         }
         if (!extracted || (quranOnly && !extracted.quran)) continue;
+        work.report?.(source,'extract',{total:extracted.totalPages ?? extracted.pages.length,readable:extracted.pages.length,failed:extracted.failedPages?.length ?? 0,reused});
         if (extracted.quran) { foundQuran = true; quranSources.add(source.id); }
         const ocr = recognizedPages.get(key);
         const indexed = new Set([...extracted.pages.map(page=>page.page),...(ocr?.keys() ?? [])]);
@@ -864,12 +872,15 @@
         if (failed) unavailable.push(source.title);
         if (extracted.totalPages && indexed.size < extracted.totalPages && !failed) {
           scans.push(indexed.size ? `${source.title} (${indexed.size}/${extracted.totalPages})` : source.title);
+          if (failedOcr.has(key)) failedScans.push(source.title);
         }
         addDocumentPages(pages,extracted,ocr);
         setSourceState(source,failed && !indexed.size ? 'error' : null);
       } catch (error) {
         if (request !== work) return;
-        work.report?.(source,'error',error?.stage ?? 'extract');
+        const stage = error?.stage ?? 'extract';
+        work.report?.(source,'error',stage);
+        if (stage === 'sign') inaccessible.push(source.title);
         const ocr = source.file || grant ? recognizedPages.get(key) : null;
         if (ocr?.size && (!quranOnly || isQuran(source))) {
           foundQuran ||= isQuran(source);
@@ -882,7 +893,7 @@
       }
     }
     if (request !== work || !allowed()) return;
-    return {pages,quranSources,unavailable,scans,foundQuran};
+    return {pages,quranSources,unavailable,inaccessible,scans,failedScans,foundQuran};
   }
 
   async function run(retryTurn = null) {
@@ -903,7 +914,8 @@
     const {sources,quran,quranOnly,hadith} = plan;
     if (!sources.length) {
       sourceSummary.parentElement.open = true;
-      if (quranOnly) notice = quranSourceHelp();
+      if (plan.book) notice = [`Wähle „${plan.book}“ unter Quellen, um dieses Buch zu durchsuchen.`,`Bu kitabı aramak için Kaynaklar bölümünden “${plan.book}” seç.`];
+      else if (quranOnly) notice = quranSourceHelp();
       else if (hadith) notice = ['Wähle unter Quellen eine Hadis-Sammlung aus.', 'Kaynaklar bölümünde bir Hadis derlemesi seç.'];
       else notice = ['Wähle zuerst eine Quelle.', 'Lütfen önce kaynak seçin.'];
       renderNotice();
@@ -927,7 +939,7 @@
     try {
       const snapshot = await collectSources(work,quranOnly);
       if (!snapshot) return;
-      const {unavailable,scans,foundQuran} = snapshot;
+      const {unavailable,inaccessible,scans,failedScans,foundQuran} = snapshot;
       const {evidence,quranRows} = MenbaQuestionChecks.rank(plan,snapshot,hadisId);
       turn.evidence = evidence.map(entry=>({...entry,sharedVersion:sharedVersions.get(entry.sourceId)}));
       turn.answer = MenbaQuestionChecks.localAnswer(retrievalQuestion,intent,turn.evidence,answerLanguage(text));
@@ -951,6 +963,10 @@
         if (request !== work || !allowed()) return;
         if (modelFailure === 'limit') {
           turn.warning.push(['Das Tageslimit für KI-Antworten ist erreicht oder für dieses Konto zu niedrig.','Yapay zekâ yanıtları için günlük sınır doldu veya bu hesap için çok düşük.']);
+        } else if (modelFailure === 'unverified') {
+          turn.warning.push(['Die KI hat keine überprüfbare Antwort geliefert. Die gefundenen Auszüge stehen unten.','Yapay zekâ doğrulanabilir bir yanıt vermedi. Bulunan alıntılar aşağıda.']);
+        } else if (modelFailure === 'access') {
+          turn.warning.push(['Der Zugriff auf die KI-Antwort wurde verweigert. Die gefundenen Auszüge stehen unten.','Yapay zekâ yanıtına erişim reddedildi. Bulunan alıntılar aşağıda.']);
         } else if (modelFailure) {
           turn.warning.push(['Die KI-Verbindung ist derzeit unterbrochen. Hier sind die lokalen Fundstellen.','Yapay zekâ bağlantısı şu anda kesik. Yerel kaynak bölümleri aşağıda.']);
         }
@@ -973,6 +989,8 @@
         turn.notice = ['Beim Laden der Quellen ist ein technischer Fehler aufgetreten.', 'Kaynak araması sırasında teknik bir sorun oluştu.'];
       } else if (!turn.evidence.length && scans.length && !snapshot.pages.length) {
         turn.notice = ['Diese Quelle ist noch nicht durchsuchbar.', 'Bu kaynak henüz okunabilir hâle getirilmedi.'];
+      } else if (!turn.evidence.length && (unavailable.length || scans.length)) {
+        turn.notice = ['Im lesbaren Teil wurde kein Beleg gefunden. Die Suche konnte nur einen Teil der Quellen prüfen.', 'Okunabilir kısımda kanıt bulunamadı. Arama kaynakların yalnızca bir bölümünü denetleyebildi.'];
       }
       if (!turn.evidence.length && sources.length === 1 && sources[0].id === hadisId && !unavailable.length) {
         turn.notice = [turn.notice[0]+' Durchsucht wurde nur die ausgewählte Hadis-Textfassung. Weitere PDFs kannst du unter Quellen auswählen.',
@@ -983,9 +1001,17 @@
         turn.warning.push([`Nicht durchsuchbar: ${labels}.`, `Aranamadı: ${labels}.`]);
         turn.needsReload = true;
       }
+      if (inaccessible.length) {
+        const labels = inaccessible.join(', ');
+        turn.warning.push([`Datei nicht erreichbar oder Zugriff verweigert: ${labels}.`,`Dosyaya ulaşılamadı veya erişim reddedildi: ${labels}.`]);
+      }
       if (scans.length) {
         const labels = scans.join(', ');
         turn.warning.push([`Seiten ohne lesbaren Text: ${labels}. Nutze die Texterkennung unter Quellen.`, `Okunabilir metni olmayan sayfalar: ${labels}. Kaynaklar menüsündeki metin tanımayı kullan.`]);
+      }
+      if (failedScans.length) {
+        const labels = failedScans.join(', ');
+        turn.warning.push([`OCR konnte nicht alle geprüften Seiten lesen: ${labels}.`,`Metin tanıma denenen sayfaların tümünü okuyamadı: ${labels}.`]);
       }
       const [first] = turn.evidence;
       if ((!turn.answer || turn.answer.kind === 'excerpt') && !turn.learning?.quiz && first?.quran && first.ranges) {
@@ -1077,6 +1103,8 @@
         recognized.push(indexed);
       }
       attemptedOcr.set(key,tried);
+      if (!rows.length || recognized.length < rows.length) failedOcr.add(key);
+      else failedOcr.delete(key);
       if (recognized.length) {
         recognizedPages.set(key,data);
         sourcesChanged();
@@ -1093,8 +1121,9 @@
         setSourceState(source,'unreadable');
         notice = ['Auf diesen Seiten wurde kein Text erkannt.', 'Bu sayfalarda metin tanınamadı.'];
       }
-    } catch {
+    } catch(error) {
       if (request === work) {
+        if (!error?.stage) failedOcr.add(sourceKey(source));
         setSourceState(source,'error');
         notice = ['Texterkennung derzeit nicht verfügbar. Prüfe Datei, Seiten und Verbindung.', 'Metin tanıma kullanılamıyor. Dosyayı, sayfaları ve bağlantını kontrol et.'];
       }
@@ -1114,7 +1143,7 @@
       && allowed() && owner === account && accountEpoch === epoch;
   }
 
-  async function processForTest(sourceIds,{admin=false,useOcr=false,ocrPage=null,language='turkish',signal,onProgress} = {}) {
+  async function processForTest(sourceIds,{admin=false,reprocess=false,useOcr=false,ocrPage=null,language='turkish',questionText='',askCloud=false,signal,onProgress} = {}) {
     if (!allowed() || request || loadingPreferences || signal?.aborted) throw Error('busy');
     if (admin && !await testOwner()) throw Error('access');
     if (!allowed() || request || signal?.aborted) throw Error('busy');
@@ -1123,7 +1152,7 @@
     if (!sources.length) throw Error('selection');
     const controller = new AbortController();
     const diagnostics = new Map();
-    const work = {controller,sources,task:null,force:admin,report(source,stage,value) {
+    const work = {controller,sources,task:null,force:reprocess,report(source,stage,value) {
       const entries = diagnostics.get(source.id) ?? {};
       entries[stage] = value;
       diagnostics.set(source.id,entries);
@@ -1169,21 +1198,23 @@
             }
           } catch(error) {
             if (controller.signal.aborted) throw error;
+            if (error?.stage === 'sign') { record.error = 'sign'; snapshot.pages.length = 0; }
             ocr = {state:'fail',page};
           } finally { await releasePdf(work); }
         }
       }
       let stored = null;
-      if (admin && record.extract?.persisted) {
+      if (admin && record.extract) {
         try {
           const version = await indexVersion(source);
           const index = await MenbaSourcePreferences.loadIndex(owner,source.id,version);
           stored = index?.parsed?.pages.length === record.extract.readable && (ocr.state !== 'pass' || index.ocr.some(row=>row.page === ocr.page));
         } catch { stored = false; }
       }
+      const probe = admin && questionText ? await diagnoseQuestion(questionText,snapshot,sources,askCloud,controller.signal) : null;
       controller.signal.throwIfAborted();
       if (request !== work || !allowed()) throw Error('access');
-      return {snapshot,source,sources,record,ocr,stored};
+      return {snapshot,source,sources,record,ocr,stored,probe};
     } finally {
       clearTimeout(timeout);
       signal?.removeEventListener('abort',abort);
@@ -1192,6 +1223,26 @@
   }
 
   const testOptions = sources => ({sources,hadisId,isQuran,language:lang});
+
+  async function diagnoseQuestion(text,snapshot,sources,askCloud,signal) {
+    const language = answerLanguage(text);
+    const {prepared,evidence,answer:local} = MenbaQuestionChecks.evaluate(text,snapshot,{...testOptions(sources),language});
+    const verified = evidence.filter(row=>MenbaQuestionChecks.checkCitation(row,snapshot.pages));
+    let answer = local;
+    let model = 'skipped';
+    let sent = false;
+    if (!answer && askCloud && MenbaCloudChat.canUse(cloud.dataset.endpoint) && verified.some(row=>!row.ocr)) {
+      answer = await MenbaCloudChat.answer({endpoint:cloud.dataset.endpoint,consent:true,question:text,evidence:verified,language,signal,
+        onFailure:reason=>{model=reason;},onSend:()=>{sent=true;model='unverified';}});
+      if (answer) model = 'answered';
+    }
+    const inspected = model === 'answered' ? verified : evidence;
+    const cited = answer?.citations.map(index=>inspected[index-1]) ?? [];
+    const valid = cited.length > 0 && cited.every(row=>verified.includes(row));
+    return {text,scope:prepared.sources.length,found:evidence.length,verified:verified.length,model,sent,
+      method:prepared.exact ? 'exact' : prepared.quranOnly || prepared.quran ? 'quran' : 'terms',
+      answer:valid ? answer.text : null,citations:valid ? cited : verified.slice(0,1)};
+  }
   async function suggestQuestions(signal) {
     const {snapshot,sources} = await processForTest(pickableSources().map(source=>source.id),{signal});
     return MenbaQuestionChecks.candidates(snapshot.pages,lang).map(candidate=>
@@ -1199,7 +1250,7 @@
   }
 
   async function diagnoseSource(sourceId,settings) {
-    const {snapshot,source,sources,record,ocr,stored} = await processForTest([sourceId],{...settings,admin:true});
+    const {snapshot,source,sources,record,ocr,stored,probe} = await processForTest([sourceId],{...settings,admin:true});
     const configuration = testOptions(sources);
     const candidates = MenbaQuestionChecks.candidates(snapshot.pages,lang,6);
     const questions = [...MenbaQuestionChecks.standardQuestions.map(text=>({text})),...candidates]
@@ -1211,7 +1262,7 @@
     const missing = MenbaQuestionChecks.test({text:'Xylutronium Befund XQQZK'},snapshot,configuration);
     const emptyScope = MenbaQuestionChecks.test({text:candidates[0]?.text ?? 'Emsile nedir?'},snapshot,{...configuration,sources:[]});
     return {
-      title:source.title,record,ocr,stored,questions,multilingual,
+      title:source.title,record,ocr,stored,questions,multilingual,probe,
       pages:snapshot.pages.length,wrongMatch:missing.found>0,scopeClean:emptyScope.found===0,
       privateIndex:!source.shareId && source.id !== hadisId,localFile:Boolean(source.file),
       publicText:source.id === hadisId,
@@ -1341,6 +1392,7 @@
       cachedPages.clear();
       recognizedPages.clear();
       attemptedOcr.clear();
+      failedOcr.clear();
       sharedVersions.clear();
       sourceStates.clear();
       loadedIndexes.clear();

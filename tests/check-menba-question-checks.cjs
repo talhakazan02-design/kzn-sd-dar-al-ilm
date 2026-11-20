@@ -82,4 +82,28 @@ const observed = checks.test(candidates[0],{pages:[rawQuran],quranSources:new Se
 assert.equal(observed.status,'pass');
 assert.equal(observed.citation.page,7);
 assert.equal(observed.citation.verse,'2:43');
+
+const descriptions = {...emsile,text:'Dieses Kapitel erläutert das Lesen des Korans. Das Lesen des Korans wird erklärt.'};
+const testScope = {...env,sources:[scopes[0],quran],isQuran:source=>source.quran};
+const scopedQuestion = 'Was steht in „Emsile“ zum Thema Koran lesen?';
+const mixed = {pages:[descriptions,rawQuran],quranSources:new Set(['q'])};
+assert.deepEqual(checks.evaluate(scopedQuestion,mixed,testScope).evidence.map(page=>page.sourceId),['e']);
+assert.deepEqual(checks.evaluate(scopedQuestion,mixed,{...testScope,sources:[quran]}).evidence,[]);
+const arabicScope = checks.plan('ماذا ورد في كتاب «Emsile» عن القرآن؟',testScope.sources,null,testScope.isQuran,'curated');
+assert.deepEqual(arabicScope.sources.map(source=>source.id),['e']);
+const curated = {id:'curated',title:'Hadis',hadith:true};
+assert.deepEqual(checks.plan('„Emsile“ kitabında hangi hadis yazıyor?',[scopes[0],curated],null,()=>false,'curated').sources,[scopes[0]]);
+
+const exactTerms = {sourceId:'e',source:'Emsile',page:2,text:'Die Sternlaterne steht im Lesesaal.'};
+const exactPhrase = {...exactTerms,page:3,text:'Dort lautet der Titel: Sternlaterne\nLesesaal.'};
+const exactQuestion = 'Welche Textstelle erwähnt „Sternlaterne Lesesaal“?';
+const exactSnapshot = {pages:[exactTerms,exactPhrase],quranSources:new Set()};
+assert.deepEqual(checks.evaluate(exactQuestion,{...exactSnapshot,pages:[exactTerms]},env).evidence,[]);
+const exactResult = checks.evaluate(exactQuestion,exactSnapshot,env);
+assert.equal(exactResult.evidence.length,1);
+assert.equal(exactResult.evidence[0].page,3);
+assert.deepEqual(exactResult.answer?.citations,[1]);
+assert.equal(checks.evaluate('Hangi metin bölümünde Namazı dosdoğru kılın geçiyor?',mixed,testScope).evidence[0].verse,'2:43');
+assert.deepEqual(MenbaSearch.findExact('Lesesaal',[{...exactTerms,text:'Unser Lesesaalbau.'}]),[]);
+assert.equal(MenbaSearch.findExact('[1].',[{...exactTerms,text:'Die belegte Aussage. [1]. Hier folgt Kontext.'}]).length,1);
 console.log('PASS: DE/TR/AR-Fragevarianten, Buchgrenzen, echte Belegprüfung, OCR-Kennzeichnung und Buch/Seitenabgleich.');

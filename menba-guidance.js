@@ -23,6 +23,8 @@
   const suggested = $('menbaSuggestedQuestions');
   const center = $('menbaTestCenter');
   const sourcePicker = $('menbaTestSource');
+  const testQuestion = $('menbaTestQuestion');
+  const testCloud = $('menbaTestCloud');
   const ocrOption = $('menbaTestOcr');
   const ocrPage = $('menbaTestPage');
   const ocrLanguage = $('menbaTestLanguage');
@@ -147,10 +149,13 @@
     sourcePicker.replaceChildren(new Option(tr('Quelle auswählen','Kaynak seç'),''),...options);
     if (sources.some(row=>row.id === old)) sourcePicker.value = old;
     else if (sources.length === 1) sourcePicker.value = sources[0].id;
+    if (sourcePicker.value !== old) testCloud.checked = false;
     cancel.hidden = !labRun;
     const busy = Boolean(labRun);
     sourcePicker.disabled = busy || !sources.length;
     ocrOption.disabled = ocrPage.disabled = ocrLanguage.disabled = sourcePicker.disabled;
+    testQuestion.disabled = sourcePicker.disabled;
+    testCloud.disabled = sourcePicker.disabled || !testQuestion.value.trim();
     run.disabled = reprocess.disabled = busy || menbaBusy || !sourcePicker.value;
     if (!busy && !sources.length && isOwner()) {
       status.textContent = tr('Wähle zuerst Quellen im MENBA-Bereich.','Önce MENBA bölümünde kaynak seç.');
@@ -160,12 +165,12 @@
   function renderReport() {
     report.replaceChildren();
     if (!result || !isOwner()) return;
-    const {record,ocr,stored,questions,multilingual,pages,privateIndex,localFile,publicText} = result;
+    const {record,ocr,stored,questions,multilingual,pages,privateIndex,localFile,publicText,probe} = result;
     const title = document.createElement('h3');
     title.textContent = result.title;
     const active = questions.filter(row=>row.status === 'pass');
     const extract = record.extract;
-    const available = record.download || publicText && pages || localFile && !record.error;
+    const available = record.download || record.access && extract || publicText && pages || localFile && !record.error;
     const reading = record.error ? 'fail' : extract?.readable && extract.readable === extract.total && !extract.failed ? 'pass' : 'review';
     const ocrDetail = ocr.reason === 'indexed' ? tr(`Seite ${ocr.page} ist bereits durchsuchbar.`,`Sayfa ${ocr.page} zaten aranabilir.`)
       : ocr.reason === 'range' ? tr(`Wähle eine Seite von 1 bis ${ocr.total}.`,`1 ile ${ocr.total} arasında bir sayfa seç.`)
@@ -184,6 +189,8 @@
       [tr('PDF-Text / Index','PDF metni / dizin'),localFile && !extract?.readable && ocr.state === 'pass' ? 'review' : reading,
         extract ? tr(`${extract.readable}/${extract.total} Seiten mit Textebene · ${extract.failed} Lesefehler.`,`${extract.total} sayfanın ${extract.readable} tanesinde metin · ${extract.failed} okuma hatası.`) : storageDetail],
       [tr('OCR','OCR'),ocr.state,ocrDetail],
+      [tr('Durchsuchbarer Index','Aranabilir dizin'),pages?'pass':record.error?'skip':'fail',
+        tr(`${pages} Einträge. ${extract?.reused ? 'Vorhandenen Index wiederverwendet.' : 'Prüfung in dieser Sitzung.'}`,`${pages} kayıt. ${extract?.reused ? 'Mevcut dizin yeniden kullanıldı.' : 'Bu oturumda denetlendi.'}`)],
       [tr('Lokale Speicherung','Yerel kayıt'),stored === true?'pass':privateIndex?(extract?'fail':'skip'):'skip',
         stored === true ? tr('Index erneut aus dem Browser-Speicher gelesen.','Dizin tarayıcı deposundan yeniden okundu.')
           : tr('Kein dauerhaft gespeicherter Index in diesem Lauf bestätigt. Gemeinsame Quellen werden sitzungsbezogen geprüft.','Bu testte kalıcı dizin doğrulanmadı. Ortak kaynaklar oturumda denetlenir.')],
@@ -195,7 +202,7 @@
       [tr('Berechtigungen','İzinler'),available?'pass':'review',tr('Admin-Rolle per Supabase geprüft. Zugriff auf diese Quelle separat geprüft.','Yönetici rolü Supabase ile kontrol edildi. Bu kaynağa erişim ayrıca denetlendi.')],
       [tr('Antworten und Zitate','Yanıtlar ve alıntılar'),active.length?'pass':pages?'review':'fail',tr('Auszug oder belegte Kurzantwort mit nachgeprüfter Quelle.','Alıntı veya kaynağı doğrulanmış kısa cevap.')],
       [tr('Seitenangaben','Sayfa bilgileri'),active.length?'pass':'skip',tr('Buch, Seite und Text wurden im Index abgeglichen. OCR-Zitate brauchen Sichtprüfung.','Kitap, sayfa ve metin dizinle karşılaştırıldı. OCR alıntıları görsel kontrol ister.')],
-      [tr('Cloud-KI','Bulut yapay zekâsı'),'skip',result.cloudConfigured ? tr('Kein externer Aufruf im automatischen Test.','Otomatik test dış hizmeti çağırmadı.') : tr('Kein Modell-Endpunkt verbunden.','Model bağlantısı yapılandırılmamış.')],
+      [tr('Cloud-KI im automatischen Test','Otomatik testte bulut yapay zekâsı'),'skip',result.cloudConfigured ? tr('Kein externer Aufruf im automatischen Test.','Otomatik test dış hizmeti çağırmadı.') : tr('Kein Modell-Endpunkt verbunden.','Model bağlantısı yapılandırılmamış.')],
       [tr('Kontrollfrage ohne Beleg','Kaynağı olmayan kontrol sorusu'),result.wrongMatch?'fail':'pass',tr('Eine absichtlich unpassende Frage darf keine Belege liefern.','Kasıtlı ilgisiz soru kaynak göstermemeli.')]
     ];
     const list = document.createElement('ul');
@@ -231,6 +238,55 @@
     }
     details.append(summary,questionList);
     report.append(title,list,details);
+    if (probe) renderProbe(probe,record,pages);
+  }
+
+  function renderProbe(probe,record,pages) {
+    const heading = document.createElement('h4');
+    heading.textContent = tr('Konkrete Testfrage','Belirli test sorusu');
+    const question = document.createElement('p');
+    question.textContent = probe.text;
+    const trace = document.createElement('ol');
+    trace.className = 'menba-test-results';
+    const method = {exact:tr('Exakte Suche','Tam ifade araması'),terms:tr('Stichwort- und Volltextsuche','Anahtar sözcük ve tam metin araması'),quran:tr('Ayet-Suche','Ayet araması')}[probe.method];
+    const cloudResult = {
+      skipped:tr('Cloudflare übersprungen.','Cloudflare atlandı.'),
+      answered:tr('Cloudflare lieferte eine Antwort mit belegten Zitaten.','Cloudflare doğrulanmış alıntılarla yanıt verdi.'),
+      limit:tr('Cloud-Kontingent zu niedrig oder ausgeschöpft.','Bulut kotası yetersiz veya dolu.'),
+      access:tr('Cloud-Zugriff verweigert.','Bulut erişimi reddedildi.'),
+      technical:tr('Cloud-Verbindung oder Modell technisch nicht erreichbar.','Bulut bağlantısına veya modele teknik olarak ulaşılamadı.'),
+      unverified:tr('Das Modell lieferte keine überprüfbare Antwort.','Model doğrulanabilir bir yanıt vermedi.')
+    }[probe.model];
+    const outcome = !probe.scope ? tr('Das genannte Buch liegt außerhalb dieser Testauswahl.','Belirtilen kitap test seçiminin dışında.')
+      : record.error ? tr('Die Quelle konnte nur teilweise oder gar nicht geprüft werden.','Kaynak kısmen denetlendi veya denetlenemedi.')
+        : !pages ? tr('Die Quelle hat keinen durchsuchbaren Text. Prüfe PDF und OCR.','Kaynakta aranabilir metin yok. PDF ve metin tanımayı kontrol et.')
+          : !probe.found ? tr('In den durchsuchbaren Abschnitten fehlt eine Fundstelle für diese Frage.','Aranabilir bölümlerde bu soruya uygun alıntı bulunamadı.')
+            : probe.answer ? tr('Antwort und Fundstelle belegt.','Yanıt ve kaynak doğrulandı.')
+              : tr('Fundstellen vorhanden. Eine belegte formulierte Antwort fehlt.','Alıntılar bulundu. Kaynakla doğrulanmış bir yanıt yok.');
+    for (const line of [
+      tr(`${probe.scope} Quelle im Suchbereich. ${method}.`,`${probe.scope} kaynak arama kapsamında. ${method}.`),
+      tr(`${probe.found} Fundstellen, davon ${probe.verified} mit Buchseite abgeglichen.`,`${probe.found} alıntı, ${probe.verified} tanesi kitap sayfasıyla karşılaştırıldı.`),
+      probe.sent ? tr('Anfrage an Cloudflare gestartet.','Cloudflare isteği başlatıldı.') : tr('Kein Cloud-Transfer für diese Frage.','Bu soru için bulut aktarımı yapılmadı.'),
+      cloudResult,outcome
+    ]) {
+      const row = document.createElement('li');
+      row.textContent = line;
+      trace.append(row);
+    }
+    report.append(heading,question,trace);
+    if (probe.answer) {
+      const answer = document.createElement('p');
+      answer.textContent = probe.answer;
+      report.append(answer);
+    }
+    for (const evidence of probe.citations) {
+      const quote = document.createElement('blockquote');
+      quote.dir = 'auto';
+      quote.textContent = evidence.text;
+      const citation = document.createElement('p');
+      citation.textContent = `${evidence.source} · ${tr('PDF-Seite','PDF sayfası')} ${evidence.page}${evidence.verse ? ` · ${evidence.verse}` : ''}${evidence.ocr ? ' · OCR' : ''}`;
+      report.append(quote,citation);
+    }
   }
 
   function clearReport() {
@@ -244,6 +300,9 @@
     const useOcr = forceOcr || ocrOption.checked || Boolean(ocrPage.value);
     if (useOcr && !ocrPage.reportValidity()) return;
     const requestedPage = ocrPage.value ? ocrPage.valueAsNumber : null;
+    const questionText = testQuestion.value.trim();
+    const askCloud = testCloud.checked && Boolean(questionText);
+    testCloud.checked = false;
     const session = accessRequest;
     const selected = sourcePicker.value;
     const active = new AbortController();
@@ -254,7 +313,7 @@
     const current = () => accessRequest === session && isOwner() && labRun === active;
     try {
       const next = await tests.diagnoseSource(selected,{
-        signal:active.signal,useOcr,ocrPage:requestedPage,language:ocrLanguage.value,
+        signal:active.signal,useOcr,ocrPage:requestedPage,language:ocrLanguage.value,reprocess:forceOcr,questionText,askCloud,
         onProgress(stage,values) {
           if (!current()) return;
           if (stage === 'page') status.textContent = tr(`PDF-Seite ${values.number}/${values.total} wird gelesen …`,`PDF sayfası okunuyor: ${values.number}/${values.total} …`);
@@ -283,14 +342,16 @@
   });
   suggest.addEventListener('click',()=>void showSuggestions());
   center.addEventListener('toggle',syncCenter);
-  sourcePicker.addEventListener('change',()=>{ ocrPage.value = ''; clearReport(); syncCenter(); });
+  sourcePicker.addEventListener('change',()=>{ ocrPage.value = ''; testCloud.checked = false; clearReport(); syncCenter(); });
+  testQuestion.addEventListener('input',()=>{ testCloud.checked = false; clearReport(); syncCenter(); });
   run.addEventListener('click',()=>void diagnose());
   reprocess.addEventListener('click',()=>void diagnose(true));
   cancel.addEventListener('click',()=>labRun?.abort());
-  $('betaAdminClose').addEventListener('click',()=>{ labRun?.abort(); clearReport(); });
+  $('betaAdminClose').addEventListener('click',()=>{ labRun?.abort(); testCloud.checked = false; clearReport(); });
   document.addEventListener('menba-source-change',()=>{
     if (!suggestionRun) clearSuggestions();
     if (!labRun) clearReport();
+    testCloud.checked = false;
     syncCenter();
   });
   document.addEventListener('library-access',()=>{
@@ -299,6 +360,8 @@
     clearSuggestions();
     clearReport();
     ocrPage.value = '';
+    testQuestion.value = '';
+    testCloud.checked = false;
     choice.value = '';
     renderFields();
     syncCenter();

@@ -314,17 +314,60 @@
       hadithWord.test(word) || /^(?:hadithsammlung(?:en)?|hadithbuch|buhari|bukhari|tirmizi|tirmidhi|nesai|nasai|muvatta|muwatta)$/u.test(word));
   }
 
+  const bookKey = value => normalize(value).replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+
+  function requestedBook(question) {
+    const quoted = /„([^“]{2,160})“|«([^»]{2,160})»|“([^”]{2,160})”|"([^"\n]{2,160})"/u.exec(question);
+    if (!quoted) return null;
+    const before = question.slice(0,quoted.index);
+    const after = question.slice(quoted.index+quoted[0].length);
+    if (!/\b(?:in|aus|buch|buchtitel|kitap)\s*$/iu.test(before)
+        && !/(?:^\s*(?:kitab\p{L}*|buch\b)|^\s*كتاب)/iu.test(after)
+        && !/(?:^|\s)كتاب\s*$/u.test(before)) return null;
+    const title = quoted.slice(1).find(Boolean).trim();
+    const key = bookKey(title);
+    return key ? {title,query:`${before} ${after}`,matches:value=>bookKey(value || '') === key} : null;
+  }
+
+  function exactPattern(phrase) {
+    const value = phrase.normalize('NFC').trim();
+    if (!value || value.length > maxPassageLength) return null;
+    const pattern = value.split(/\s+/u).map(part=>part.replace(/[.*+?^${}()|[\]\\]/gu,'\\$&')).join('\\s+');
+    return new RegExp(`(?<![\\p{L}\\p{M}\\p{N}])${pattern}(?![\\p{L}\\p{M}\\p{N}])`,'iu');
+  }
+
+  function findExact(phrase,pages) {
+    const pattern = exactPattern(phrase);
+    if (!pattern) return [];
+    const hits = [];
+    for (const page of pages) {
+      const rows = page.verses?.length ? page.verses.map(verse=>({...page,...verse,meal:true})) : [page];
+      for (const row of rows) {
+        if (typeof row.text !== 'string') continue;
+        const text = row.text.normalize('NFC');
+        const match = pattern.exec(text);
+        if (!match) continue;
+        const {sourceId,source,page:number,verse,ranges,meal,ocr} = row;
+        const snippet = verse ? row.text : getExcerpt(text,match.index,match.index+match[0].length);
+        hits.push({sourceId,source,page:number,verse,ranges,meal,ocr,text:snippet});
+        if (hits.length === maxPassages) return hits;
+      }
+    }
+    return hits;
+  }
+
+  function matchesExact(text,phrase) {
+    return exactPattern(phrase)?.test(text.normalize('NFC')) ?? false;
+  }
+
   function find(question, pages) {
     if (typeof question !== 'string' || !Array.isArray(pages)) return [];
-    const questionWords = queryTerms(question).filter(word=>significant(word) && !/^\d+$/u.test(word));
+    const book = requestedBook(question);
+    const body = book?.query ?? question;
+    const questionWords = queryTerms(body).filter(word=>significant(word) && !/^\d+$/u.test(word));
     const mainTerms = questionWords.filter(word => !hadithWord.test(word));
     const terms = (mainTerms.length ? mainTerms : questionWords).slice(0, 16);
-    const prayerParts = prayerPartsQuestion(question);
-    const requestedBook = /„([^“]{2,160})“|«([^»]{2,160})»|“([^”]{2,160})”/u.exec(question);
-    const bookTitle = requestedBook?.slice(1).find(Boolean);
-    const identifyingBook = requestedBook && (/\b(?:in|aus|buch|buchtitel)\s*$/iu.test(question.slice(0,requestedBook.index))
-      || /^\s*(?:kitab\p{L}*|buch\b)/iu.test(question.slice(requestedBook.index+requestedBook[0].length)));
-    const bookKey = identifyingBook && normalize(bookTitle).replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+    const prayerParts = prayerPartsQuestion(body);
     const available = [];
     const titleCache = new Map();
     for (const page of pages) {
@@ -332,9 +375,9 @@
       const sourceTitle = typeof page.source === 'string' ? page.source : '';
       if (!titleCache.has(sourceTitle)) titleCache.set(sourceTitle, new Set([...tokens(sourceTitle)].map(({word}) => word)));
       const title = titleCache.get(sourceTitle);
-      const exactBook = bookKey && normalize(sourceTitle).replace(/[^\p{L}\p{N}]+/gu,' ').trim() === bookKey;
+      const exactBook = book?.matches(sourceTitle);
       const named = exactBook || terms.some(term => titleTerms.has(term) && title.has(term));
-      if (bookKey && !exactBook) continue;
+      if (book && !exactBook) continue;
       if (prayerParts.length && terms.includes('ilmihal') && !title.has('ilmihal')) continue;
       available.push({page, title, named});
     }
@@ -361,7 +404,7 @@
         continue;
       }
       // A named source narrows the search but is never evidence for a passage.
-      const remaining = terms.filter(term => !title.has(term) || (!titleTerms.has(term) && !bookKey));
+      const remaining = terms.filter(term => !title.has(term) || !titleTerms.has(term));
       const bodyTerms = remaining.length ? remaining : terms;
       const indexes = new Map(bodyTerms.map((term, index) => [term, index]));
       const threshold = bodyTerms.length === 1 ? 1 : Math.max(2, Math.ceil(bodyTerms.length / 2));
@@ -393,5 +436,5 @@
     return [...original.values()].slice(0,16);
   }
 
-  globalThis.MenbaSearch = Object.freeze({find,inspectHadith,isHadithSource,keywords,prayerPartsQuestion});
+  globalThis.MenbaSearch = Object.freeze({find,findExact,matchesExact,requestedBook,inspectHadith,isHadithSource,keywords,prayerPartsQuestion});
 })();

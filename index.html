@@ -1681,6 +1681,8 @@ main:has(#libraryArea:not(.hidden))>.centered-guest-logo{display:none}
     <summary>MENBA Test Merkezi</summary>
     <p data-de="Prüfe jeweils eine unter MENBA ausgewählte Quelle. Die Tests laufen lokal und verwenden keine Cloud-KI." data-tr="MENBA’da seçtiğin kaynaklardan birini denetle. Testler cihazında çalışır ve bulut yapay zekâsını kullanmaz.">Prüfe jeweils eine unter MENBA ausgewählte Quelle. Die Tests laufen lokal und verwenden keine Cloud-KI.</p>
     <label><span data-de="Ausgewählte Quelle" data-tr="Seçili kaynak">Ausgewählte Quelle</span><select id="menbaTestSource"></select></label>
+    <label><span data-de="Konkrete Testfrage (optional)" data-tr="Belirli test sorusu (isteğe bağlı)">Konkrete Testfrage (optional)</span><input id="menbaTestQuestion" maxlength="500" dir="auto"></label>
+    <label><input id="menbaTestCloud" type="checkbox"> <span data-de="Die Testfrage und bis zu drei belegte Auszüge bei Bedarf einmal an Cloudflare senden" data-tr="Gerekirse test sorusunu ve en fazla üç doğrulanmış alıntıyı bir kez Cloudflare’a gönder">Die Testfrage und bis zu drei belegte Auszüge bei Bedarf einmal an Cloudflare senden</span></label>
     <label><input type="checkbox" id="menbaTestOcr"> <span data-de="Eine unlesbare Seite mit OCR prüfen" data-tr="Okunamayan bir sayfayı OCR ile dene">Eine unlesbare Seite mit OCR prüfen</span></label>
     <label><span data-de="OCR-Sprache" data-tr="OCR dili">OCR-Sprache</span>
       <select id="menbaTestLanguage"><option value="turkish" data-de="Türkisch" data-tr="Türkçe">Türkisch</option><option value="german" data-de="Deutsch" data-tr="Almanca">Deutsch</option><option value="arabic" data-de="Arabisch" data-tr="Arapça">Arabisch</option><option value="multilingual" data-de="Gemischt" data-tr="Karışık">Gemischt</option><option value="ottoman" data-de="Osmanisch (Näherung)" data-tr="Osmanlıca (yaklaşık)">Osmanisch (Näherung)</option></select>
@@ -2723,7 +2725,7 @@ document.addEventListener('library-language',()=>{drawEditor();refreshCards();})
 <script src="shared-library.js?v=sidebar20261119"></script>
 <script src="library-workspace.js?v=test-center"></script>
 <script src="sidebar-stats.js?v=20261119"></script>
-<script src="menba-search.js?v=prayer-evidence"></script>
+<script src="menba-search.js?v=answer-reliability"></script>
 <script src="menba-ocr.js?v=source-repair"></script>
 <script src="menba-quran.js?v=chat-answer20261119"></script>
 <script src="menba-quran-edition.js?v=quran20261119"></script>
@@ -2731,9 +2733,9 @@ document.addEventListener('library-language',()=>{drawEditor();refreshCards();})
 <script src="menba-source-preferences.js?v=source-repair"></script>
 <script src="menba-answers.js?v=source-repair"></script>
 <script src="menba-learning.js?v=learning-admin"></script>
-<script src="menba-cloud-chat.js?v=learning-admin"></script>
-<script src="menba-question-checks.js?v=prayer-evidence"></script>
-<script src="menba.js?v=phase-2-chat"></script>
-<script src="menba-guidance.js?v=ocr-diagnose"></script>
+<script src="menba-cloud-chat.js?v=answer-reliability"></script>
+<script src="menba-question-checks.js?v=answer-reliability"></script>
+<script src="menba.js?v=answer-reliability"></script>
+<script src="menba-guidance.js?v=answer-reliability"></script>
 <script src="menba-admin.js?v=learning-admin"></script>
 </body></html>

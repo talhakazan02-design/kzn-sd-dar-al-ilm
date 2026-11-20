@@ -66,7 +66,7 @@
   const isApproved = () => accessState === 'approved' && Boolean(currentUser?.id);
   const isApprovedOwner = () => isApproved() && document.documentElement.dataset.betaOwner === 'true';
 
-  async function answer({endpoint, consent = false, question, previousQuestion = '', evidence, language = 'de', signal, onFailure} = {}) {
+  async function answer({endpoint, consent = false, question, previousQuestion = '', evidence, language = 'de', signal, onFailure, onSend} = {}) {
     const url = parseEndpoint(endpoint);
     if (consent !== true || !url || !isApproved() || signal?.aborted) return null;
     const body = buildRequest(question, previousQuestion, evidence, language);
@@ -86,8 +86,13 @@
     try {
       const auth = await Promise.race([db.auth.getSession(), cancelled]);
       const session = auth?.data?.session;
-      if (!stillCurrent() || request.signal.aborted || auth?.error || session?.user?.id !== account
-        || typeof session.access_token !== 'string' || !/^[A-Za-z0-9._-]{20,4096}$/u.test(session.access_token)) return null;
+      if (!stillCurrent() || request.signal.aborted) return null;
+      if (auth?.error || session?.user?.id !== account
+        || typeof session.access_token !== 'string' || !/^[A-Za-z0-9._-]{20,4096}$/u.test(session.access_token)) {
+        onFailure?.('access');
+        return null;
+      }
+      onSend?.();
       const response = await fetch(url.href, {
         method:'POST',
         credentials:'omit',
@@ -100,13 +105,18 @@
       });
       if (!stillCurrent() || request.signal.aborted) return null;
       if (response.status !== 200) {
-        if (response.status !== 204) onFailure?.(response.status === 429 ? 'limit' : 'technical');
+        const failure = response.status === 204 ? 'unverified' : response.status === 429 ? 'limit'
+          : response.status === 401 || response.status === 403 ? 'access' : 'technical';
+        onFailure?.(failure);
         return null;
       }
-      if (Number(response.headers.get('Content-Length')) > maxResponseBytes) return null;
+      if (Number(response.headers.get('Content-Length')) > maxResponseBytes) { onFailure?.('technical'); return null; }
       const raw = await response.text();
-      if (!stillCurrent() || request.signal.aborted || raw.length > maxResponseBytes) return null;
-      return validateReply(JSON.parse(raw), body.excerpts);
+      if (!stillCurrent() || request.signal.aborted) return null;
+      if (raw.length > maxResponseBytes) { onFailure?.('technical'); return null; }
+      const answer = validateReply(JSON.parse(raw), body.excerpts);
+      if (!answer) onFailure?.('unverified');
+      return answer;
     } catch {
       if (stillCurrent() && !signal?.aborted) onFailure?.('technical');
       return null;
