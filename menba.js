@@ -13,6 +13,7 @@
   const ask = $('menbaAsk');
   const status = $('menbaStatus');
   const results = $('menbaResults');
+  const empty = $('menbaEmpty');
   const stop = $('menbaCancel');
   const ocrTools = $('menbaOcrTools');
   const ocrForm = $('menbaOcrForm');
@@ -21,8 +22,8 @@
   const photoFile = $('menbaPhotoFile');
   const category = $('menbaCategory');
   const clearChat = $('menbaClearChat');
-  const retry = $('menbaRetry');
   const learningMode = $('menbaMode');
+  const modeSummary = $('menbaModeSummary');
   const learningTask = $('menbaTask');
   const useTopic = $('menbaUseTopic');
   const cloud = $('menbaCloudPilot');
@@ -55,7 +56,7 @@
   let turns = [];
   let localQuran = null;
   let localPhoto = null;
-  let retryQuestion = null;
+  let editingQuestion = false;
   let hocaAllowed = false;
   let hocaRequest = 0;
   let nextDiagnosticAt = 0;
@@ -312,10 +313,9 @@
     quranFile.disabled = !canAsk || busy || savingPreferences;
     photoFile.disabled = quranFile.disabled;
     category.disabled = !canAsk || busy || !categories.length;
-    clearChat.hidden = !canAsk || !turns.length;
-    clearChat.disabled = !canAsk || busy || !turns.length;
-    retry.hidden = !canAsk || !retryQuestion;
-    retry.disabled = busy;
+    clearChat.hidden = !canAsk;
+    clearChat.disabled = busy;
+    empty.hidden = !canAsk || turns.length > 0;
     renderLearning(canAsk,busy);
     cloud.hidden = !canAsk || !MenbaCloudChat.canUse(cloud.dataset.endpoint);
     consent.disabled = busy;
@@ -329,10 +329,13 @@
     stop.hidden = !request;
     ask.disabled = !canAsk || busy;
     question.disabled = !canAsk || busy;
-    ask.textContent = request ? tr('Suche läuft …', 'Aranıyor …') : tr('Frage stellen', 'Sor');
+    ask.textContent = request ? tr('Läuft …', 'İşleniyor …') : tr('Senden', 'Gönder');
     renderNotice();
     form.setAttribute('aria-busy', String(busy));
+    const scrollTop = results.scrollTop;
+    const atEnd = results.scrollHeight - results.clientHeight - scrollTop < 48;
     results.replaceChildren(...turns.map(renderTurn));
+    results.scrollTop = atEnd ? results.scrollHeight : scrollTop;
     document.dispatchEvent(new CustomEvent('menba-busy',{detail:busy}));
   }
 
@@ -341,6 +344,7 @@
       learningMode.add(new Option('Hoca Modu','hoca'));
     }
     if (!hocaAllowed) learningMode.querySelector('[value="hoca"]')?.remove();
+    modeSummary.textContent = `${tr('Arbeitsmodus','Çalışma modu')} · ${learningMode.selectedOptions[0].textContent}`;
     $('menbaHocaNav').hidden = !canAsk || !hocaAllowed;
     for (const button of document.querySelectorAll('[data-menba-mode]')) {
       if (portal === 'menba' && learningMode.value === button.dataset.menbaMode) button.setAttribute('aria-current','page');
@@ -422,10 +426,50 @@
     sourceSummary.focus();
   }
 
+  function citationText(entry,index) {
+    const verse = entry.verse ? `${tr('Koran', 'Kur’an')} ${entry.verse} · ` : '';
+    const pageLabel = entry.quran ? tr('PDF-Seite', 'PDF sayfası') : tr('Seite', 'Sayfa');
+    const locator = entry.sourceId === photoId ? tr('Seitenfoto','Sayfa fotoğrafı') : `${pageLabel} ${entry.page}`;
+    return `[${index+1}] ${verse}${entry.source} · ${locator}${entry.ocr ? ' · OCR' : ''}`;
+  }
+
+  async function copyAnswer(turn,feedback) {
+    if (!allowed() || request || !turns.includes(turn)) return;
+    const sources = turn.evidence.flatMap((entry,index) => {
+      if (turn.answer && !turn.answer.citations.includes(index+1)) return [];
+      const label = citationText(entry,index);
+      return [turn.answer ? label : `${entry.text}\n${label}`];
+    });
+    const text = [turn.answer?.text, ...sources].filter(Boolean).join('\n\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      feedback.textContent = tr('Kopiert.','Kopyalandı.');
+    } catch {
+      feedback.textContent = tr('Kopieren fehlgeschlagen. Du kannst den Text markieren.','Kopyalanamadı. Metni seçip kopyalayabilirsin.');
+    }
+  }
+
+  function editQuestion(turn) {
+    if (!allowed() || request) return;
+    editingQuestion = true;
+    consent.checked = false;
+    question.value = turn.question;
+    question.focus();
+    question.setSelectionRange(question.value.length,question.value.length);
+  }
+
   function renderTurn(turn) {
     const item = document.createElement('article');
     item.className = 'menba-turn';
-    item.append(paragraph(turn.question,'menba-user'));
+    const prompt = document.createElement('div');
+    prompt.className = 'menba-prompt';
+    prompt.append(paragraph(turn.question,'menba-user'));
+    if (turn.notice) {
+      const edit = helpButton('Frage bearbeiten','Soruyu düzenle',()=>editQuestion(turn));
+      edit.disabled = request !== null;
+      prompt.append(edit);
+    }
+    item.append(prompt);
     if (!turn.notice) return item;
     const reply = document.createElement('div');
     reply.className = 'menba-reply';
@@ -468,14 +512,17 @@
       reply.append(mark);
     }
     turn.evidence.forEach((entry,index) => {
-      const passage = document.createElement('div');
+      const passage = document.createElement('details');
       passage.className = 'menba-passage';
+      passage.open = entry.expanded ?? (!turn.answer || turn.answer.kind === 'excerpt');
+      passage.addEventListener('toggle',()=>{ entry.expanded = passage.open; });
       const quote = document.createElement('blockquote');
       quote.append(...entry.text.split(/\r?\n/u).map(line => paragraph(line)));
-      const verse = entry.verse ? `${tr('Koran', 'Kur’an')} ${entry.verse} · ` : '';
-      const pageLabel = entry.quran ? tr('PDF-Seite', 'PDF sayfası') : tr('Seite', 'Sayfa');
-      const locator = entry.sourceId === photoId ? tr('Seitenfoto','Sayfa fotoğrafı') : `${pageLabel} ${entry.page}`;
-      const cite = paragraph(`[${index+1}] ${verse}${entry.source} · ${locator}${entry.ocr ? ' · OCR' : ''}`,'menba-citation');
+      const cite = document.createElement('summary');
+      cite.className = 'menba-citation';
+      cite.dir = 'auto';
+      cite.textContent = citationText(entry,index);
+      passage.append(cite);
       if (entry.meal) passage.append(paragraph(tr('Türkische Bedeutung aus der PDF', 'PDF’den Türkçe meal'), 'menba-meal-label'));
       const quiz = turn.learning?.quiz?.[index];
       if (quiz) {
@@ -483,8 +530,8 @@
         const summary = document.createElement('summary');
         summary.textContent = tr('Lösung und Fundstelle anzeigen','Cevabı ve kaynağı göster');
         reveal.append(summary,paragraph(quiz.answer),quote);
-        passage.append(paragraph(quiz.prompt),reveal,cite);
-      } else passage.append(quote,cite);
+        passage.append(paragraph(quiz.prompt),reveal);
+      } else passage.append(quote);
       if ((entry.quran || entry.ocr && entry.sourceId !== photoId) && !quiz) {
         if (entry.preview) {
           const frame = document.createElement('div');
@@ -510,7 +557,7 @@
           };
           zoom.addEventListener('click', () => { entry.zoomed = !entry.zoomed; updateZoom(); });
           updateZoom();
-          passage.prepend(frame, zoom);
+          passage.append(frame, zoom);
         } else {
           const button = document.createElement('button');
           button.type = 'button';
@@ -524,8 +571,9 @@
       }
       reply.append(passage);
     });
+    const actions = document.createElement('div');
+    actions.className = 'menba-chat-actions';
     if (!turn.evidence.length) {
-      const actions = document.createElement('div');
       actions.append(
         helpButton('Quellen auswählen','Kaynak Seç',showSources),
         helpButton('Beispielfragen','Örnek Sorular',()=>{
@@ -535,8 +583,20 @@
         }),
         helpButton('Andere Frage stellen','Başka Soru Dene',()=>question.focus())
       );
-      reply.append(actions);
     }
+    const repeat = turn.usedCloud
+      ? helpButton('Lokal erneut versuchen','Cihazda yeniden dene',()=>void run(turn))
+      : helpButton('Erneut versuchen','Yeniden dene',()=>void run(turn));
+    repeat.disabled = request !== null;
+    actions.append(repeat);
+    if (turn.evidence.length && !turn.learning?.quiz?.length) {
+      const feedback = paragraph('','menba-copy-status');
+      feedback.setAttribute('role','status');
+      const copy = helpButton('Antwort kopieren','Yanıtı kopyala',()=>void copyAnswer(turn,feedback));
+      copy.disabled = request !== null;
+      actions.append(copy,feedback);
+    }
+    reply.append(actions);
     item.append(reply);
     return item;
   }
@@ -825,21 +885,21 @@
     return {pages,quranSources,unavailable,scans,foundQuran};
   }
 
-  async function run(force = false) {
-    const text = question.value.trim();
+  async function run(retryTurn = null) {
+    const text = (retryTurn?.question ?? question.value).trim();
     if (!allowed() || request || loadingPreferences || !text) return;
-    retryQuestion = null;
-    const last = turns.at(-1);
-    const useCloud = consent.checked && !cloud.hidden;
+    const last = retryTurn || editingQuestion ? null : turns.at(-1);
+    const useCloud = !retryTurn && consent.checked && !cloud.hidden;
     consent.checked = false;
     const mode = learningMode.value;
     const task = learningTask.value;
-    const directIntent = MenbaAnswers.inspect(text);
-    const intent = directIntent ?? MenbaAnswers.inspect(text,last?.answer ? last.intent : null);
-    const previous = directIntent ? null : contextFor(text,intent,last);
-    const retrievalQuestion = previous?.retrievalQuestion ?? text;
     const picked = pickableSources();
-    const plan = MenbaQuestionChecks.plan(retrievalQuestion,pickableSources(),intent,isQuran,hadisId);
+    const reuseTopic = retryTurn?.sources.every(source=>picked.some(row=>row.id === source.id && sourceKey(row) === sourceKey(source)));
+    const directIntent = MenbaAnswers.inspect(text);
+    const intent = reuseTopic ? retryTurn.intent : directIntent ?? MenbaAnswers.inspect(text,last?.answer ? last.intent : null);
+    const previous = directIntent ? null : contextFor(text,intent,last);
+    const retrievalQuestion = reuseTopic ? retryTurn.retrievalQuestion : previous?.retrievalQuestion ?? text;
+    const plan = MenbaQuestionChecks.plan(retrievalQuestion,picked,intent,isQuran,hadisId);
     const {sources,quran,quranOnly,hadith} = plan;
     if (!sources.length) {
       sourceSummary.parentElement.open = true;
@@ -854,12 +914,16 @@
       renderNotice();
       return;
     }
-    const turn = {question:text, retrievalQuestion, sources, evidence:[], notice:null, warning:[], answer:null, intent, mode};
-    const work = {controller:new AbortController(), sources, task:null, turn, force};
+    const turn = {question:text, retrievalQuestion, sources, evidence:[], notice:null, warning:[], answer:null, intent, mode, usedCloud:useCloud};
+    const work = {controller:new AbortController(), sources, task:null, turn, force:retryTurn?.needsReload === true};
     request = work;
     turns.push(turn);
-    question.value = '';
+    if (!retryTurn) {
+      question.value = '';
+      editingQuestion = false;
+    }
     render();
+    results.scrollTop = results.scrollHeight;
     try {
       const snapshot = await collectSources(work,quranOnly);
       if (!snapshot) return;
@@ -889,7 +953,6 @@
           turn.warning.push(['Das Tageslimit für KI-Antworten ist erreicht oder für dieses Konto zu niedrig.','Yapay zekâ yanıtları için günlük sınır doldu veya bu hesap için çok düşük.']);
         } else if (modelFailure) {
           turn.warning.push(['Die KI-Verbindung ist derzeit unterbrochen. Hier sind die lokalen Fundstellen.','Yapay zekâ bağlantısı şu anda kesik. Yerel kaynak bölümleri aşağıda.']);
-          retryQuestion = text;
         }
       }
       if (!turn.answer && previous && requestsSource(text) && turn.evidence.length) {
@@ -918,7 +981,7 @@
       if (unavailable.length) {
         const labels = unavailable.join(', ');
         turn.warning.push([`Nicht durchsuchbar: ${labels}.`, `Aranamadı: ${labels}.`]);
-        retryQuestion = text;
+        turn.needsReload = true;
       }
       if (scans.length) {
         const labels = scans.join(', ');
@@ -939,7 +1002,7 @@
     } catch {
       if (request === work) {
         turn.notice = ['Die Suche konnte wegen eines technischen Fehlers nicht abgeschlossen werden.', 'Teknik bir hata nedeniyle arama tamamlanamadı.'];
-        retryQuestion = text;
+        turn.needsReload = true;
       }
     } finally {
       if (request === work) {
@@ -1225,6 +1288,7 @@
   document.addEventListener('menba-select-mode',event=>{
     if (!allowed() || request || !['talebe','hoca'].includes(event.detail) || (event.detail === 'hoca' && !hocaAllowed)) return;
     learningMode.value = event.detail;
+    modeSummary.parentElement.open = true;
     renderLearning(true,false);
   });
   useTopic.addEventListener('click',()=>{
@@ -1235,14 +1299,12 @@
   clearChat.addEventListener('click', () => {
     if (!allowed() || request) return;
     turns = [];
-    retryQuestion = notice = null;
+    notice = null;
+    consent.checked = false;
+    editingQuestion = false;
     question.value = '';
     render();
-  });
-  retry.addEventListener('click', () => {
-    if (!allowed() || request || !retryQuestion) return;
-    question.value = retryQuestion;
-    void run(true);
+    question.focus();
   });
   form.addEventListener('submit', event => {
     event.preventDefault();
@@ -1290,7 +1352,7 @@
       consent.checked = false;
       selected.clear();
       notice = null;
-      retryQuestion = null;
+      editingQuestion = false;
       turns = [];
       question.value = '';
       if (owner) {

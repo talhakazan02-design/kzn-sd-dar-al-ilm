@@ -23,7 +23,7 @@ const query = name => ({
   }
 });
 window.supabase = {createClient:()=>({
-  auth:{getSession:async()=>({data:{session:{user:fixtureUser}}}),getUser:async()=>({data:{user:fixtureUser}}),onAuthStateChange(){}},
+  auth:{getSession:async()=>({data:{session:{user:fixtureUser,access_token:'synthetic-fixture-session-token'}}}),getUser:async()=>({data:{user:fixtureUser}}),onAuthStateChange(){}},
   from:query,
   rpc:async()=>({data:[],error:null}),
   storage:{from:()=>({async createSignedUrl(file){
@@ -52,16 +52,26 @@ async function check() {
   const executablePath = process.env.MENBA_CHROME_PATH;
   const browser = await chromium.launch(executablePath ? {executablePath} : {});
   try {
-    const page = await browser.newPage({viewport:{width:1100,height:850}});
+    const page = await browser.newPage({viewport:{width:1440,height:900}});
+    await page.addInitScript(()=>{
+      Object.defineProperty(navigator,'clipboard',{value:{async writeText(text){window.copiedText = text;}}});
+    });
     const errors = [];
     page.on('pageerror', error=>errors.push(error.message));
     let downloads = 0;
     let externalPosts = 0;
+    let cloudCalls = 0;
     const types = {js:'text/javascript',css:'text/css',json:'application/json'};
     await page.route('**/*', async route=>{
       const url = new URL(route.request().url());
       if (url.hostname === 'cdn.jsdelivr.net' && url.pathname.endsWith('/build/pdf.min.mjs')) {
         return route.fulfill({contentType:'text/javascript',headers:{'Access-Control-Allow-Origin':'*'},body:pdfParser});
+      }
+      if (url.hostname === 'kzn-menba-pilot.talhakazan02.workers.dev' && url.pathname === '/menba/answer') {
+        const headers = {'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'authorization,content-type','Access-Control-Allow-Methods':'POST,OPTIONS'};
+        if (route.request().method() === 'OPTIONS') return route.fulfill({status:204,headers});
+        cloudCalls++;
+        return route.fulfill({status:200,headers,json:{text:'Die Laterne steht im Lesesaal.',citations:[{number:1,quote:excerpt}]}});
       }
       if (url.origin !== origin) {
         if (route.request().method() === 'POST') externalPosts++;
@@ -102,8 +112,10 @@ async function check() {
 
     const chat = page.locator('#menbaResults');
     const citation = chat.locator('.menba-citation').filter({hasText:'Bibliotheksordnung · Seite 1'});
+    const question = page.locator('#menbaQuestion');
+    const questionText = 'Wo steht die Sternlaterne im Lesesaal?';
     const ask = async () => {
-      await page.locator('#menbaQuestion').fill('Wo steht die Sternlaterne im Lesesaal?');
+      await question.fill(questionText);
       await page.locator('#menbaAsk').click();
       await page.waitForFunction(()=>!document.getElementById('menbaAsk').disabled);
     };
@@ -125,8 +137,79 @@ async function check() {
     assert.equal(await citation.count(),1);
     assert.equal(downloads,1,'After a valid grant the saved index is reusable');
     assert.equal(externalPosts,0);
+
+    const tools = page.locator('.menba-tools');
+    const conversation = page.locator('.menba-conversation');
+    const boxes = async () => Promise.all([tools.boundingBox(),conversation.boundingBox()]);
+    const [aside, desktopChat] = await boxes();
+    assert(aside.x + aside.width <= desktopChat.x,'Desktop places sources beside the conversation');
+    const sourceMenu = tools.locator('.menba-source-menu').first();
+    await page.locator('#menbaSourcesSummary').click();
+    assert.equal(await sourceMenu.evaluate(element=>element.open),false);
+    const templates = page.locator('#menbaQuestionTemplates');
+    await templates.locator('summary').click();
+    await templates.locator('#menbaTemplateChoice').selectOption('0');
+    await templates.locator('input').fill('Gebetswaschung');
+    await templates.getByRole('button',{name:'Frage übernehmen'}).click();
+    assert.match(await question.inputValue(),/Gebetswaschung/u);
+    await templates.locator('summary').click();
+
+    await consent.check();
+    await ask();
+    const latest = chat.locator('.menba-turn').last();
+    await latest.locator('.menba-answer').getByText(/Laterne steht im Lesesaal/u).waitFor();
+    assert.equal(cloudCalls,1);
+    const evidence = latest.locator('.menba-passage');
+    assert.equal(await evidence.evaluate(element=>element.open),false);
+    await evidence.locator('summary').click();
+    assert.equal(await evidence.locator('blockquote').textContent(),excerpt);
+    await latest.getByRole('button',{name:'Antwort kopieren'}).click();
+    await latest.getByText('Kopiert.').waitFor();
+    assert.equal(await page.evaluate(()=>window.copiedText),'Die Laterne steht im Lesesaal.\n\n[1] Bibliotheksordnung · Seite 1');
+
+    const turns = chat.locator('.menba-turn');
+    const beforeEdit = await turns.count();
+    await consent.check();
+    await latest.getByRole('button',{name:'Frage bearbeiten'}).click();
+    assert.equal(await question.inputValue(),questionText);
+    assert.equal(await turns.count(),beforeEdit);
+    assert.equal(await consent.isChecked(),false);
+    await question.fill('Mein neuer Entwurf');
+    await consent.check();
+    await latest.getByRole('button',{name:'Lokal erneut versuchen'}).click();
+    await page.waitForFunction(()=>!document.getElementById('menbaAsk').disabled);
+    assert.equal(await turns.count(),beforeEdit+1);
+    assert.equal(await question.inputValue(),'Mein neuer Entwurf');
+    assert.equal(await consent.isChecked(),false);
+    assert.equal(cloudCalls,1,'Retry must not implicitly send to Cloudflare');
+
+    await page.locator('#langBtn').click();
+    await latest.getByRole('button',{name:'Soruyu düzenle'}).waitFor();
+    assert.match(await latest.locator('.menba-citation').textContent(),/Sayfa 1/u);
+    assert.equal(await page.locator('#menbaClearChat').textContent(),'Yeni sohbet');
+    const saveScreenshot = async name=>{
+      if (process.env.MENBA_QA_SCREENSHOTS) await page.locator('.menba-panel').screenshot({path:path.join(process.env.MENBA_QA_SCREENSHOTS,name)});
+    };
+    await saveScreenshot('menba-phase-2-desktop.png');
+    await page.setViewportSize({width:768,height:1024});
+    const [tabletTools, tabletChat] = await boxes();
+    assert(tabletTools.y + tabletTools.height <= tabletChat.y,'Tablet keeps tools above the conversation');
+    await page.setViewportSize({width:390,height:780});
+    const [mobileTools, mobileChat] = await boxes();
+    assert(mobileTools.y + mobileTools.height <= mobileChat.y,'Mobile keeps tools above the conversation');
+    assert(await page.locator('.menba-panel').evaluate(element=>element.scrollWidth <= element.clientWidth+1));
+    await page.locator('#menbaClearChat').click();
+    assert.equal(await turns.count(),0);
+    assert.equal(await question.inputValue(),'');
+    assert(await book.isChecked());
+    await ask();
+    await latest.locator('.menba-citation').filter({hasText:'Bibliotheksordnung · Sayfa 1'}).waitFor();
+    assert(await question.evaluate(element=>parseFloat(getComputedStyle(element).fontSize) >= 18));
+    assert(await latest.locator('blockquote').evaluate(element=>parseFloat(getComputedStyle(element).fontSize) >= 18));
+    await saveScreenshot('menba-phase-2-mobile.png');
     assert.deepEqual(errors,[]);
     console.log('PASS: source consent, fresh Storage grant, removed stale citations and reused authorized PDF index.');
+    console.log('PASS: desktop and mobile conversation, templates, sources, editing, copying, local retry, new conversation and TR labels.');
   } finally {
     await browser.close();
   }
